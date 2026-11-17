@@ -127,6 +127,18 @@ class EventDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
+            final gpsUrl = event.googleMapsDirectionsUrl ?? event.googleMapsUrl ?? 'https://maps.google.com/?q=${Uri.encodeComponent("${event.venueName} ${event.venueAddress}")}';
+            OutlinedButton.icon(
+              icon: const Icon(Icons.navigation, color: AppConstants.dangerColor),
+              label: const Text('Start GPS Turn-by-Turn Navigation', style: TextStyle(fontWeight: FontWeight.bold)),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => _openUrl(gpsUrl),
+            ),
+            const SizedBox(height: 12),
+
             OutlinedButton.icon(
               icon: const Icon(Icons.open_in_browser),
               label: const Text('Open Event Mini-Website'),
@@ -137,16 +149,20 @@ class EventDetailScreen extends StatelessWidget {
               onPressed: () => _openUrl(eventUrl),
             ),
 
-            if (event.googleMapsUrl != null && event.googleMapsUrl!.isNotEmpty) ...[
+            if (event.instagramUrl != null && event.instagramUrl!.isNotEmpty) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(
-                icon: const Icon(Icons.directions, color: AppConstants.dangerColor),
-                label: const Text('Get Venue Directions (Google Maps)'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () => _openUrl(event.googleMapsUrl!),
+                icon: const Icon(Icons.camera_alt, color: Colors.purple),
+                label: const Text('Event Instagram Page'),
+                onPressed: () => _openUrl(event.instagramUrl!),
+              ),
+            ],
+            if (event.youtubeUrl != null && event.youtubeUrl!.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.live_tv, color: Colors.red),
+                label: const Text('Watch Live Stream'),
+                onPressed: () => _openUrl(event.youtubeUrl!),
               ),
             ],
           ],

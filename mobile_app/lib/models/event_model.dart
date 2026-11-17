@@ -10,6 +10,11 @@ class EventModel {
   final String venueName;
   final String venueAddress;
   final String? googleMapsUrl;
+  final String? googleMapsDirectionsUrl;
+  final String? instagramUrl;
+  final String? youtubeUrl;
+  final String? eventHashtag;
+  final String? dressCode;
   final String? coverImageUrl;
   final bool isPublished;
   final String? qrImageUrl;
@@ -27,6 +32,11 @@ class EventModel {
     required this.venueName,
     required this.venueAddress,
     this.googleMapsUrl,
+    this.googleMapsDirectionsUrl,
+    this.instagramUrl,
+    this.youtubeUrl,
+    this.eventHashtag,
+    this.dressCode,
     this.coverImageUrl,
     required this.isPublished,
     this.qrImageUrl,
@@ -52,7 +62,12 @@ class EventModel {
       eventTime: json['event_time'],
       venueName: json['venue_name'] ?? '',
       venueAddress: json['venue_address'] ?? '',
-      googleMapsUrl: json['google_maps_url'],
+      googleMapsUrl: json['maps_url'] ?? json['google_maps_url'],
+      googleMapsDirectionsUrl: json['google_maps_directions_url'],
+      instagramUrl: json['instagram_url'],
+      youtubeUrl: json['youtube_url'],
+      eventHashtag: json['event_hashtag'],
+      dressCode: json['dress_code'],
       coverImageUrl: json['cover_image_url'] ?? json['cover_image'],
       isPublished: json['is_published'] ?? false,
       qrImageUrl: qrImg,

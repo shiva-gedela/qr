@@ -17,17 +17,22 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
   final _venueNameController = TextEditingController();
   final _venueAddressController = TextEditingController();
   final _mapsUrlController = TextEditingController();
+  final _instagramController = TextEditingController();
+  final _youtubeController = TextEditingController();
+  final _hashtagController = TextEditingController();
+  final _dressCodeController = TextEditingController();
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 14));
   String _eventType = 'wedding';
   bool _isLoading = false;
 
   final List<Map<String, String>> _eventTypes = [
-    {'code': 'wedding', 'label': 'Wedding'},
-    {'code': 'birthday', 'label': 'Birthday'},
-    {'code': 'anniversary', 'label': 'Anniversary'},
-    {'code': 'engagement', 'label': 'Engagement'},
-    {'code': 'housewarming', 'label': 'Housewarming'},
-    {'code': 'other', 'label': 'Other Event'},
+    {'code': 'wedding', 'label': '💍 Wedding'},
+    {'code': 'birthday', 'label': '🎂 Birthday'},
+    {'code': 'engagement', 'label': '💑 Engagement'},
+    {'code': 'anniversary', 'label': '❤️ Anniversary'},
+    {'code': 'housewarming', 'label': '🏠 Housewarming'},
+    {'code': 'graduation', 'label': '🎓 Graduation'},
+    {'code': 'other', 'label': '🎉 Other Celebration'},
   ];
 
   void _handleSubmit() async {
@@ -44,7 +49,11 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
         'event_date': dateStr,
         'venue_name': _venueNameController.text.trim(),
         'venue_address': _venueAddressController.text.trim(),
-        'google_maps_url': _mapsUrlController.text.trim(),
+        'maps_url': _mapsUrlController.text.trim(),
+        'instagram_url': _instagramController.text.trim(),
+        'youtube_url': _youtubeController.text.trim(),
+        'event_hashtag': _hashtagController.text.trim(),
+        'dress_code': _dressCodeController.text.trim(),
         'is_published': true,
       });
 
@@ -125,7 +134,35 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _mapsUrlController,
-                decoration: const InputDecoration(labelText: 'Google Maps Link', border: OutlineInputBorder()),
+                decoration: const InputDecoration(labelText: 'Google Maps GPS Navigation URL', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _instagramController,
+                decoration: const InputDecoration(labelText: 'Instagram Profile / Event Page', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _youtubeController,
+                decoration: const InputDecoration(labelText: 'YouTube Live Stream (Virtual Guests)', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _hashtagController,
+                      decoration: const InputDecoration(labelText: 'Event Hashtag (e.g. #PriyaWedsRam)', border: OutlineInputBorder()),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _dressCodeController,
+                      decoration: const InputDecoration(labelText: 'Dress Code (e.g. Festive)', border: OutlineInputBorder()),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               ElevatedButton(

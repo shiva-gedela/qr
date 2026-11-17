@@ -18,15 +18,15 @@ class Event(models.Model):
     """Core event model for all types of celebrations."""
 
     EVENT_TYPES = [
-        ('wedding', 'Wedding'),
-        ('birthday', 'Birthday'),
-        ('engagement', 'Engagement'),
-        ('anniversary', 'Anniversary'),
-        ('housewarming', 'Housewarming'),
-        ('babyshower', 'Baby Shower'),
-        ('graduation', 'Graduation'),
-        ('corporate', 'Corporate'),
-        ('other', 'Other'),
+        ('wedding', '💍 Wedding'),
+        ('birthday', '🎂 Birthday'),
+        ('engagement', '💑 Engagement'),
+        ('anniversary', '❤️ Anniversary'),
+        ('housewarming', '🏠 Housewarming'),
+        ('graduation', '🎓 Graduation'),
+        ('babyshower', '👶 Baby Shower'),
+        ('corporate', '💼 Corporate'),
+        ('other', '🎉 Other Occasion'),
     ]
 
     # Ownership & identity
@@ -51,10 +51,17 @@ class Event(models.Model):
     event_end_date = models.DateField(blank=True, null=True)
     event_end_time = models.TimeField(blank=True, null=True)
 
-    # Venue
+    # Venue & GPS
     venue_name = models.CharField(max_length=300, blank=True)
     venue_address = models.TextField(blank=True)
     maps_url = models.URLField(blank=True, help_text="Google Maps URL for the venue")
+
+    # Social Pages & Event Community
+    instagram_url = models.URLField(blank=True, help_text="Instagram event profile or page URL")
+    facebook_url = models.URLField(blank=True, help_text="Facebook event/group URL")
+    youtube_url = models.URLField(blank=True, help_text="YouTube live stream URL for virtual guests")
+    event_hashtag = models.CharField(max_length=100, blank=True, help_text="Event hashtag, e.g. #PriyaWedsRam")
+    dress_code = models.CharField(max_length=150, blank=True, help_text="Dress code suggestion, e.g. Festive / Formal")
 
     # Media
     cover_image = models.ImageField(upload_to='events/covers/', blank=True, null=True)
@@ -112,15 +119,27 @@ class Event(models.Model):
         icons = {
             'wedding': '💍',
             'birthday': '🎂',
-            'engagement': '💍',
+            'engagement': '💑',
             'anniversary': '❤️',
             'housewarming': '🏠',
-            'babyshower': '👶',
             'graduation': '🎓',
+            'babyshower': '👶',
             'corporate': '💼',
             'other': '🎉',
         }
         return icons.get(self.event_type, '🎉')
+
+    @property
+    def google_maps_directions_url(self):
+        """Turn-by-turn Google Maps GPS navigation destination URL."""
+        if self.maps_url and 'http' in self.maps_url:
+            return self.maps_url
+        import urllib.parse
+        destination = f"{self.venue_name} {self.venue_address}".strip()
+        if destination:
+            encoded = urllib.parse.quote_plus(destination)
+            return f"https://www.google.com/maps/dir/?api=1&destination={encoded}"
+        return "https://maps.google.com/"
 
     def get_photos(self, category=None):
         qs = self.media.filter(media_type='image', is_approved=True)

@@ -125,37 +125,84 @@
         </div>
     </div>
 
-    <!-- Date & Venue Card -->
+    <!-- Date & Venue Card with GPS Navigation -->
     <div class="detail-card p-4 mb-4">
-        <div class="row g-4">
-            <div class="col-md-6 text-center">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-6 text-center border-end-md">
                 <i class="bi bi-calendar-heart display-6 text-primary mb-2 d-block" style="color:var(--event-primary)!important;"></i>
                 <h6 class="fw-bold text-muted small text-uppercase tracking-wide">Date & Time</h6>
                 <h5 class="fw-bold mb-1">{{ event.event_date|date:"l, d F Y" }}</h5>
                 {% if event.event_time %}
-                <p class="text-muted mb-0"><i class="bi bi-clock me-1"></i>{{ event.event_time|time:"g:i A" }}</p>
+                <p class="text-muted mb-1"><i class="bi bi-clock me-1 text-warning"></i>{{ event.event_time|time:"g:i A" }}</p>
                 {% endif %}
                 {% if event.event_end_date %}
                 <p class="text-muted small mb-0">Until {{ event.event_end_date|date:"d F Y" }}</p>
                 {% endif %}
+                {% if event.dress_code %}
+                <div class="mt-2">
+                    <span class="badge bg-light text-dark border"><i class="bi bi-suit-heart me-1 text-danger"></i>Dress Code: {{ event.dress_code }}</span>
+                </div>
+                {% endif %}
             </div>
             {% if event.venue_name %}
             <div class="col-md-6 text-center">
-                <i class="bi bi-geo-alt display-6 mb-2 d-block" style="color:var(--event-primary);"></i>
-                <h6 class="fw-bold text-muted small text-uppercase">Venue</h6>
+                <i class="bi bi-geo-alt-fill display-6 mb-2 d-block text-danger"></i>
+                <h6 class="fw-bold text-muted small text-uppercase tracking-wide">Event Location</h6>
                 <h5 class="fw-bold mb-1">{{ event.venue_name }}</h5>
                 {% if event.venue_address %}
-                <p class="text-muted mb-0 small">{{ event.venue_address }}</p>
+                <p class="text-muted mb-2 small">{{ event.venue_address }}</p>
                 {% endif %}
-                {% if event.maps_url %}
-                <a href="{{ event.maps_url }}" target="_blank" class="btn btn-sm btn-event-primary mt-2">
-                    <i class="bi bi-map me-1"></i>Get Directions
-                </a>
-                {% endif %}
+                <div class="d-flex flex-column gap-2 mt-3">
+                    <a href="{{ event.google_maps_directions_url }}" target="_blank" class="btn btn-primary fw-bold shadow-sm">
+                        <i class="bi bi-cursor-fill me-2 text-warning"></i>Open in Google Maps (GPS)
+                    </a>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="/events/e/{{ event.slug }}/gps/" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-compass me-1"></i>Start Navigation
+                        </a>
+                        {% if event.venue_address %}
+                        <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ event.venue_name }}, {{ event.venue_address|escapejs }}'); alert('Address copied to clipboard!');">
+                            <i class="bi bi-copy me-1"></i>Copy Address
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
             {% endif %}
         </div>
     </div>
+
+    <!-- Social Pages & Virtual Event Community -->
+    {% if event.instagram_url or event.facebook_url or event.youtube_url or event.event_hashtag %}
+    <div class="detail-card p-4 mb-4">
+        <h5 class="fw-bold mb-3 text-center" style="color:var(--event-primary);">
+            <i class="bi bi-heart-fill me-2 text-danger"></i>Connect &amp; Follow the Event
+        </h5>
+        <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-2">
+            {% if event.instagram_url %}
+            <a href="{{ event.instagram_url }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm">
+                <i class="bi bi-instagram me-1"></i>Instagram Page
+            </a>
+            {% endif %}
+            {% if event.youtube_url %}
+            <a href="{{ event.youtube_url }}" target="_blank" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm">
+                <i class="bi bi-broadcast me-1"></i>Watch Live Ceremony
+            </a>
+            {% endif %}
+            {% if event.facebook_url %}
+            <a href="{{ event.facebook_url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
+                <i class="bi bi-facebook me-1"></i>Facebook Event
+            </a>
+            {% endif %}
+            {% if event.event_hashtag %}
+            <div class="badge bg-light text-primary border rounded-pill px-3 py-2 fs-6 shadow-sm" style="cursor:pointer;" onclick="navigator.clipboard.writeText('{{ event.event_hashtag|escapejs }}'); alert('Hashtag copied: {{ event.event_hashtag|escapejs }}');" title="Click to copy hashtag">
+                <i class="bi bi-hash me-1 text-danger"></i>{{ event.event_hashtag }}
+            </div>
+            {% endif %}
+        </div>
+        <p class="text-center text-muted small mb-0 mt-2">Tag your posts and stories with the event hashtag!</p>
+    </div>
+    {% endif %}
 
     <!-- Description -->
     {% if event.description %}

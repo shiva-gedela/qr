@@ -24,6 +24,7 @@ class EventForm(forms.ModelForm):
             'event_type', 'title', 'host_names', 'description',
             'event_date', 'event_time', 'event_end_date', 'event_end_time',
             'venue_name', 'venue_address', 'maps_url',
+            'instagram_url', 'facebook_url', 'youtube_url', 'event_hashtag', 'dress_code',
             'cover_image', 'is_published', 'is_private', 'private_password',
             'allow_guest_uploads', 'require_media_approval',
         ]
@@ -35,10 +36,20 @@ class EventForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 5}),
             'venue_address': forms.Textarea(attrs={'rows': 3}),
             'maps_url': forms.URLInput(attrs={'placeholder': 'https://maps.google.com/...'}),
+            'instagram_url': forms.URLInput(attrs={'placeholder': 'https://instagram.com/...'}),
+            'facebook_url': forms.URLInput(attrs={'placeholder': 'https://facebook.com/...'}),
+            'youtube_url': forms.URLInput(attrs={'placeholder': 'https://youtube.com/live/... (Live Stream)'}),
+            'event_hashtag': forms.TextInput(attrs={'placeholder': '#PriyaWedsRam'}),
+            'dress_code': forms.TextInput(attrs={'placeholder': 'e.g. Traditional Indian / Black Tie'}),
         }
         labels = {
             'host_names': 'Host Name(s)',
-            'maps_url': 'Google Maps URL',
+            'maps_url': 'Google Maps URL (GPS)',
+            'instagram_url': 'Instagram Page / Profile',
+            'facebook_url': 'Facebook Event / Page',
+            'youtube_url': 'YouTube Live Stream URL',
+            'event_hashtag': 'Event Hashtag',
+            'dress_code': 'Dress Code',
             'is_published': 'Publish this event',
             'is_private': 'Make event private (require password)',
             'allow_guest_uploads': 'Allow guests to upload photos & videos',
@@ -48,20 +59,27 @@ class EventForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
         self.helper.layout = Layout(
             Fieldset('Event Details',
                 Row(Column('event_type', css_class='col-md-4'), Column('title', css_class='col-md-8')),
                 'host_names',
                 'description',
+                Row(Column('dress_code', css_class='col-md-6'), Column('event_hashtag', css_class='col-md-6')),
             ),
             Fieldset('Date & Time',
                 Row(Column('event_date', css_class='col-md-3'), Column('event_time', css_class='col-md-3'),
                     Column('event_end_date', css_class='col-md-3'), Column('event_end_time', css_class='col-md-3')),
             ),
-            Fieldset('Venue',
+            Fieldset('Venue & GPS Navigation',
                 'venue_name',
                 'venue_address',
                 'maps_url',
+            ),
+            Fieldset('Social Pages & Live Stream',
+                Row(Column('instagram_url', css_class='col-md-4'),
+                    Column('facebook_url', css_class='col-md-4'),
+                    Column('youtube_url', css_class='col-md-4')),
             ),
             Fieldset('Media & Settings',
                 'cover_image',

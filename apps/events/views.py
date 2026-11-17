@@ -40,7 +40,10 @@ def event_create(request):
             messages.success(request, f"Event '{event.title}' created successfully!")
             return redirect('event_detail', pk=event.pk)
     else:
-        form = EventForm()
+        initial = {}
+        if request.GET.get('type'):
+            initial['event_type'] = request.GET.get('type')
+        form = EventForm(initial=initial)
 
     return render(request, 'events/event_form.html', {
         'form': form,
@@ -495,3 +498,13 @@ def _validate_media_file(f):
         return 'video', None
 
     return None, f"Unsupported file type ({content_type}). Allowed: JPG, PNG, WEBP, GIF, MP4, WEBM, MOV."
+
+
+def event_gps_redirect(request, slug):
+    """
+    Direct GPS redirection endpoint: /events/e/<slug>/gps/ or /events/e/<slug>/navigate/
+    Redirects scanner / guest directly into Google Maps GPS navigation for the event venue.
+    """
+    event = get_object_or_404(Event, slug=slug)
+    return redirect(event.google_maps_directions_url)
+

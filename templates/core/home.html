@@ -161,20 +161,16 @@
         </div>
         <div class="row g-3 justify-content-center">
             {% for et in event_types %}
-            <div class="col-6 col-md-3 col-lg-2">
-                <div class="card border-0 shadow-sm text-center p-3 hover-lift h-100">
-                    <div class="fs-1 mb-2">{{ et.icon }}</div>
-                    <div class="fw-semibold small">{{ et.name }}</div>
-                </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="/events/create/?type={{ et.code }}" class="text-decoration-none text-dark">
+                    <div class="card border-0 shadow-sm text-center p-3 hover-lift h-100 rounded-4">
+                        <div class="fs-1 mb-2">{{ et.icon }}</div>
+                        <div class="fw-bold small">{{ et.name }}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Create QR &rarr;</div>
+                    </div>
+                </a>
             </div>
             {% endfor %}
-            <!-- Static fallback -->
-            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">💍</div><div class="fw-semibold small">Wedding</div></div></div>
-            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">🎂</div><div class="fw-semibold small">Birthday</div></div></div>
-            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">💑</div><div class="fw-semibold small">Engagement</div></div></div>
-            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">❤️</div><div class="fw-semibold small">Anniversary</div></div></div>
-            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">🏠</div><div class="fw-semibold small">Housewarming</div></div></div>
-            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">🎓</div><div class="fw-semibold small">Graduation</div></div></div>
         </div>
     </div>
 </section>

@@ -22,6 +22,8 @@ urlpatterns = [
 
     # Public event mini-website (QR landing page)
     path('e/<slug:slug>/', views.event_public, name='event_public'),
+    path('e/<slug:slug>/gps/', views.event_gps_redirect, name='event_gps_redirect'),
+    path('e/<slug:slug>/navigate/', views.event_gps_redirect, name='event_navigate'),
     path('e/<slug:slug>/calendar.ics', views.event_calendar_ics, name='event_calendar_ics'),
     path('e/<slug:slug>/guest-upload/', views.guest_media_upload, name='guest_media_upload'),
 ]

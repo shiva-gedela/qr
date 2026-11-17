@@ -261,16 +261,21 @@ def generate_event_qr_pdf(qr_instance):
     # Scan Call to Action
     c.setFillColor(primary_color)
     c.setFont("Helvetica-Bold", 15)
-    c.drawCentredString(page_w / 2, qr_y - 40, "Scan with your Smartphone Camera")
+    c.drawCentredString(page_w / 2, qr_y - 36, "Scan with your Smartphone Camera")
 
     c.setFillColor(colors.HexColor('#666666'))
     c.setFont("Helvetica", 11)
-    c.drawCentredString(page_w / 2, qr_y - 58, "Access event invitation, schedule, photo gallery & directions directly")
+    c.drawCentredString(page_w / 2, qr_y - 54, "Access event invitation, Google Maps GPS navigation, gallery & social pages")
+
+    if event and event.event_hashtag:
+        c.setFillColor(colors.HexColor('#d97706'))
+        c.setFont("Helvetica-Bold", 11)
+        c.drawCentredString(page_w / 2, qr_y - 70, f"Share your moments: {event.event_hashtag}")
 
     # Direct URL
     c.setFillColor(colors.HexColor('#0d6efd'))
     c.setFont("Helvetica-Bold", 11)
-    c.drawCentredString(page_w / 2, qr_y - 78, qr_instance.target_url)
+    c.drawCentredString(page_w / 2, qr_y - 88, qr_instance.target_url)
 
     # Footer note
     c.setFillColor(colors.HexColor('#888888'))

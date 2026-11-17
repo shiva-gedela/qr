@@ -52,6 +52,7 @@ class EventSerializer(serializers.ModelSerializer):
     storage_info = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     event_type_display = serializers.CharField(source='get_event_type_display', read_only=True)
+    google_maps_directions_url = serializers.CharField(read_only=True)
 
     class Meta:
         model = Event
@@ -59,7 +60,8 @@ class EventSerializer(serializers.ModelSerializer):
             'id', 'uuid', 'slug', 'event_type', 'event_type_display',
             'title', 'host_names', 'description',
             'event_date', 'event_time', 'event_end_date', 'event_end_time',
-            'venue_name', 'venue_address', 'maps_url',
+            'venue_name', 'venue_address', 'maps_url', 'google_maps_directions_url',
+            'instagram_url', 'facebook_url', 'youtube_url', 'event_hashtag', 'dress_code',
             'cover_image_url', 'is_published', 'is_private',
             'allow_guest_uploads', 'require_media_approval', 'max_storage_mb',
             'owner_name', 'public_url', 'photos', 'videos', 'qr_code',
@@ -135,5 +137,6 @@ class EventCreateSerializer(serializers.ModelSerializer):
             'event_type', 'title', 'host_names', 'description',
             'event_date', 'event_time', 'event_end_date', 'event_end_time',
             'venue_name', 'venue_address', 'maps_url',
+            'instagram_url', 'facebook_url', 'youtube_url', 'event_hashtag', 'dress_code',
             'is_published', 'is_private', 'private_password',
         ]
