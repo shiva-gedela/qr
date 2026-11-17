@@ -3,41 +3,68 @@
 
 {% block extra_css %}
 <style>
-.section-label {
-    font-size: .7rem;
-    text-transform: uppercase;
-    letter-spacing: .1rem;
+.form-fieldset-legend {
+    font-size: 1.1rem;
     font-weight: 700;
-    color: #6c757d;
-    margin-bottom: .5rem;
+    color: #1e1b4b;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+fieldset legend {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    color: #312e81 !important;
+    border-bottom: 2px solid #e0e7ff !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1.25rem !important;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="bg-light py-4 border-bottom">
+<!-- ══ Header Banner ═════════════════════════════════════════════════════════ -->
+<div class="py-4 text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);">
     <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="/events/">Events</a></li>
-                    <li class="breadcrumb-item active">{{ title }}</li>
+                    <li class="breadcrumb-item"><a href="/events/" class="text-white-50 text-decoration-none">Events</a></li>
+                    <li class="breadcrumb-item active text-white" aria-current="page">{{ title }}</li>
                 </ol>
             </nav>
-            <h2 class="fw-bold mb-0"><i class="bi bi-calendar-plus text-primary me-2"></i>{{ title }}</h2>
+            <h1 class="display-6 fw-bold mb-0 text-white"><i class="bi bi-calendar2-heart text-warning me-2"></i>{{ title }}</h1>
         </div>
         {% if event %}
-        <a href="/events/{{ event.pk }}/" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Back
+        <a href="/events/{{ event.pk }}/" class="btn btn-outline-light rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i>Back to Event
         </a>
         {% endif %}
     </div>
 </div>
 
-<div class="container py-4">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-9 col-xl-8">
-            <div class="card border-0 shadow-sm">
+        <div class="col-lg-10 col-xl-9">
+            <!-- Occasion Quick Reminder Banner -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-light">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-4">🎉</span>
+                        <div>
+                            <strong class="d-block text-dark">6 Supported Occasions with Smart QR &amp; GPS</strong>
+                            <small class="text-muted">Wedding, Birthday, Engagement, Anniversary, Housewarming, Graduation</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-primary rounded-pill px-3 py-2"><i class="bi bi-compass me-1"></i>Google Maps Directions Auto-Linked</span>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="card-body p-4 p-md-5">
                     {% load crispy_forms_tags %}
                     <form method="post" enctype="multipart/form-data" novalidate>

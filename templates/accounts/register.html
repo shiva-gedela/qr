@@ -1,18 +1,26 @@
 {% extends 'base.html' %}
-{% block title %}Register - {{ SITE_NAME }}{% endblock %}
+{% block title %}Create Account - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="min-vh-100 d-flex align-items-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-    <div class="container">
+<div class="min-vh-100 d-flex align-items-center py-5 position-relative overflow-hidden" style="background: radial-gradient(circle at 20% 20%, #312e81 0%, #1e1b4b 60%, #0f172a 100%);">
+    <!-- Decorative Ambient Glows -->
+    <div class="position-absolute" style="top: 10%; right: 15%; width: 320px; height: 320px; background: rgba(245, 158, 11, 0.12); filter: blur(90px); border-radius: 50%;"></div>
+    <div class="position-absolute" style="bottom: 10%; left: 10%; width: 380px; height: 380px; background: rgba(99, 102, 241, 0.15); filter: blur(100px); border-radius: 50%;"></div>
+
+    <div class="container position-relative" style="z-index: 2;">
         <div class="row justify-content-center">
-            <div class="col-md-7 col-lg-6">
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <!-- Card Header -->
-                    <div class="card-header bg-primary text-white text-center py-4 border-0">
-                        <div class="mb-2"><i class="bi bi-qr-code-scan display-6 text-warning"></i></div>
-                        <h3 class="fw-bold mb-1">Create Account</h3>
-                        <p class="mb-0 text-white-75 small">Join {{ SITE_NAME }} for free</p>
+            <div class="col-md-8 col-lg-7 col-xl-6">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(16px);">
+                    <!-- Header -->
+                    <div class="p-4 text-center border-bottom" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); color: white;">
+                        <div class="d-inline-flex p-3 rounded-circle bg-warning text-dark shadow-sm mb-3">
+                            <i class="bi bi-stars fs-3"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1 text-white">Create Your Account</h3>
+                        <p class="text-white-75 small mb-0">Join {{ SITE_NAME }} and design instant event QR codes with GPS navigation</p>
                     </div>
+
+                    <!-- Form Body -->
                     <div class="card-body p-4 p-md-5">
                         {% load crispy_forms_tags %}
                         <form method="post" novalidate>
@@ -21,16 +29,24 @@
                         </form>
 
                         <hr class="my-4">
-                        <p class="text-center text-muted mb-0">
-                            Already have an account?
-                            <a href="/accounts/login/" class="text-primary fw-semibold">Sign In</a>
-                        </p>
-                        <p class="text-center text-muted small mt-3">
-                            By registering, you agree to our
-                            <a href="#" class="text-muted">Terms</a> &amp;
-                            <a href="#" class="text-muted">Privacy Policy</a>
-                        </p>
+
+                        <div class="text-center">
+                            <span class="text-muted small">Already have an account?</span>
+                            <a href="/accounts/login/" class="text-primary fw-bold small ms-1 text-decoration-none">
+                                Sign In &rarr;
+                            </a>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Occasions Pills footer -->
+                <div class="text-center mt-4 text-white-50 small d-flex flex-wrap gap-2 justify-content-center">
+                    <span>💍 Wedding</span> &bull;
+                    <span>🎂 Birthday</span> &bull;
+                    <span>💑 Engagement</span> &bull;
+                    <span>❤️ Anniversary</span> &bull;
+                    <span>🏠 Housewarming</span> &bull;
+                    <span>🎓 Graduation</span>
                 </div>
             </div>
         </div>

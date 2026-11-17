@@ -2,16 +2,25 @@
 {% block title %}Sign In - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="min-vh-100 d-flex align-items-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-    <div class="container">
+<div class="min-vh-100 d-flex align-items-center py-5 position-relative overflow-hidden" style="background: radial-gradient(circle at 20% 20%, #312e81 0%, #1e1b4b 60%, #0f172a 100%);">
+    <!-- Decorative Ambient Glows -->
+    <div class="position-absolute" style="top: 10%; left: 15%; width: 300px; height: 300px; background: rgba(99, 102, 241, 0.15); filter: blur(90px); border-radius: 50%;"></div>
+    <div class="position-absolute" style="bottom: 15%; right: 15%; width: 350px; height: 350px; background: rgba(236, 72, 153, 0.12); filter: blur(100px); border-radius: 50%;"></div>
+
+    <div class="container position-relative" style="z-index: 2;">
         <div class="row justify-content-center">
-            <div class="col-md-5 col-lg-4">
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="card-header bg-primary text-white text-center py-4 border-0">
-                        <div class="mb-2"><i class="bi bi-qr-code-scan display-6 text-warning"></i></div>
-                        <h3 class="fw-bold mb-1">Welcome Back</h3>
-                        <p class="mb-0 text-white-75 small">Sign in to your account</p>
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(16px);">
+                    <!-- Header -->
+                    <div class="p-4 text-center border-bottom" style="background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 100%); color: white;">
+                        <div class="d-inline-flex p-3 rounded-circle bg-warning text-dark shadow-sm mb-3">
+                            <i class="bi bi-qr-code-scan fs-3"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1 text-white">Welcome Back</h3>
+                        <p class="text-white-75 small mb-0">Sign in to manage your Event QR invitations</p>
                     </div>
+
+                    <!-- Form Body -->
                     <div class="card-body p-4 p-md-5">
                         {% load crispy_forms_tags %}
                         <form method="post" novalidate>
@@ -20,14 +29,25 @@
                         </form>
 
                         <div class="text-center mt-3">
-                            <a href="/accounts/password-reset/" class="text-muted small">Forgot your password?</a>
+                            <a href="/accounts/password-reset/" class="text-muted small text-decoration-none">
+                                <i class="bi bi-key me-1"></i>Forgot your password?
+                            </a>
                         </div>
+
                         <hr class="my-4">
-                        <p class="text-center text-muted mb-0">
-                            New here?
-                            <a href="/accounts/register/" class="text-primary fw-semibold">Create a free account</a>
-                        </p>
+
+                        <div class="text-center">
+                            <span class="text-muted small">Don't have an account?</span>
+                            <a href="/accounts/register/" class="text-primary fw-bold small ms-1 text-decoration-none">
+                                Register for Free &rarr;
+                            </a>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Feature hint below card -->
+                <div class="text-center mt-4 text-white-50 small">
+                    <i class="bi bi-shield-check text-warning me-1"></i>Protected with encrypted session tokens &bull; GPS Ready
                 </div>
             </div>
         </div>

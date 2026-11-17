@@ -20,11 +20,13 @@
 <body class="d-flex flex-column min-vh-100">
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════════════════════════════ -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-glass sticky-top py-3">
     <div class="container">
         <a class="navbar-brand fw-bold fs-4 d-flex align-items-center gap-2" href="/">
-            <i class="bi bi-qr-code-scan text-warning"></i>
-            {{ SITE_NAME }}
+            <div class="d-inline-flex p-2 rounded-3 bg-warning text-dark shadow-sm">
+                <i class="bi bi-qr-code-scan fs-5"></i>
+            </div>
+            <span>{{ SITE_NAME }}</span>
         </a>
 
         <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
@@ -134,17 +136,23 @@
                 </ul>
             </div>
             <div class="col-md-3">
-                <h6 class="fw-semibold mb-3">Events</h6>
+                <h6 class="fw-semibold mb-3">6 Core Occasions</h6>
                 <ul class="list-unstyled small">
-                    <li class="text-muted">Wedding Invitations</li>
-                    <li class="text-muted">Birthday Parties</li>
-                    <li class="text-muted">Corporate Events</li>
+                    <li class="text-muted mb-1">💍 Wedding &amp; Reception</li>
+                    <li class="text-muted mb-1">🎂 Birthday Celebration</li>
+                    <li class="text-muted mb-1">💑 Engagement Ceremony</li>
+                    <li class="text-muted mb-1">❤️ Wedding Anniversary</li>
+                    <li class="text-muted mb-1">🏠 Housewarming (Griha Pravesh)</li>
+                    <li class="text-muted mb-1">🎓 Graduation Ceremony</li>
                 </ul>
             </div>
             <div class="col-md-3">
-                <h6 class="fw-semibold mb-3">Contact</h6>
-                <p class="text-muted small mb-1"><i class="bi bi-envelope me-2"></i>hello@eventconnect.com</p>
-                <p class="text-muted small"><i class="bi bi-whatsapp me-2"></i>+91 98765 43210</p>
+                <h6 class="fw-semibold mb-3">Mobile &amp; Support</h6>
+                <p class="text-muted small mb-2"><i class="bi bi-envelope me-2 text-warning"></i>support@eventconnect.com</p>
+                <p class="text-muted small mb-3"><i class="bi bi-geo-alt me-2 text-danger"></i>GPS Google Maps Redirection</p>
+                <a href="https://github.com/shiva-gedela/qr/releases/download/v1.0.0/EventConnectQR-v1.0.0.apk" class="btn btn-outline-warning btn-sm d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-android2 fs-6"></i>Download Android App
+                </a>
             </div>
         </div>
         <hr class="border-secondary">

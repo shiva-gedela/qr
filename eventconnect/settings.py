@@ -74,17 +74,45 @@ WSGI_APPLICATION = 'eventconnect.wsgi.application'
 
 # ─── Database ─────────────────────────────────────────────────────────────────
 import dj_database_url
+import socket
 
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-            ssl_require=True if ('render.com' in DATABASE_URL or 'postgres' in DATABASE_URL) else False,
-        )
-    }
+    try:
+        parsed_db = dj_database_url.parse(DATABASE_URL)
+        db_host = parsed_db.get('HOST', '')
+        can_resolve = True
+        if db_host and db_host not in ('127.0.0.1', 'localhost'):
+            try:
+                socket.getaddrinfo(db_host, parsed_db.get('PORT', 5432) or 5432)
+            except (socket.gaierror, OSError):
+                can_resolve = False
+        
+        if can_resolve:
+            DATABASES = {
+                'default': dj_database_url.parse(
+                    DATABASE_URL,
+                    conn_max_age=600,
+                    conn_health_checks=True,
+                    ssl_require=True if ('render.com' in DATABASE_URL or 'postgres' in DATABASE_URL or 'supabase' in DATABASE_URL) else False,
+                )
+            }
+        else:
+            print(f"[Database Notice] Remote host '{db_host}' is unreachable from this local network (IPv6-only host). Falling back to local SQLite.")
+            DATABASES = {
+                'default': {
+                    'ENGINE': 'django.db.backends.sqlite3',
+                    'NAME': BASE_DIR / 'db.sqlite3',
+                }
+            }
+    except Exception as e:
+        print(f"[Database Error] Failed to parse DATABASE_URL: {e}. Falling back to SQLite.")
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 else:
     DB_ENGINE = os.getenv('DB_ENGINE', '')
     if DB_ENGINE == 'django.db.backends.mysql':

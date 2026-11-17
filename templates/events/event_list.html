@@ -2,67 +2,99 @@
 {% block title %}My Events - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="bg-light py-4 border-bottom">
+<!-- ══ Header Banner ═════════════════════════════════════════════════════════ -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);">
     <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-calendar-event text-primary me-2"></i>My Events</h2>
-            <p class="text-muted mb-0">{{ events|length }} event{{ events|length|pluralize }} created</p>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">
+                    <i class="bi bi-calendar2-heart me-1"></i>All Celebrations
+                </span>
+                <span class="text-white-50 small">&bull; {{ events|length }} Event{{ events|length|pluralize }}</span>
+            </div>
+            <h1 class="display-5 fw-bold mb-1 text-white">My Events &amp; Invitations</h1>
+            <p class="text-white-75 mb-0">Manage smart QR codes, turn-by-turn GPS location redirects, and guest media uploads.</p>
         </div>
-        <a href="/events/create/" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-2"></i>Create New Event
-        </a>
+        <div class="d-flex gap-2">
+            <a href="/events/create/" class="btn btn-warning btn-lg fw-bold px-4 shadow">
+                <i class="bi bi-plus-circle-fill me-2"></i>Create New Event
+            </a>
+        </div>
     </div>
 </div>
 
-<div class="container py-4">
+<div class="container py-5">
     {% if events %}
     <div class="row g-4">
         {% for event in events %}
         <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-sm h-100 hover-lift">
+            <div class="card border-0 shadow-sm rounded-4 h-100 hover-lift overflow-hidden position-relative">
                 <!-- Cover Image -->
-                <div class="position-relative" style="height: 200px; overflow: hidden;">
+                <div class="position-relative" style="height: 210px; overflow: hidden; background: #312e81;">
                     <img src="{{ event.cover_image_url }}"
                          class="w-100 h-100"
-                         style="object-fit: cover;"
+                         style="object-fit: cover; transition: transform 0.4s ease;"
                          alt="{{ event.title }}"
                          onerror="this.src='/static/images/default-event-cover.jpg'">
-                    <div class="position-absolute top-0 start-0 m-2">
-                        <span class="badge" style="background: rgba(0,0,0,0.6);">
+                    
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge px-3 py-2 rounded-pill shadow-sm" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); font-size: 0.85rem;">
                             {{ event.event_type_icon }} {{ event.get_event_type_display }}
                         </span>
                     </div>
-                    <div class="position-absolute top-0 end-0 m-2">
+
+                    <div class="position-absolute top-0 end-0 m-3">
                         {% if event.is_published %}
-                            <span class="badge bg-success">Published</span>
+                            <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">
+                                <i class="bi bi-broadcast-pin me-1"></i>Live
+                            </span>
                         {% else %}
-                            <span class="badge bg-secondary">Draft</span>
+                            <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm">Draft</span>
                         {% endif %}
                     </div>
+
+                    {% if event.event_hashtag %}
+                    <div class="position-absolute bottom-0 start-0 m-3">
+                        <span class="badge bg-dark bg-opacity-75 text-warning rounded-pill px-3 py-1">
+                            <i class="bi bi-hash"></i>{{ event.event_hashtag }}
+                        </span>
+                    </div>
+                    {% endif %}
                 </div>
 
-                <div class="card-body">
-                    <h5 class="fw-bold mb-1">{{ event.title }}</h5>
-                    <p class="text-muted small mb-2"><i class="bi bi-people me-1"></i>{{ event.host_names }}</p>
-                    <div class="d-flex gap-3 text-muted small mb-3">
-                        <span><i class="bi bi-calendar3 me-1"></i>{{ event.event_date|date:"d M Y" }}</span>
+                <div class="card-body p-4 d-flex flex-column">
+                    <h5 class="fw-bold mb-1 text-dark">{{ event.title }}</h5>
+                    {% if event.host_names %}
+                    <p class="text-muted small mb-3"><i class="bi bi-people me-1 text-primary"></i>Hosted by {{ event.host_names }}</p>
+                    {% endif %}
+
+                    <div class="d-flex flex-column gap-2 text-muted small mb-4 mt-auto">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-calendar3 text-primary"></i>
+                            <span class="fw-semibold text-dark">{{ event.event_date|date:"l, d M Y" }}</span>
+                            {% if event.event_time %}at {{ event.event_time|time:"g:i A" }}{% endif %}
+                        </div>
                         {% if event.venue_name %}
-                        <span><i class="bi bi-geo-alt me-1"></i>{{ event.venue_name|truncatechars:20 }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <span class="text-truncate">{{ event.venue_name }}</span>
+                        </div>
                         {% endif %}
                     </div>
-                </div>
 
-                <div class="card-footer bg-white border-top-0 pb-3">
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="/events/{{ event.pk }}/" class="btn btn-sm btn-primary flex-fill">
-                            <i class="bi bi-eye me-1"></i>Manage
+                    <div class="pt-3 border-top d-flex gap-2 flex-wrap">
+                        <a href="/events/{{ event.pk }}/" class="btn btn-sm btn-primary flex-fill rounded-pill fw-semibold">
+                            <i class="bi bi-speedometer2 me-1"></i>Manage &amp; QR
                         </a>
                         {% if event.is_published %}
-                        <a href="/events/e/{{ event.slug }}/" class="btn btn-sm btn-outline-success" target="_blank">
-                            <i class="bi bi-box-arrow-up-right me-1"></i>View
+                        <a href="/events/e/{{ event.slug }}/" class="btn btn-sm btn-outline-success rounded-pill" target="_blank" title="View Invitation Website">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                        <a href="/events/e/{{ event.slug }}/gps/" class="btn btn-sm btn-outline-danger rounded-pill" target="_blank" title="Open Google Maps GPS Navigation">
+                            <i class="bi bi-cursor-fill"></i>
                         </a>
                         {% endif %}
-                        <a href="/events/{{ event.pk }}/edit/" class="btn btn-sm btn-outline-secondary">
+                        <a href="/events/{{ event.pk }}/edit/" class="btn btn-sm btn-outline-secondary rounded-pill" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </a>
                     </div>
@@ -74,9 +106,11 @@
     {% else %}
     <div class="text-center py-5">
         <div class="display-1 mb-3">🎉</div>
-        <h3 class="fw-bold mb-2">No Events Yet</h3>
-        <p class="text-muted mb-4">Create your first event invitation with QR code.</p>
-        <a href="/events/create/" class="btn btn-primary btn-lg px-5">
+        <h3 class="fw-bold mb-2">No Events Created Yet</h3>
+        <p class="text-muted mb-4" style="max-width: 480px; margin: 0 auto;">
+            Generate high-res vector printable QR codes, embed Google Maps turn-by-turn GPS redirection, and collect guest memories.
+        </p>
+        <a href="/events/create/" class="btn btn-primary btn-lg px-5 rounded-pill fw-bold shadow">
             <i class="bi bi-plus-circle me-2"></i>Create Your First Event
         </a>
     </div>

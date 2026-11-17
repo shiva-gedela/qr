@@ -2,18 +2,18 @@
 {% block title %}Customize QR Code - {{ event.title }} - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="bg-light py-4 border-bottom">
+<div class="py-4 text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);">
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="/events/">Events</a></li>
-                <li class="breadcrumb-item"><a href="/events/{{ event.pk }}/">{{ event.title }}</a></li>
-                <li class="breadcrumb-item active">Customize QR Code</li>
+                <li class="breadcrumb-item"><a href="/events/" class="text-white-50 text-decoration-none">Events</a></li>
+                <li class="breadcrumb-item"><a href="/events/{{ event.pk }}/" class="text-white-50 text-decoration-none">{{ event.title }}</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Customize QR</li>
             </ol>
         </nav>
-        <h2 class="fw-bold mb-0">
-            <i class="bi bi-palette text-primary me-2"></i>Customize Event QR Code
-        </h2>
+        <h1 class="display-6 fw-bold mb-0 text-white">
+            <i class="bi bi-palette text-warning me-2"></i>Customize Event QR Code
+        </h1>
     </div>
 </div>
 
