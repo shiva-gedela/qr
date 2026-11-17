@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}Pricing Plans - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-5 border-bottom text-center">
+    <div class="container">
+        <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-2">SIMPLE & TRANSPARENT PRICING</span>
+        <h1 class="fw-bold mb-3">Choose the Perfect Plan for Your Event & Business</h1>
+        <p class="text-muted lead mx-auto" style="max-width: 650px;">
+            From intimate gatherings to grand weddings and growing digital business profiles, EventConnect QR gives you stunning invitations, branded QR codes, and smart photo galleries.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4 align-items-stretch justify-content-center">
+        {% for plan in plans %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm position-relative d-flex flex-column {% if plan.code == 'wedding_package' %}border border-2 border-primary shadow{% endif %}" style="border-radius: 16px;">
+                {% if plan.badge %}
+                <div class="position-absolute top-0 end-0 m-3">
+                    <span class="badge {% if plan.code == 'wedding_package' %}bg-primary{% elif plan.code == 'premium_event' %}bg-warning text-dark{% else %}bg-secondary{% endif %} rounded-pill px-3 py-1">
+                        {{ plan.badge }}
+                    </span>
+                </div>
+                {% endif %}
+
+                <div class="card-body p-4 d-flex flex-column">
+                    <h5 class="fw-bold mb-1 text-dark">{{ plan.name }}</h5>
+                    <p class="text-muted small mb-3">{{ plan.description }}</p>
+
+                    <div class="my-3">
+                        {% if plan.is_free %}
+                        <span class="display-5 fw-bold text-dark">₹0</span>
+                        <span class="text-muted">/ forever</span>
+                        {% else %}
+                        <span class="display-5 fw-bold text-dark">₹{{ plan.price|floatformat:0 }}</span>
+                        <span class="text-muted">/ {% if plan.duration_days == 365 %}year{% else %}{{ plan.duration_days }} days{% endif %}</span>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-3 text-muted opacity-25">
+
+                    <!-- Entitlements Checklist -->
+                    <ul class="list-unstyled small d-flex flex-column gap-2 mb-4 flex-grow-1">
+                        <li class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                            <span><strong>{{ plan.max_events }}</strong> Event{{ plan.max_events|pluralize }}</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                            <span><strong>{{ plan.max_storage_mb }} MB</strong> Media Storage</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            {% if plan.custom_qr_allowed %}
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                            <span>Custom QR Colors & Logo</span>
+                            {% else %}
+                            <i class="bi bi-dash-circle text-muted me-2 fs-6"></i>
+                            <span class="text-muted">Standard Black/White QR</span>
+                            {% endif %}
+                        </li>
+                        <li class="d-flex align-items-center">
+                            {% if plan.guest_upload_allowed %}
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                            <span>Guest Photo Uploads & Moderation</span>
+                            {% else %}
+                            <i class="bi bi-dash-circle text-muted me-2 fs-6"></i>
+                            <span class="text-muted">Host Only Uploads</span>
+                            {% endif %}
+                        </li>
+                        <li class="d-flex align-items-center">
+                            {% if plan.tabletop_standee_pdf %}
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                            <span>Printable Standee PDF Cards</span>
+                            {% else %}
+                            <i class="bi bi-dash-circle text-muted me-2 fs-6"></i>
+                            <span class="text-muted">PNG QR Download Only</span>
+                            {% endif %}
+                        </li>
+                        <li class="d-flex align-items-center">
+                            {% if plan.business_profile_allowed %}
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                            <span>Digital Business Profile & Catalog</span>
+                            {% else %}
+                            <i class="bi bi-dash-circle text-muted me-2 fs-6"></i>
+                            <span class="text-muted">Events Only</span>
+                            {% endif %}
+                        </li>
+                        <li class="d-flex align-items-center">
+                            {% if plan.remove_branding %}
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-6"></i>
+                            <span>White-label (No Branding)</span>
+                            {% else %}
+                            <i class="bi bi-dash-circle text-muted me-2 fs-6"></i>
+                            <span class="text-muted">Powered by EventConnect QR</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+
+                    <!-- CTA Button -->
+                    {% if current_plan_code == plan.code %}
+                    <button class="btn btn-outline-success w-100 disabled" disabled>
+                        <i class="bi bi-check2-circle me-1"></i>Current Plan
+                    </button>
+                    {% elif plan.is_free %}
+                    <a href="{% url 'checkout' plan_code=plan.code %}" class="btn btn-outline-secondary w-100">
+                        Get Started Free
+                    </a>
+                    {% else %}
+                    <a href="{% url 'checkout' plan_code=plan.code %}" class="btn {% if plan.code == 'wedding_package' %}btn-primary{% else %}btn-outline-primary{% endif %} w-100 shadow-sm">
+                        Upgrade to {{ plan.name }}
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="row justify-content-center mt-5 pt-4">
+        <div class="col-lg-8">
+            <h4 class="fw-bold text-center mb-4">Frequently Asked Questions</h4>
+            <div class="accordion accordion-flush" id="pricingFaq">
+                <div class="accordion-item border rounded-3 mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Will my QR code stop working when my plan expires?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body text-muted small">
+                            No. All printed QR codes use permanent vanity URLs (e.g. <code>/events/e/your-slug/</code> and <code>/b/your-slug/</code>). Your QR codes and invitations will remain accessible.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border rounded-3 mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            What payment methods does Razorpay support?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body text-muted small">
+                            Razorpay supports UPI (Google Pay, PhonePe, Paytm), Credit & Debit cards (Visa, MasterCard, RuPay), NetBanking (50+ banks), and popular Wallets.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item border rounded-3 mb-2">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Can I get a tax invoice with GST details?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#pricingFaq">
+                        <div class="accordion-body text-muted small">
+                            Yes! A downloadable PDF tax invoice is automatically generated upon every successful payment in your <a href="{% url 'payment_history' %}">Payment History</a>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

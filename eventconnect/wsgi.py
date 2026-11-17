@@ -1,0 +1,7 @@
+"""eventconnect/wsgi.py - WSGI config for EventConnect QR."""
+
+import os
+from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'eventconnect.settings')
+application = get_wsgi_application()

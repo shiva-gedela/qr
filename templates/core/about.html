@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}About - {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="bg-light py-5 border-bottom text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-info-circle text-primary me-3"></i>About {{ SITE_NAME }}</h1>
+        <p class="lead text-muted">Create beautiful event invitations with QR codes for all your special occasions.</p>
+    </div>
+</div>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <p class="lead">EventConnect QR is a modern platform that lets you create beautiful digital event invitations
+            complete with QR codes, photo galleries and interactive maps.</p>
+            <p>Share your event with guests via a simple QR code. When guests scan it, they land on your beautiful
+            custom event mini-website with all the details they need.</p>
+            <h4 class="mt-4 mb-3 fw-bold">Our Mission</h4>
+            <p>To make every celebration memorable by combining elegant digital design with the convenience of QR technology.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

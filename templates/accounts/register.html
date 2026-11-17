@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}Register - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-7 col-lg-6">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <!-- Card Header -->
+                    <div class="card-header bg-primary text-white text-center py-4 border-0">
+                        <div class="mb-2"><i class="bi bi-qr-code-scan display-6 text-warning"></i></div>
+                        <h3 class="fw-bold mb-1">Create Account</h3>
+                        <p class="mb-0 text-white-75 small">Join {{ SITE_NAME }} for free</p>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        {% load crispy_forms_tags %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            {% crispy form %}
+                        </form>
+
+                        <hr class="my-4">
+                        <p class="text-center text-muted mb-0">
+                            Already have an account?
+                            <a href="/accounts/login/" class="text-primary fw-semibold">Sign In</a>
+                        </p>
+                        <p class="text-center text-muted small mt-3">
+                            By registering, you agree to our
+                            <a href="#" class="text-muted">Terms</a> &amp;
+                            <a href="#" class="text-muted">Privacy Policy</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

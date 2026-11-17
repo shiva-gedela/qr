@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+{% block title %}Customize Business QR Code - {{ business.name }} - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="/business/">Businesses</a></li>
+                <li class="breadcrumb-item"><a href="/business/{{ business.pk }}/">{{ business.name }}</a></li>
+                <li class="breadcrumb-item active">Customize QR Code</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">
+            <i class="bi bi-palette text-primary me-2"></i>Customize Business QR Code
+        </h2>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+
+        <!-- Form Column -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-sliders me-2 text-primary"></i>Branding &amp; Colors</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="qrCustomizeForm">
+                        {% csrf_token %}
+
+                        <!-- Business Presets -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase text-muted">Brand Color Presets</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#1a365d', '#ffffff')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#1a365d;"></span>Corporate Navy
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#d4ac0d', '#1a1a1a')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#d4ac0d;"></span>Luxury Gold
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#0d9488', '#f0fdfa')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#0d9488;"></span>Tech Teal
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#d97706', '#fffbeb')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#d97706;"></span>Warm Amber
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#059669', '#f0fdf4')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#059669;"></span>Eco Emerald
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#000000', '#ffffff')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#000000;"></span>Minimal Black
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Foreground & Background Colors -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Foreground Color</label>
+                                <div class="input-group">
+                                    <input type="color" name="fill_color" id="id_fill_color" value="{{ qr.fill_color }}" class="form-control form-control-color" style="height:48px;" onchange="updatePreview()">
+                                    <input type="text" id="fill_hex" class="form-control" value="{{ qr.fill_color }}" oninput="syncColorInput('fill_hex', 'id_fill_color')">
+                                </div>
+                                <small class="text-muted">QR code pattern color</small>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label fw-bold">Background Color</label>
+                                <div class="input-group">
+                                    <input type="color" name="back_color" id="id_back_color" value="{{ qr.back_color }}" class="form-control form-control-color" style="height:48px;" onchange="updatePreview()">
+                                    <input type="text" id="back_hex" class="form-control" value="{{ qr.back_color }}" oninput="syncColorInput('back_hex', 'id_back_color')">
+                                </div>
+                                <small class="text-muted">Background fill color</small>
+                            </div>
+                        </div>
+
+                        <!-- Center Logo -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Center Logo / Brand Icon (Optional)</label>
+                            {% if qr.logo %}
+                            <div class="d-flex align-items-center gap-3 mb-2 p-2 bg-light rounded">
+                                <img src="{{ qr.logo.url }}" width="45" height="45" class="rounded border" style="object-fit:cover;">
+                                <small class="text-muted">Current Logo: <strong>{{ qr.logo.name }}</strong></small>
+                            </div>
+                            {% elif business.logo %}
+                            <div class="d-flex align-items-center gap-3 mb-2 p-2 bg-light rounded">
+                                <img src="{{ business.logo.url }}" width="45" height="45" class="rounded border" style="object-fit:cover;">
+                                <small class="text-muted">Using default Business Logo</small>
+                            </div>
+                            {% endif %}
+                            <input type="file" name="logo" id="id_logo" class="form-control" accept="image/png,image/jpeg,image/webp">
+                            <small class="text-muted">PNG with transparent background looks best in the center plate.</small>
+                        </div>
+
+                        <!-- Destination URL Notice -->
+                        <div class="alert alert-info py-2 small mb-4">
+                            <i class="bi bi-link-45deg me-1"></i>Destination Profile URL: 
+                            <strong class="text-break">{{ qr.target_url }}</strong>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg me-1"></i>Save &amp; Generate QR
+                            </button>
+                            <a href="/business/{{ business.pk }}/" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Preview Column -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-eye me-2 text-primary"></i>Live QR Preview</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="p-4 rounded-4 shadow-sm d-inline-block mb-3" id="previewContainer" style="background: {{ qr.back_color }};">
+                        {% if qr.qr_image %}
+                        <img id="qrPreviewImg" src="{{ qr.qr_image.url }}" width="240" height="240" class="img-fluid" alt="QR Preview">
+                        {% else %}
+                        <img id="qrPreviewImg" src="/qr/preview/?target_url={{ qr.target_url|urlencode }}&fill_color={{ qr.fill_color|urlencode }}&back_color={{ qr.back_color|urlencode }}" width="240" height="240" class="img-fluid" alt="QR Preview">
+                        {% endif %}
+                    </div>
+
+                    <h5 class="fw-bold mb-1">{{ business.name }}</h5>
+                    <p class="text-muted small mb-3">Scan to open digital profile &amp; quick actions</p>
+
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a href="/qr/download/png/{{ qr.uuid }}/" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-file-earmark-image me-1"></i>Download PNG
+                        </a>
+                        <a href="/qr/download/pdf/{{ qr.uuid }}/" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Download Standee Card (PDF)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function syncColorInput(sourceId, targetId) {
+    const val = document.getElementById(sourceId).value;
+    if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+        document.getElementById(targetId).value = val;
+        updatePreview();
+    }
+}
+
+function applyPreset(fill, back) {
+    document.getElementById('id_fill_color').value = fill;
+    document.getElementById('fill_hex').value = fill;
+    document.getElementById('id_back_color').value = back;
+    document.getElementById('back_hex').value = back;
+    updatePreview();
+}
+
+function updatePreview() {
+    const fill = document.getElementById('id_fill_color').value;
+    const back = document.getElementById('id_back_color').value;
+    document.getElementById('fill_hex').value = fill;
+    document.getElementById('back_hex').value = back;
+
+    const container = document.getElementById('previewContainer');
+    container.style.background = back;
+
+    const targetUrl = encodeURIComponent("{{ qr.target_url }}");
+    const previewUrl = `/qr/preview/?target_url=${targetUrl}&fill_color=${encodeURIComponent(fill)}&back_color=${encodeURIComponent(back)}`;
+    document.getElementById('qrPreviewImg').src = previewUrl;
+}
+</script>
+{% endblock %}

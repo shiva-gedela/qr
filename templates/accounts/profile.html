@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <h2 class="fw-bold mb-1"><i class="bi bi-person-circle text-primary me-2"></i>My Profile</h2>
+        <p class="text-muted mb-0">Update your personal information and avatar.</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Profile Settings</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% load crispy_forms_tags %}
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        {% crispy form %}
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm text-center">
+                <div class="card-body p-4">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" class="rounded-circle mb-3 shadow" width="120" height="120" style="object-fit:cover;">
+                    {% else %}
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3 shadow mx-auto" style="width:120px;height:120px;font-size:3rem;">
+                            {{ user.first_name|first|upper }}
+                        </div>
+                    {% endif %}
+                    <h5 class="fw-bold">{{ user.get_full_name }}</h5>
+                    <p class="text-muted small">{{ user.email }}</p>
+                    <p class="text-muted small">Member since {{ user.created_at|date:"M Y" }}</p>
+                    {% if user.email_verified %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Email Verified</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle me-1"></i>Unverified</span>
+                        <div class="mt-2">
+                            <a href="/accounts/resend-verification/" class="btn btn-sm btn-outline-warning">Verify Email</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

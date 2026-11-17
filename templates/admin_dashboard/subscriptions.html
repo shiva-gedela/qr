@@ -1,0 +1,120 @@
+{% extends 'admin_dashboard/base_admin.html' %}
+{% block title %}Subscriptions & Revenue - Platform Admin{% endblock %}
+{% block header_title %}Subscription Accounts & Revenue Transactions{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Active User Subscriptions -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0">Active Subscriptions ({{ subscriptions|length }})</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th>User</th>
+                                <th>Plan</th>
+                                <th>Status</th>
+                                <th>Started</th>
+                                <th>Expires</th>
+                                <th>Days Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in subscriptions %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ s.user.get_full_name|default:s.user.email }}</div>
+                                    <div class="text-muted small">{{ s.user.email }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ s.plan.name }}</span>
+                                </td>
+                                <td>
+                                    {% if s.status == 'active' %}
+                                    <span class="badge bg-success-subtle text-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary">{{ s.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small">{{ s.start_date|date:"d M Y" }}</td>
+                                <td class="small">
+                                    {% if s.end_date %}{{ s.end_date|date:"d M Y" }}{% else %}Lifetime{% endif %}
+                                </td>
+                                <td class="small">
+                                    {% if s.end_date %}
+                                    <span class="fw-bold">{{ s.days_remaining }}</span> days
+                                    {% else %}
+                                    <span class="text-success fw-bold">Permanent</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center py-4 text-muted">No subscriptions found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Transactions & Invoices -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h6 class="fw-bold mb-0">Transaction History & Tax Invoices ({{ payments|length }})</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>User</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Razorpay Order ID</th>
+                                <th>Date</th>
+                                <th class="text-end">Invoice</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                            <tr>
+                                <td class="font-monospace fw-bold">{{ p.invoice_number }}</td>
+                                <td>{{ p.user.email }}</td>
+                                <td>{{ p.plan.name }}</td>
+                                <td class="fw-bold text-success">₹{{ p.amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if p.status == 'captured' %}
+                                    <span class="badge bg-success-subtle text-success">Captured</span>
+                                    {% elif p.status == 'created' %}
+                                    <span class="badge bg-warning-subtle text-warning">Created</span>
+                                    {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">{{ p.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="font-monospace small text-muted">{{ p.razorpay_order_id }}</td>
+                                <td class="small">{{ p.created_at|date:"d M Y, H:i" }}</td>
+                                <td class="text-end">
+                                    <a href="{% url 'download_invoice' invoice_number=p.invoice_number %}" class="btn btn-outline-secondary btn-sm" title="Download Tax Invoice">
+                                        <i class="bi bi-file-earmark-pdf text-danger me-1"></i>PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="text-center py-4 text-muted">No payment transactions found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

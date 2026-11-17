@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}My Business Profiles - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="bi bi-briefcase text-primary me-2"></i>My Business Profiles</h2>
+            <p class="text-muted mb-0">{{ businesses|length }} profile{{ businesses|length|pluralize }} created</p>
+        </div>
+        <a href="{% url 'business_create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Create Business Profile
+        </a>
+    </div>
+</div>
+
+<div class="container py-4">
+    {% if businesses %}
+    <div class="row g-4">
+        {% for business in businesses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm h-100 hover-lift">
+                <!-- Cover Image & Logo -->
+                <div class="position-relative" style="height: 160px; overflow: hidden; background: linear-gradient(135deg, #1e293b, #334155);">
+                    {% if business.cover_image %}
+                    <img src="{{ business.cover_image.url }}"
+                         class="w-100 h-100"
+                         style="object-fit: cover;"
+                         alt="{{ business.name }}">
+                    {% endif %}
+                    
+                    <div class="position-absolute top-0 start-0 m-2">
+                        <span class="badge bg-dark bg-opacity-75">
+                            {{ business.get_category_display }}
+                        </span>
+                    </div>
+                    <div class="position-absolute top-0 end-0 m-2">
+                        {% if business.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Logo avatar overlapping -->
+                    <div class="position-absolute bottom-0 start-0 ms-3 mb-2">
+                        <div class="rounded-circle border border-3 border-white shadow bg-white d-flex align-items-center justify-content-center overflow-hidden" style="width: 58px; height: 58px;">
+                            {% if business.logo %}
+                            <img src="{{ business.logo.url }}" alt="{{ business.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                            <i class="bi bi-building fs-4 text-primary"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body pt-3">
+                    <h5 class="fw-bold mb-1 text-truncate">{{ business.name }}</h5>
+                    {% if business.tagline %}
+                    <p class="text-muted small mb-2 text-truncate">{{ business.tagline }}</p>
+                    {% endif %}
+
+                    <div class="d-flex flex-column gap-1 text-muted small mb-3">
+                        {% if business.phone %}
+                        <div><i class="bi bi-telephone me-2 text-primary"></i>{{ business.phone }}</div>
+                        {% endif %}
+                        {% if business.city %}
+                        <div><i class="bi bi-geo-alt me-2 text-danger"></i>{{ business.city }}{% if business.state %}, {{ business.state }}{% endif %}</div>
+                        {% endif %}
+                        <div><i class="bi bi-grid me-2 text-info"></i>{{ business.services.count }} Product/Service{{ business.services.count|pluralize }}</div>
+                        <div><i class="bi bi-qr-code-scan me-2 text-muted"></i>{{ business.qr_code.scan_count|default:0 }} Scan{{ business.qr_code.scan_count|default:0|pluralize }}</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'business_detail' pk=business.pk %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                            <i class="bi bi-gear me-1"></i>Manage
+                        </a>
+                        <a href="{% url 'business_public' slug=business.slug %}" target="_blank" class="btn btn-primary btn-sm">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Public Card
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Footer Quick QR link -->
+                <div class="card-footer bg-transparent border-top-0 pt-0 pb-3 d-flex justify-content-between align-items-center">
+                    {% if business.qr_code %}
+                    <a href="{% url 'qr_download_png' qr_uuid=business.qr_code.uuid %}" class="text-decoration-none small text-muted">
+                        <i class="bi bi-qr-code me-1"></i>Download QR
+                    </a>
+                    <a href="{% url 'business_qr_customize' business_pk=business.pk %}" class="text-decoration-none small text-primary">
+                        <i class="bi bi-palette me-1"></i>Customize QR
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="display-1 text-muted mb-3"><i class="bi bi-briefcase"></i></div>
+        <h4 class="fw-bold">No Business Profiles Yet</h4>
+        <p class="text-muted mb-4">Create your first digital business profile and generate a smart branded QR code with call, WhatsApp, directions & service catalog.</p>
+        <a href="{% url 'business_create' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle me-2"></i>Create Business Profile
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

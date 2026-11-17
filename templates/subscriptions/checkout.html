@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Checkout - {{ plan.name }} - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'pricing' %}">Pricing</a></li>
+                <li class="breadcrumb-item active">Checkout</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0"><i class="bi bi-shield-check text-success me-2"></i>Secure Checkout</h2>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Order Summary Card -->
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold text-primary mb-1">{{ plan.name }}</h5>
+                            <p class="text-muted small mb-0">{{ plan.description }}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="fs-4 fw-bold text-dark">₹{{ order.amount_display|floatformat:2 }}</span>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-flush small mb-3">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Duration</span>
+                            <span class="fw-bold">{% if plan.duration_days == 365 %}1 Year (365 Days){% else %}{{ plan.duration_days }} Days{% endif %}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Storage Quota</span>
+                            <span class="fw-bold">{{ plan.max_storage_mb }} MB</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Custom QR & Standees</span>
+                            <span class="fw-bold text-success">Included</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span class="text-muted">Invoice Number</span>
+                            <span class="font-monospace">{{ order.invoice_number }}</span>
+                        </li>
+                    </ul>
+
+                    <div class="bg-light p-3 rounded-3 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Total Amount Due</span>
+                        <span class="fs-4 fw-bold text-primary">₹{{ order.amount_display|floatformat:2 }}</span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-top p-4">
+                    <!-- Standard Razorpay Checkout Button -->
+                    <button id="rzp-button" class="btn btn-primary btn-lg w-100 py-3 shadow-sm mb-3">
+                        <i class="bi bi-lock-fill me-2"></i>Pay ₹{{ order.amount_display|floatformat:0 }} via Razorpay
+                    </button>
+
+                    <div class="text-center text-muted small mb-2">
+                        <i class="bi bi-shield-lock text-success me-1"></i>256-bit encrypted secure checkout powered by <strong>Razorpay</strong>
+                    </div>
+
+                    <!-- Sandbox Dev Simulation Form -->
+                    <div class="border-top pt-3 mt-3">
+                        <p class="text-muted small text-center mb-2">
+                            <i class="bi bi-code-slash me-1"></i>Development / Sandbox Mode Available
+                        </p>
+                        <form method="post" action="{% url 'payment_verify' %}" id="verifyForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="razorpay_order_id" id="razorpay_order_id" value="{{ order.order_id }}">
+                            <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id" value="pay_test_{{ order.order_id }}">
+                            <input type="hidden" name="razorpay_signature" id="razorpay_signature" value="sig_dev_sandbox_valid">
+                            
+                            <button type="submit" class="btn btn-outline-success btn-sm w-100">
+                                <i class="bi bi-check-circle me-1"></i>Simulate Successful Razorpay Payment (Test Sandbox)
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Checkout Integration Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+const options = {
+    "key": "{{ order.key_id }}",
+    "amount": "{{ order.amount }}",
+    "currency": "{{ order.currency }}",
+    "name": "{{ site_name }}",
+    "description": "{{ plan.name }}",
+    "order_id": "{{ order.order_id }}",
+    "handler": function (response) {
+        document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+        document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+        document.getElementById('razorpay_signature').value = response.razorpay_signature;
+        document.getElementById('verifyForm').submit();
+    },
+    "prefill": {
+        "name": "{{ user.get_full_name }}",
+        "email": "{{ user.email }}",
+        "contact": "{{ user.phone|default:'' }}"
+    },
+    "theme": {
+        "color": "#4f46e5"
+    }
+};
+
+const rzp1 = new Razorpay(options);
+rzp1.on('payment.failed', function (response) {
+    alert("Payment failed: " + response.error.description);
+});
+
+document.getElementById('rzp-button').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}

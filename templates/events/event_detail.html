@@ -1,0 +1,514 @@
+{% extends 'base.html' %}
+{% block title %}{{ event.title }} - Manage - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-4 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/events/">Events</a></li>
+                <li class="breadcrumb-item active">{{ event.title }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="fw-bold mb-1">
+                    {{ event.event_type_icon }} {{ event.title }}
+                </h2>
+                <div class="d-flex gap-2 align-items-center">
+                    {% if event.is_published %}
+                        <span class="badge bg-success">Published</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Draft</span>
+                    {% endif %}
+                    <span class="text-muted small">{{ event.get_event_type_display }} &bull; {{ event.event_date|date:"d M Y" }}</span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="/events/{{ event.pk }}/edit/" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i>Edit
+                </a>
+                <form method="post" action="/events/{{ event.pk }}/toggle-publish/" class="d-inline">
+                    {% csrf_token %}
+                    <button class="btn {% if event.is_published %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if event.is_published %}
+                            <i class="bi bi-eye-slash me-1"></i>Unpublish
+                        {% else %}
+                            <i class="bi bi-broadcast me-1"></i>Publish
+                        {% endif %}
+                    </button>
+                </form>
+                {% if event.is_published %}
+                <a href="/events/e/{{ event.slug }}/" target="_blank" class="btn btn-outline-success">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>View Public Page
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row g-4">
+
+        <!-- Left Column: Event Info + Media -->
+        <div class="col-lg-8">
+
+            <!-- Event Details Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle text-primary me-2"></i>Event Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% if event.host_names %}
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Hosts</small>
+                            <strong>{{ event.host_names }}</strong>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Date</small>
+                            <strong>{{ event.event_date|date:"l, d F Y" }}</strong>
+                            {% if event.event_time %} at {{ event.event_time|time:"g:i A" }}{% endif %}
+                        </div>
+                        {% if event.venue_name %}
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Venue</small>
+                            <strong>{{ event.venue_name }}</strong>
+                        </div>
+                        {% endif %}
+                        {% if event.venue_address %}
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Address</small>
+                            <strong>{{ event.venue_address }}</strong>
+                        </div>
+                        {% endif %}
+                        {% if event.description %}
+                        <div class="col-12">
+                            <small class="text-muted d-block">Description</small>
+                            <p class="mb-0">{{ event.description }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage & Gallery Quota Bar -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                        <div>
+                            <span class="fw-bold small text-uppercase text-muted"><i class="bi bi-hdd-network me-1"></i>Gallery Storage</span>
+                            <span class="ms-2 fw-semibold">{{ event.used_storage_mb }} MB / {{ event.max_storage_mb }} MB ({{ event.storage_percentage }}%)</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            {% if photos or videos %}
+                            <a href="/events/{{ event.pk }}/gallery/download-zip/" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-file-zip me-1"></i>Download All (ZIP)
+                            </a>
+                            {% endif %}
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                                <i class="bi bi-upload me-1"></i>Upload Media
+                            </button>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar {% if event.storage_percentage > 90 %}bg-danger{% elif event.storage_percentage > 70 %}bg-warning{% else %}bg-success{% endif %}"
+                             role="progressbar" style="width: {{ event.storage_percentage }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Approvals Banner (Guest Uploads) -->
+            {% if pending_media %}
+            <div class="card border-0 shadow-sm mb-4 border-warning" style="border-left: 4px solid #ffc107!important;">
+                <div class="card-header bg-warning bg-opacity-10 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-clock-history text-warning me-2"></i>Pending Guest Uploads
+                        <span class="badge bg-warning text-dark ms-1">{{ pending_media|length }}</span>
+                    </h5>
+                    <form method="post" action="/events/{{ event.pk }}/media/approve-all/" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="bi bi-check-all me-1"></i>Approve All
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body p-3">
+                    <p class="small text-muted mb-3">Guests uploaded these files. Review and approve them to display on the public invitation website.</p>
+                    <div class="row g-3">
+                        {% for item in pending_media %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card h-100 border shadow-sm">
+                                {% if item.media_type == 'image' %}
+                                <img src="{{ item.thumbnail_url }}" class="card-img-top" style="height:140px; object-fit:cover;">
+                                {% else %}
+                                <div class="bg-dark text-white d-flex align-items-center justify-content-center" style="height:140px;">
+                                    <i class="bi bi-camera-video display-5 text-warning"></i>
+                                </div>
+                                {% endif %}
+                                <div class="card-body p-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="badge bg-secondary small">{{ item.get_category_display }}</span>
+                                        <small class="text-muted">{{ item.file_size_mb }} MB</small>
+                                    </div>
+                                    <p class="small text-truncate mb-2" title="{{ item.caption }}">{{ item.caption|default:"No caption" }}</p>
+                                    <div class="d-flex gap-1">
+                                        <form method="post" action="/events/{{ event.pk }}/media/{{ item.pk }}/toggle-approval/" class="flex-fill">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-success w-100">
+                                                <i class="bi bi-check-lg"></i> Approve
+                                            </button>
+                                        </form>
+                                        <form method="post" action="/events/{{ event.pk }}/media/{{ item.pk }}/delete/" class="flex-fill" onsubmit="return confirm('Reject and delete this media?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                                <i class="bi bi-trash3"></i> Reject
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Category Filter Pills -->
+            <div class="d-flex gap-2 mb-3 overflow-auto py-1" style="white-space: nowrap;">
+                <a href="/events/{{ event.pk }}/?category=all" class="btn btn-sm {% if selected_category == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                    All Media
+                </a>
+                {% for cat in categories %}
+                {% if cat.count > 0 or selected_category == cat.code %}
+                <a href="/events/{{ event.pk }}/?category={{ cat.code }}" class="btn btn-sm {% if selected_category == cat.code %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                    {{ cat.label }} <span class="badge bg-light text-dark ms-1">{{ cat.count }}</span>
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Photo Gallery -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-images text-primary me-2"></i>Photos
+                        <span class="badge bg-primary ms-2">{{ photos|length }}</span>
+                    </h5>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="bi bi-upload me-1"></i>Upload Photos
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if photos %}
+                    <div class="row g-3">
+                        {% for photo in photos %}
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden position-relative hover-lift">
+                                <img src="{{ photo.thumbnail_url }}" class="w-100" style="height:150px; object-fit:cover;" alt="{{ photo.caption }}">
+                                <div class="position-absolute top-0 start-0 m-1">
+                                    <span class="badge bg-dark bg-opacity-75" style="font-size:0.7rem;">{{ photo.get_category_display }}</span>
+                                </div>
+                                <div class="p-2 d-flex justify-content-between align-items-center bg-white border-top">
+                                    <small class="text-muted text-truncate" style="max-width:90px;" title="{{ photo.caption }}">{{ photo.caption|default:"Photo" }}</small>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/events/{{ event.pk }}/media/{{ photo.pk }}/download/" class="btn btn-sm btn-light text-primary" title="Download">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        <form method="post" action="/events/{{ event.pk }}/media/{{ photo.pk }}/delete/" onsubmit="return confirm('Delete this photo?');" class="d-inline">
+                                            {% csrf_token %}
+                                            <button class="btn btn-sm btn-light text-danger" type="submit" title="Delete">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-image display-4 d-block mb-2"></i>
+                        No photos in this category.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Video Gallery -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-camera-video text-primary me-2"></i>Videos
+                        <span class="badge bg-primary ms-2">{{ videos|length }}</span>
+                    </h5>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="bi bi-upload me-1"></i>Upload Video
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if videos %}
+                    <div class="row g-3">
+                        {% for video in videos %}
+                        <div class="col-md-6">
+                            <div class="card border rounded-3 overflow-hidden shadow-sm">
+                                <video class="card-img-top" controls style="max-height:220px; background:#000;">
+                                    <source src="{{ video.file_url }}">
+                                </video>
+                                <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-secondary me-1">{{ video.get_category_display }}</span>
+                                        <small class="text-muted">{{ video.caption|default:"Video" }}</small>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="/events/{{ event.pk }}/media/{{ video.pk }}/download/" class="btn btn-sm btn-light text-primary" title="Download">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        <form method="post" action="/events/{{ event.pk }}/media/{{ video.pk }}/delete/" onsubmit="return confirm('Delete this video?');" class="d-inline">
+                                            {% csrf_token %}
+                                            <button class="btn btn-sm btn-light text-danger" type="submit" title="Delete">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="bi bi-camera-video display-4 d-block mb-2"></i>
+                        No videos uploaded yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Links & Actions -->
+        <div class="col-lg-4">
+
+            <!-- Event QR Code Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-qr-code text-primary me-2"></i>Event QR Code</h6>
+                    {% if qr %}
+                    <span class="badge bg-light text-dark border">
+                        <i class="bi bi-eye me-1"></i>{{ qr.scan_count }} scan{{ qr.scan_count|pluralize }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="card-body text-center p-4">
+                    {% if qr and qr.qr_image %}
+                    <div class="qr-container p-3 rounded-3 shadow-sm mb-3 d-inline-block" style="background: {{ qr.back_color }};">
+                        <img src="{{ qr.qr_image.url }}" alt="Event QR Code" style="max-width:180px;" class="img-fluid">
+                    </div>
+                    {% else %}
+                    <div class="p-4 bg-light rounded text-muted mb-3">
+                        <i class="bi bi-qr-code display-4 d-block mb-2"></i>
+                        <span>QR code generating...</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-grid gap-2 mb-3">
+                        {% if qr %}
+                        <div class="btn-group w-100">
+                            <a href="/qr/download/png/{{ qr.uuid }}/" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-download me-1"></i>Download PNG
+                            </a>
+                            <a href="/qr/download/pdf/{{ qr.uuid }}/" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Printable PDF
+                            </a>
+                        </div>
+                        <a href="/qr/event/{{ event.pk }}/customize/" class="btn btn-primary btn-sm">
+                            <i class="bi bi-palette me-1"></i>Customize Colors &amp; Logo
+                        </a>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted d-block">
+                        <i class="bi bi-shield-check text-success me-1"></i>QR code remains valid even if event details are updated.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Public Link -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-link-45deg text-primary me-2"></i>Event Public Link</h6>
+                </div>
+                <div class="card-body">
+                    {% if event.is_published %}
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control form-control-sm"
+                               value="{{ site_url }}/events/e/{{ event.slug }}/"
+                               id="eventLink" readonly>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="copyLink('eventLink')">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="https://wa.me/?text={{ site_url }}/events/e/{{ event.slug }}/"
+                           class="btn btn-sm btn-success" target="_blank">
+                            <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ site_url }}/events/e/{{ event.slug }}/"
+                           class="btn btn-sm btn-primary" target="_blank">
+                            <i class="bi bi-facebook me-1"></i>Share
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning mb-0 small">
+                        <i class="bi bi-exclamation-circle me-1"></i>Publish the event to get a public link.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Cover Image -->
+            {% if event.cover_image %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-image text-primary me-2"></i>Cover Image</h6>
+                </div>
+                <img src="{{ event.cover_image.url }}" class="card-img-bottom rounded-bottom"
+                     style="max-height:200px; object-fit:cover;">
+            </div>
+            {% endif %}
+
+            <!-- Danger Zone -->
+            <div class="card border-0 shadow-sm border-danger">
+                <div class="card-header bg-danger text-white py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Danger Zone</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Permanently delete this event and all its media.</p>
+                    <a href="/events/{{ event.pk }}/delete/" class="btn btn-danger btn-sm">
+                        <i class="bi bi-trash3 me-1"></i>Delete Event
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Media Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="bi bi-cloud-arrow-up text-primary me-2"></i>Upload Photos &amp; Videos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="/events/{{ event.pk }}/upload/" id="ownerUploadForm">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    {% if event.is_storage_full %}
+                    <div class="alert alert-danger py-2 small mb-3">
+                        <i class="bi bi-exclamation-octagon me-1"></i>Storage limit reached ({{ event.max_storage_mb }} MB). Please delete files to upload more.
+                    </div>
+                    {% endif %}
+
+                    <div class="upload-zone mb-3 text-center p-4 rounded-3 border-2 border-dashed bg-light" id="ownerDropZone" onclick="document.getElementById('ownerFileInput').click();" style="cursor: pointer; border: 2px dashed #0d6efd;">
+                        <i class="bi bi-cloud-arrow-up display-5 text-primary mb-2 d-block"></i>
+                        <span class="fw-bold d-block">Drag &amp; drop files here or click to browse</span>
+                        <small class="text-muted">JPG, PNG, WEBP (max 5 MB) • MP4, WEBM (max 100 MB)</small>
+                        <input type="file" name="files" id="ownerFileInput" class="d-none" multiple accept="image/*,video/*" required onchange="handleFileSelect(this, 'ownerFilePreview')">
+                    </div>
+                    <div id="ownerFilePreview" class="mb-3 small text-muted"></div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="general">General</option>
+                                <option value="ceremony">Ceremony</option>
+                                <option value="reception">Reception</option>
+                                <option value="decor">Decoration</option>
+                                <option value="food">Food &amp; Catering</option>
+                                <option value="guests">Guests</option>
+                                <option value="candid" selected>Candid</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Visibility</label>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" name="is_public" value="true" id="isPublic" checked>
+                                <label class="form-check-label small" for="isPublic">Public in Gallery</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small">Caption (optional)</label>
+                        <input type="text" name="caption" class="form-control" placeholder="Add a caption...">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" {% if event.is_storage_full %}disabled{% endif %}>
+                        <i class="bi bi-upload me-1"></i>Upload Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyLink(id) {
+    const el = document.getElementById(id);
+    el.select();
+    document.execCommand('copy');
+    const btn = el.nextElementSibling;
+    btn.innerHTML = '<i class="bi bi-check-lg"></i>';
+    setTimeout(() => btn.innerHTML = '<i class="bi bi-copy"></i>', 2000);
+}
+
+function handleFileSelect(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (!preview) return;
+    const files = Array.from(input.files);
+    if (files.length === 0) {
+        preview.innerHTML = '';
+        return;
+    }
+    const totalMb = (files.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024)).toFixed(2);
+    preview.innerHTML = `<div class="alert alert-info py-1 px-3 mb-0"><i class="bi bi-check-circle me-1"></i><strong>${files.length}</strong> file(s) selected (${totalMb} MB total)</div>`;
+}
+
+// Drag and drop events for upload zone
+(function setupDragAndDrop() {
+    const dropZone = document.getElementById('ownerDropZone');
+    const fileInput = document.getElementById('ownerFileInput');
+    if (!dropZone || !fileInput) return;
+
+    ['dragenter', 'dragover'].forEach(event => {
+        dropZone.addEventListener(event, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-primary', 'bg-opacity-10');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(event => {
+        dropZone.addEventListener(event, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-primary', 'bg-opacity-10');
+        });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFileSelect(fileInput, 'ownerFilePreview');
+        }
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Sign In - {{ SITE_NAME }}{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-header bg-primary text-white text-center py-4 border-0">
+                        <div class="mb-2"><i class="bi bi-qr-code-scan display-6 text-warning"></i></div>
+                        <h3 class="fw-bold mb-1">Welcome Back</h3>
+                        <p class="mb-0 text-white-75 small">Sign in to your account</p>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        {% load crispy_forms_tags %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            {% crispy form %}
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <a href="/accounts/password-reset/" class="text-muted small">Forgot your password?</a>
+                        </div>
+                        <hr class="my-4">
+                        <p class="text-center text-muted mb-0">
+                            New here?
+                            <a href="/accounts/register/" class="text-primary fw-semibold">Create a free account</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

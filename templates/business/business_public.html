@@ -1,0 +1,455 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ business.name }} - Digital Business Profile | EventConnect QR</title>
+
+    <!-- OpenGraph Meta Tags for Rich Social Sharing -->
+    <meta property="og:title" content="{{ business.name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
+    <meta property="og:description" content="{{ business.description|truncatewords:25|default:business.tagline }}">
+    {% if business.cover_image %}
+    <meta property="og:image" content="{{ business.cover_image.url }}">
+    {% elif business.logo %}
+    <meta property="og:image" content="{{ business.logo.url }}">
+    {% endif %}
+    <meta property="og:type" content="business.business">
+
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-accent: #4f46e5;
+            --primary-hover: #4338ca;
+            --whatsapp-color: #25D366;
+            --phone-color: #0284c7;
+            --maps-color: #ea4335;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .biz-container {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #ffffff;
+            min-height: 100vh;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        }
+
+        .biz-hero {
+            position: relative;
+            height: 220px;
+            background: linear-gradient(135deg, #1e1b4b, #312e81, #4338ca);
+            overflow: hidden;
+        }
+
+        .biz-hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.65;
+        }
+
+        .biz-logo-container {
+            position: absolute;
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        .biz-logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 8px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            color: #ffffff;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            color: #ffffff;
+        }
+
+        .quick-action-btn i {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
+        }
+
+        .btn-call { background-color: var(--phone-color); }
+        .btn-whatsapp { background-color: var(--whatsapp-color); }
+        .btn-maps { background-color: var(--maps-color); }
+        .btn-vcard { background-color: #6366f1; }
+        .btn-share { background-color: #475569; }
+
+        .service-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            transition: all 0.2s ease;
+            background: #ffffff;
+        }
+
+        .service-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+        }
+
+        .social-link {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .social-link:hover {
+            background: var(--primary-accent);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="biz-container">
+    <!-- Hero / Cover Image Banner -->
+    <div class="biz-hero">
+        {% if business.cover_image %}
+        <img src="{{ business.cover_image.url }}" alt="{{ business.name }}" class="biz-hero-img">
+        {% endif %}
+
+        <!-- Top bar overlay controls -->
+        <div class="position-absolute top-0 w-100 p-3 d-flex justify-content-between align-items-center z-2">
+            <span class="badge bg-dark bg-opacity-75 px-3 py-2 rounded-pill small">
+                {{ business.get_category_display }}
+            </span>
+            <div class="d-flex gap-2">
+                {% if qr %}
+                <button type="button" class="btn btn-sm btn-light rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#qrModal">
+                    <i class="bi bi-qr-code me-1"></i>QR
+                </button>
+                {% endif %}
+                {% if is_owner %}
+                <a href="{% url 'business_detail' pk=business.pk %}" class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-gear me-1"></i>Manage
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Overlapping Center Logo -->
+        <div class="biz-logo-container">
+            {% if business.logo %}
+            <img src="{{ business.logo.url }}" alt="{{ business.name }}">
+            {% else %}
+            <i class="bi bi-building fs-1 text-primary"></i>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Business Header Identity -->
+    <div class="text-center pt-5 px-4 pb-3">
+        <h3 class="fw-bold mb-1 text-dark">{{ business.name }}</h3>
+        {% if business.tagline %}
+        <p class="text-muted fw-medium mb-2">{{ business.tagline }}</p>
+        {% endif %}
+
+        {% if business.city or business.state %}
+        <div class="d-inline-flex align-items-center text-muted small mb-3">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+            <span>{{ business.city }}{% if business.state %}, {{ business.state }}{% endif %}</span>
+        </div>
+        {% endif %}
+
+        <!-- Quick Action Buttons Grid -->
+        <div class="row g-2 justify-content-center my-3">
+            {% if business.phone_url %}
+            <div class="col">
+                <a href="{{ business.phone_url }}" class="quick-action-btn btn-call">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>Call</span>
+                </a>
+            </div>
+            {% endif %}
+
+            {% if business.whatsapp_url %}
+            <div class="col">
+                <a href="{{ business.whatsapp_url }}" target="_blank" class="quick-action-btn btn-whatsapp">
+                    <i class="bi bi-whatsapp"></i>
+                    <span>WhatsApp</span>
+                </a>
+            </div>
+            {% endif %}
+
+            {% if business.maps_url %}
+            <div class="col">
+                <a href="{{ business.maps_url }}" target="_blank" class="quick-action-btn btn-maps">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <span>Directions</span>
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="col">
+                <a href="{% url 'business_vcard' slug=business.slug %}" class="quick-action-btn btn-vcard">
+                    <i class="bi bi-person-plus-fill"></i>
+                    <span>Save Contact</span>
+                </a>
+            </div>
+
+            <div class="col">
+                <button type="button" class="quick-action-btn btn-share w-100 border-0" id="shareBtn">
+                    <i class="bi bi-share-fill"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="px-4 pb-5">
+        <!-- About Us / Overview -->
+        {% if business.description %}
+        <div class="mb-4">
+            <div class="section-title">About Us</div>
+            <p class="text-secondary small leading-relaxed mb-0" style="white-space: pre-line;">{{ business.description }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Products & Services Catalog -->
+        {% if services %}
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="section-title mb-0">Products & Services</div>
+                <span class="badge bg-light text-secondary border small">{{ services|length }} Available</span>
+            </div>
+
+            <div class="d-flex flex-column gap-3 mt-3">
+                {% for service in services %}
+                <div class="service-card p-3">
+                    <div class="d-flex gap-3 align-items-center">
+                        {% if service.image %}
+                        <img src="{{ service.image.url }}" alt="{{ service.name }}" class="rounded-3 flex-shrink-0" style="width: 70px; height: 70px; object-fit: cover;">
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="fw-bold mb-1 text-dark">{{ service.name }}</h6>
+                            {% if service.description %}
+                            <p class="text-muted small mb-2 text-truncate" style="max-width: 320px;">{{ service.description }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <span class="fw-bold text-primary small">{{ service.price_display }}</span>
+                                {% if business.whatsapp %}
+                                <a href="https://wa.me/{{ business.clean_whatsapp_number }}?text=Hello%2C%20I%20am%20interested%20in%20'{{ service.name|urlencode }}'%20from%20your%20EventConnect%20catalog."
+                                   target="_blank"
+                                   class="btn btn-outline-success btn-sm py-1 px-2 rounded-pill small">
+                                    <i class="bi bi-whatsapp me-1"></i>Enquire
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Direct Contact Info Card -->
+        <div class="mb-4">
+            <div class="section-title">Direct Contact</div>
+            <div class="bg-light rounded-4 p-3 d-flex flex-column gap-2 small">
+                {% if business.phone %}
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-telephone text-primary me-3 fs-5"></i>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.7rem;">PHONE</div>
+                        <a href="{{ business.phone_url }}" class="fw-bold text-dark text-decoration-none">{{ business.phone }}</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if business.email %}
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-envelope text-danger me-3 fs-5"></i>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.7rem;">EMAIL</div>
+                        <a href="mailto:{{ business.email }}" class="fw-bold text-dark text-decoration-none">{{ business.email }}</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if business.website %}
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-globe text-info me-3 fs-5"></i>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.7rem;">WEBSITE</div>
+                        <a href="{{ business.website }}" target="_blank" class="fw-bold text-dark text-decoration-none">{{ business.website }}</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if business.full_address %}
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-geo-alt text-danger me-3 fs-5"></i>
+                    <div>
+                        <div class="text-muted" style="font-size: 0.7rem;">ADDRESS</div>
+                        <span class="text-dark">{{ business.full_address }}</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Operating Hours -->
+        {% if business.working_hours %}
+        <div class="mb-4">
+            <div class="section-title">Operating Schedule</div>
+            <div class="bg-light rounded-4 p-3 small text-secondary">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-clock-history text-primary me-3 fs-5 mt-1"></i>
+                    <div style="white-space: pre-line;">{{ business.working_hours }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Social Media Presence -->
+        {% if business.instagram or business.facebook or business.twitter or business.linkedin or business.youtube %}
+        <div class="mb-4 text-center">
+            <div class="section-title">Connect on Social Media</div>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+                {% if business.instagram %}
+                <a href="{{ business.instagram }}" target="_blank" class="social-link" title="Instagram">
+                    <i class="bi bi-instagram"></i>
+                </a>
+                {% endif %}
+                {% if business.facebook %}
+                <a href="{{ business.facebook }}" target="_blank" class="social-link" title="Facebook">
+                    <i class="bi bi-facebook"></i>
+                </a>
+                {% endif %}
+                {% if business.twitter %}
+                <a href="{{ business.twitter }}" target="_blank" class="social-link" title="Twitter / X">
+                    <i class="bi bi-twitter-x"></i>
+                </a>
+                {% endif %}
+                {% if business.linkedin %}
+                <a href="{{ business.linkedin }}" target="_blank" class="social-link" title="LinkedIn">
+                    <i class="bi bi-linkedin"></i>
+                </a>
+                {% endif %}
+                {% if business.youtube %}
+                <a href="{{ business.youtube }}" target="_blank" class="social-link" title="YouTube">
+                    <i class="bi bi-youtube"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="text-center pt-4 border-top">
+            <a href="{% url 'business_vcard' slug=business.slug %}" class="btn btn-outline-primary rounded-pill btn-sm px-4 mb-3">
+                <i class="bi bi-person-lines-fill me-1"></i>Save Contact to Phonebook (.vcf)
+            </a>
+            <p class="text-muted small mb-0">Powered by <a href="/" class="text-decoration-none fw-bold text-primary">EventConnect QR</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: QR Code for Physical Display / Scanning -->
+{% if qr %}
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow text-center p-3">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold" id="qrModalLabel">Scan to Open Profile</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                {% if qr.qr_image %}
+                <img src="{{ qr.qr_image.url }}" alt="Business QR Code" class="img-fluid rounded mb-3" style="width: 220px; height: 220px;">
+                {% endif %}
+                <p class="small text-muted mb-2">Scan with any smartphone camera to view this digital business card.</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'qr_download_png' qr_uuid=qr.uuid %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-download me-1"></i>Download PNG
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- JavaScript & Share API -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.getElementById('shareBtn')?.addEventListener('click', async () => {
+    const shareData = {
+        title: '{{ business.name|escapejs }}',
+        text: 'Check out {{ business.name|escapejs }} on EventConnect QR',
+        url: window.location.href,
+    };
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (err) {
+            console.log('Share dismissed');
+        }
+    } else {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert('Business profile link copied to clipboard!');
+        });
+    }
+});
+</script>
+
+</body>
+</html>

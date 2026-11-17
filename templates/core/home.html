@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% block title %}{{ SITE_NAME }} - Create Beautiful Event Invitations{% endblock %}
+
+{% block content %}
+
+<!-- ══ Hero Section ════════════════════════════════════════════════════════ -->
+<section class="hero-section py-5 text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 85vh; display:flex; align-items:center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <span class="badge bg-warning text-dark mb-3 fs-6 px-3 py-2">🎉 Digital Invitations Made Easy</span>
+                <h1 class="display-3 fw-bold mb-4" style="font-family: 'Playfair Display', serif;">
+                    Create Stunning<br>Event Invitations<br>with <span class="text-warning">QR Codes</span>
+                </h1>
+                <p class="lead mb-5 text-white-75 fs-5">
+                    Design beautiful digital invitations for weddings, birthdays, engagements and more.
+                    Share via QR code, WhatsApp and social media instantly.
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a href="/accounts/register/" class="btn btn-warning btn-lg px-5 py-3 fw-bold shadow">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Get Started Free
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg px-5 py-3">
+                        <i class="bi bi-play-circle me-2"></i>See How It Works
+                    </a>
+                </div>
+                <div class="d-flex justify-content-center gap-4 mt-5 text-white-50 small">
+                    <span><i class="bi bi-check-circle text-warning me-1"></i>Free Forever Plan</span>
+                    <span><i class="bi bi-check-circle text-warning me-1"></i>No Credit Card</span>
+                    <span><i class="bi bi-check-circle text-warning me-1"></i>Mobile Ready</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ Stats Bar ═══════════════════════════════════════════════════════════ -->
+<section class="bg-primary text-white py-4">
+    <div class="container">
+        <div class="row text-center g-3">
+            <div class="col-6 col-md-3">
+                <div class="fs-2 fw-bold text-warning">10,000+</div>
+                <div class="text-white-75 small">Events Created</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="fs-2 fw-bold text-warning">50,000+</div>
+                <div class="text-white-75 small">QR Scans</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="fs-2 fw-bold text-warning">8+</div>
+                <div class="text-white-75 small">Event Types</div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="fs-2 fw-bold text-warning">99.9%</div>
+                <div class="text-white-75 small">Uptime</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ Features Section ════════════════════════════════════════════════════ -->
+<section id="features" class="py-5 bg-light">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary mb-2">Features</span>
+            <h2 class="display-5 fw-bold">Everything You Need</h2>
+            <p class="text-muted lead">Create, share and manage your events all in one place.</p>
+        </div>
+        <div class="row g-4">
+            {% for feature in features_list %}
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-3 p-3 d-inline-flex mb-4">
+                            <i class="bi {{ feature.icon }} fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">{{ feature.title }}</h5>
+                        <p class="text-muted">{{ feature.desc }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Static fallback features if no context -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-3 p-3 d-inline-flex mb-4">
+                            <i class="bi bi-qr-code fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">QR Code Generator</h5>
+                        <p class="text-muted">Generate unique QR codes for every event. Download as PNG or PDF with custom branding.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-success bg-gradient text-white rounded-3 p-3 d-inline-flex mb-4">
+                            <i class="bi bi-phone fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Event Mini-Website</h5>
+                        <p class="text-muted">Beautiful mobile-first invitation page with gallery, maps and social sharing built-in.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-warning bg-gradient text-dark rounded-3 p-3 d-inline-flex mb-4">
+                            <i class="bi bi-images fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Photo & Video Gallery</h5>
+                        <p class="text-muted">Upload and share unlimited photos and videos with your guests beautifully organized.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-info bg-gradient text-white rounded-3 p-3 d-inline-flex mb-4">
+                            <i class="bi bi-geo-alt fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Google Maps Integration</h5>
+                        <p class="text-muted">Add venue location with Get Directions button. Guests can navigate directly from the invite.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-danger bg-gradient text-white rounded-3 p-3 d-inline-flex mb-4">
+                            <i class="bi bi-share fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Social Sharing</h5>
+                        <p class="text-muted">Share your event via WhatsApp, Facebook, Twitter or copy the link instantly.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-purple bg-gradient text-white rounded-3 p-3 d-inline-flex mb-4" style="background:#6f42c1!important;">
+                            <i class="bi bi-building fs-2"></i>
+                        </div>
+                        <h5 class="fw-bold">Business Profiles</h5>
+                        <p class="text-muted">Create a digital business card with QR code. Showcase products, services and contact info.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ Event Types ════════════════════════════════════════════════════════ -->
+<section class="py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <span class="badge bg-warning text-dark mb-2">Event Types</span>
+            <h2 class="display-5 fw-bold">For Every Occasion</h2>
+        </div>
+        <div class="row g-3 justify-content-center">
+            {% for et in event_types %}
+            <div class="col-6 col-md-3 col-lg-2">
+                <div class="card border-0 shadow-sm text-center p-3 hover-lift h-100">
+                    <div class="fs-1 mb-2">{{ et.icon }}</div>
+                    <div class="fw-semibold small">{{ et.name }}</div>
+                </div>
+            </div>
+            {% endfor %}
+            <!-- Static fallback -->
+            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">💍</div><div class="fw-semibold small">Wedding</div></div></div>
+            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">🎂</div><div class="fw-semibold small">Birthday</div></div></div>
+            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">💑</div><div class="fw-semibold small">Engagement</div></div></div>
+            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">❤️</div><div class="fw-semibold small">Anniversary</div></div></div>
+            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">🏠</div><div class="fw-semibold small">Housewarming</div></div></div>
+            <div class="col-6 col-md-3 col-lg-2"><div class="card border-0 shadow-sm text-center p-3 hover-lift h-100"><div class="fs-1 mb-2">🎓</div><div class="fw-semibold small">Graduation</div></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ══ CTA Section ════════════════════════════════════════════════════════ -->
+<section class="py-5 text-white text-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+    <div class="container py-4">
+        <h2 class="display-5 fw-bold mb-3">Ready to Create Your First Invitation?</h2>
+        <p class="lead mb-4">Join thousands of hosts who trust EventConnect QR for their special occasions.</p>
+        <a href="/accounts/register/" class="btn btn-light btn-lg px-5 py-3 fw-bold shadow text-danger">
+            <i class="bi bi-stars me-2"></i>Start for Free Today
+        </a>
+    </div>
+</section>
+
+{% endblock %}
