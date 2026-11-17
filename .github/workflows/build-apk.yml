@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,8 +35,37 @@ jobs:
         working-directory: mobile_app
         run: flutter build apk --release --no-tree-shake-icons
 
+      - name: Rename APK for release
+        run: |
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/EventConnectQR-v1.0.1.apk
+
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: EventConnectQR-release-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
+
+      - name: Publish GitHub Release v1.0.1
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.1
+          name: "EventConnect QR v1.0.1 - Mobile App Release"
+          body: |
+            ## EventConnect QR Mobile App (v1.0.1)
+            
+            ### Fixes & Enhancements:
+            - **Custom Server URL Configuration**: Configure your backend URL (Render Cloud or Wi-Fi IP) via the ⚙️ Settings dialog on the login screen.
+            - **Offline Demo Mode**: Test all 6 occasion templates, QR code scanner, and GPS navigation instantly without waiting for a server.
+            - **Crash & Timeout Protection**: Added error boundaries so the app never freezes or crashes when offline.
+            - **Google Maps GPS Navigation**: Seamless one-click turn-by-turn navigation.
+            
+            ### Installation Instructions for Android:
+            1. Download `EventConnectQR-v1.0.1.apk` on your mobile phone.
+            2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
+               - Tap **"More details"**
+               - Tap **"Install anyway"**
+            3. Open the app and tap **"Explore in Offline Demo Mode"** to start exploring immediately!
+          files: |
+            mobile_app/build/app/outputs/flutter-apk/EventConnectQR-v1.0.1.apk
+            mobile_app/build/app/outputs/flutter-apk/app-release.apk

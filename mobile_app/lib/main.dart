@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppConstants.initBaseUrl();
   final loggedIn = await AuthService.isLoggedIn();
   runApp(EventConnectApp(isLoggedIn: loggedIn));
 }

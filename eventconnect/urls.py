@@ -22,4 +22,38 @@ urlpatterns = [
     path('api/business/', include('apps.business.api_urls')),
     path('api/subscriptions/', include('apps.subscriptions.api_urls')),
     path('api/qr/', include('apps.qrcodes.api_urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    from apps.accounts.models import User
+    from apps.events.models import Event
+    from apps.accounts import views as acc_views
+    from apps.events import views as ev_views
+    from apps.qrcodes import views as qr_views
+
+    def _preview_dashboard(request):
+        request.user = User.objects.filter(email='demo@eventconnect.com').first() or User.objects.first()
+        return acc_views.dashboard_view(request)
+
+    def _preview_events(request):
+        request.user = User.objects.filter(email='demo@eventconnect.com').first() or User.objects.first()
+        return ev_views.event_list(request)
+
+    def _preview_event_detail(request):
+        ev = Event.objects.first()
+        request.user = ev.owner
+        return ev_views.event_detail(request, pk=ev.pk)
+
+    def _preview_qr_customize(request):
+        ev = Event.objects.first()
+        request.user = ev.owner
+        return qr_views.customize_event_qr(request, event_pk=ev.pk)
+
+    urlpatterns += [
+        path('preview/dashboard/', _preview_dashboard),
+        path('preview/events/', _preview_events),
+        path('preview/event-detail/', _preview_event_detail),
+        path('preview/qr-customize/', _preview_qr_customize),
+    ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

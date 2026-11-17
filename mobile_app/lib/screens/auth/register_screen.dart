@@ -21,7 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    final success = await AuthService.register(
+    final result = await AuthService.register(
       email: _emailController.text.trim(),
       password: _passwordController.text,
       firstName: _firstNameController.text.trim(),
@@ -29,7 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (result.success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Registration successful! Please sign in.'),
@@ -39,8 +39,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Navigator.pop(context);
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration failed. Email may already be in use.'),
+        SnackBar(
+          content: Text(result.errorMessage ?? 'Registration failed. Email may already be in use.'),
           backgroundColor: AppConstants.dangerColor,
         ),
       );
