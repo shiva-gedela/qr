@@ -41,6 +41,7 @@ class AuthService {
       body: jsonEncode({
         'email': email,
         'password': password,
+        'confirm_password': password,
         'first_name': firstName,
         'last_name': lastName,
       }),

@@ -35,6 +35,7 @@ class RegisterForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
         self.helper.layout = Layout(
             Row(Column('first_name', css_class='col-md-6'), Column('last_name', css_class='col-md-6')),
             'email', 'phone', 'password1', 'password2',
@@ -42,7 +43,7 @@ class RegisterForm(forms.ModelForm):
         )
 
     def clean_email(self):
-        email = self.cleaned_data.get('email', '').lower()
+        email = self.cleaned_data.get('email', '').strip().lower()
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("An account with this email already exists.")
         return email
@@ -94,10 +95,14 @@ class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
         self.helper.layout = Layout(
             'username', 'password', 'remember_me',
             Submit('submit', 'Sign In', css_class='btn btn-primary w-100 mt-3'),
         )
+
+    def clean_username(self):
+        return self.cleaned_data.get('username', '').strip().lower()
 
 
 class ProfileUpdateForm(forms.ModelForm):
@@ -113,6 +118,7 @@ class ProfileUpdateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
         self.helper.layout = Layout(
             Row(Column('first_name', css_class='col-md-6'), Column('last_name', css_class='col-md-6')),
             'phone', 'bio', 'avatar',
@@ -129,6 +135,7 @@ class PasswordResetRequestForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
         self.helper.layout = Layout(
             'email',
             Submit('submit', 'Send Reset Link', css_class='btn btn-primary w-100 mt-3'),
@@ -144,6 +151,7 @@ class SetNewPasswordForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_tag = False
         self.helper.layout = Layout(
             'password1', 'password2',
             Submit('submit', 'Set New Password', css_class='btn btn-primary w-100 mt-3'),

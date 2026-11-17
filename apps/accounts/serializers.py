@@ -33,24 +33,26 @@ class RegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration via API."""
 
     password = serializers.CharField(write_only=True, min_length=8)
-    confirm_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True, required=False, default='')
 
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'phone', 'password', 'confirm_password']
 
     def validate_email(self, value):
-        if User.objects.filter(email=value.lower()).exists():
+        cleaned = value.strip().lower()
+        if User.objects.filter(email=cleaned).exists():
             raise serializers.ValidationError("Email already registered.")
-        return value.lower()
+        return cleaned
 
     def validate(self, data):
-        if data['password'] != data['confirm_password']:
+        confirm = data.get('confirm_password')
+        if confirm and data['password'] != confirm:
             raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
         return data
 
     def create(self, validated_data):
-        validated_data.pop('confirm_password')
+        validated_data.pop('confirm_password', None)
         email = validated_data['email']
         base = email.split('@')[0]
         username = base
