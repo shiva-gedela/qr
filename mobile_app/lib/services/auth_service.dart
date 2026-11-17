@@ -142,8 +142,9 @@ class AuthService {
         email: 'demo@eventconnect.com',
         firstName: 'Guest',
         lastName: 'Demo',
-        userType: 'free',
-        isEmailVerified: true,
+        phone: '+91 98765 43210',
+        emailVerified: true,
+        isPremium: true,
       );
     }
     return null;
