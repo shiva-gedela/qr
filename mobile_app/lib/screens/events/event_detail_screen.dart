@@ -19,6 +19,7 @@ class EventDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final eventUrl = '${AppConstants.baseUrl}/events/e/${event.slug}/';
+    final gpsUrl = event.googleMapsDirectionsUrl ?? event.googleMapsUrl ?? 'https://maps.google.com/?q=${Uri.encodeComponent("${event.venueName ?? ''} ${event.venueAddress ?? ''}")}';
 
     return Scaffold(
       appBar: AppBar(
@@ -127,7 +128,6 @@ class EventDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            final gpsUrl = event.googleMapsDirectionsUrl ?? event.googleMapsUrl ?? 'https://maps.google.com/?q=${Uri.encodeComponent("${event.venueName} ${event.venueAddress}")}';
             OutlinedButton.icon(
               icon: const Icon(Icons.navigation, color: AppConstants.dangerColor),
               label: const Text('Start GPS Turn-by-Turn Navigation', style: TextStyle(fontWeight: FontWeight.bold)),
