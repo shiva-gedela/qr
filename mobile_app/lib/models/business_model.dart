@@ -109,4 +109,97 @@ class BusinessModel {
       qrImageUrl: qrImg,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'slug': slug,
+      'tagline': tagline,
+      'category': category,
+      'category_display': categoryDisplay ?? categoryTitle,
+      'description': description,
+      'phone': phone,
+      'whatsapp': whatsapp,
+      'email': email,
+      'website': website,
+      'address': address,
+      'city': city,
+      'state': state,
+      'maps_url': mapsUrl,
+      'logo_url': logoUrl,
+      'cover_image_url': coverImageUrl,
+      'is_verified': isVerified,
+      'is_active': isActive,
+      'services': services.map((s) => {
+        'id': s.id,
+        'name': s.name,
+        'description': s.description,
+        'price_display': s.priceDisplay,
+        'is_available': s.isAvailable,
+      }).toList(),
+      'qr_image_url': qrImageUrl,
+    };
+  }
+
+  String get categoryEmoji {
+    switch (category.toLowerCase()) {
+      case 'catering':
+      case 'food':
+        return '🍽️';
+      case 'photography':
+      case 'video':
+        return '📸';
+      case 'decoration':
+      case 'decor':
+      case 'flowers':
+        return '🎨';
+      case 'dj':
+      case 'music':
+      case 'sound':
+        return '🎵';
+      case 'venue':
+      case 'hall':
+      case 'resort':
+        return '🏰';
+      case 'makeup':
+      case 'styling':
+      case 'beauty':
+        return '💄';
+      case 'planner':
+      case 'coordinator':
+        return '📋';
+      case 'bakery':
+      case 'cake':
+        return '🎂';
+      default:
+        return '💼';
+    }
+  }
+
+  String get categoryTitle {
+    if (categoryDisplay != null && categoryDisplay!.isNotEmpty) {
+      return categoryDisplay!;
+    }
+    switch (category.toLowerCase()) {
+      case 'catering':
+        return 'Catering & Food';
+      case 'photography':
+        return 'Photography & Video';
+      case 'decoration':
+        return 'Decoration & Florals';
+      case 'dj':
+        return 'DJ, Sound & Lights';
+      case 'venue':
+        return 'Banquets & Venues';
+      case 'makeup':
+        return 'Bridal Makeup & Hair';
+      case 'planner':
+        return 'Event Planners';
+      case 'bakery':
+        return 'Custom Cakes & Treats';
+      default:
+        return 'Event Vendor';
+    }
+  }
 }

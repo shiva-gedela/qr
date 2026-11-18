@@ -208,21 +208,198 @@ class ApiService {
     return localEvent;
   }
 
-  // Business API
+  // Business / Vendor API
   static Future<List<BusinessModel>> getBusinesses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final localVendorsRaw = prefs.getStringList('local_created_vendors') ?? [];
+    final List<BusinessModel> localVendors = [];
+    for (final raw in localVendorsRaw) {
+      try {
+        localVendors.add(BusinessModel.fromJson(jsonDecode(raw)));
+      } catch (_) {}
+    }
+
     try {
       final response = await http.get(
         Uri.parse(AppConstants.businessUrl),
         headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: 6));
+      ).timeout(const Duration(seconds: 4));
 
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
         final List results = decoded is List ? decoded : (decoded['results'] ?? []);
-        return results.map((b) => BusinessModel.fromJson(b)).toList();
+        final serverVendors = results.map((b) => BusinessModel.fromJson(b)).toList();
+        return [...localVendors, ...serverVendors];
       }
     } catch (_) {}
-    return [];
+
+    if (localVendors.isNotEmpty) {
+      return [...localVendors, ..._getOfflineDemoVendors()];
+    }
+    return _getOfflineDemoVendors();
+  }
+
+  static Future<BusinessModel> createBusiness({
+    required String name,
+    required String category,
+    required String tagline,
+    required String phone,
+    required String whatsapp,
+    String email = '',
+    String website = '',
+    required String address,
+    required String city,
+    String state = 'Karnataka',
+    String description = '',
+    List<BusinessServiceModel> services = const [],
+  }) async {
+    final slug = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '');
+    final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+    final newVendor = BusinessModel(
+      id: id,
+      name: name,
+      slug: '$slug-$id',
+      tagline: tagline,
+      category: category,
+      categoryDisplay: null,
+      description: description,
+      phone: phone,
+      whatsapp: whatsapp.isNotEmpty ? whatsapp : phone,
+      email: email,
+      website: website,
+      address: address,
+      city: city,
+      state: state,
+      isVerified: true,
+      isActive: true,
+      services: services,
+      qrImageUrl: null,
+    );
+
+    // Save locally
+    final prefs = await SharedPreferences.getInstance();
+    final localVendorsRaw = prefs.getStringList('local_created_vendors') ?? [];
+    localVendorsRaw.insert(0, jsonEncode(newVendor.toJson()));
+    await prefs.setStringList('local_created_vendors', localVendorsRaw);
+
+    // Attempt server sync if possible
+    try {
+      await http.post(
+        Uri.parse(AppConstants.businessUrl),
+        headers: await _getHeaders(),
+        body: jsonEncode(newVendor.toJson()),
+      ).timeout(const Duration(seconds: 4));
+    } catch (_) {}
+
+    return newVendor;
+  }
+
+  static List<BusinessModel> _getOfflineDemoVendors() {
+    return [
+      BusinessModel(
+        id: 101,
+        name: 'Royal Feast Caterers',
+        slug: 'royal-feast-caterers',
+        tagline: '5-Star Traditional & International Wedding Menus',
+        category: 'catering',
+        description: 'Over 15 years serving exquisite multi-cuisine banquets, live chat counters, and desserts for grand celebrations.',
+        phone: '+91 98450 12345',
+        whatsapp: '+91 98450 12345',
+        email: 'info@royalfeastcaterers.in',
+        website: 'https://qroutex.com/v/royal-feast',
+        address: 'MG Road, Central Bengaluru',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        isVerified: true,
+        isActive: true,
+        services: [
+          BusinessServiceModel(id: 1, name: 'Royal Gold Banquet Buffet', description: 'Complete 7-course multi-cuisine buffet spread', priceDisplay: '₹750 / plate', isAvailable: true),
+          BusinessServiceModel(id: 2, name: 'Live Chaat & Dessert Counter', description: '8 interactive live food and beverage stations', priceDisplay: '₹250 / plate', isAvailable: true),
+        ],
+      ),
+      BusinessModel(
+        id: 102,
+        name: 'Lumière Wedding Studios',
+        slug: 'lumiere-wedding-studios',
+        tagline: 'Cinematic Wedding & Candid Pre-Shoot Photography',
+        category: 'photography',
+        description: 'Award-winning photojournalists capturing timeless emotion, cinematic 4K video, drone footage, and luxury albums.',
+        phone: '+91 98860 67890',
+        whatsapp: '+91 98860 67890',
+        email: 'contact@lumierephotos.com',
+        website: 'https://qroutex.com/v/lumiere-studios',
+        address: 'Indiranagar 100ft Road',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        isVerified: true,
+        isActive: true,
+        services: [
+          BusinessServiceModel(id: 3, name: 'Complete 2-Day Wedding Package', description: 'Traditional + Candid + 4K Teaser Film + Drone', priceDisplay: '₹1,25,000', isAvailable: true),
+          BusinessServiceModel(id: 4, name: 'Pre-Wedding Outdoor Shoot', description: 'Full day shoot at 2 scenic locations with stylist', priceDisplay: '₹35,000', isAvailable: true),
+        ],
+      ),
+      BusinessModel(
+        id: 103,
+        name: 'Flora Magic Decor & Mandap',
+        slug: 'flora-magic-decor',
+        tagline: 'Exotic Floral Stage, Mandap & Fairytale Lighting',
+        category: 'decoration',
+        description: 'Customized luxury theme setups, eco-friendly floral mandaps, fairy light tunnels, and grand reception stages.',
+        phone: '+91 98765 11223',
+        whatsapp: '+91 98765 11223',
+        email: 'hello@floramagic.in',
+        website: 'https://qroutex.com/v/flora-magic',
+        address: 'Koramangala 4th Block',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        isVerified: true,
+        isActive: true,
+        services: [
+          BusinessServiceModel(id: 5, name: 'Grand Royal Mandap & Stage', description: 'Fresh imported florals, crystal chandeliers & velvet backdrop', priceDisplay: '₹85,000', isAvailable: true),
+        ],
+      ),
+      BusinessModel(
+        id: 104,
+        name: 'DJ SoundVibe & Live Band',
+        slug: 'dj-soundvibe',
+        tagline: 'High-Energy Bollywood, Punjabi & EDM Sangeet DJ',
+        category: 'dj',
+        description: 'Professional sound engineering, JBL line array systems, concert lighting, and top celebrity DJs.',
+        phone: '+91 99112 33445',
+        whatsapp: '+91 99112 33445',
+        email: 'bookings@djsoundvibe.com',
+        website: 'https://qroutex.com/v/soundvibe',
+        address: 'HSR Layout Sector 2',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        isVerified: true,
+        isActive: true,
+        services: [
+          BusinessServiceModel(id: 6, name: 'Sangeet & Cocktail DJ Setup', description: '5 hours live DJ performance + dual truss intelligent lights', priceDisplay: '₹40,000', isAvailable: true),
+        ],
+      ),
+      BusinessModel(
+        id: 105,
+        name: 'The Grand Heritage Palace & Lawn',
+        slug: 'grand-heritage-palace',
+        tagline: '1,500 Guest Capacity Luxury Convention Lawn & AC Hall',
+        category: 'venue',
+        description: 'Sprawling green lawns, 50,000 sq ft pillarless AC hall, 20 air-conditioned guest suites, and valet parking for 400 cars.',
+        phone: '+91 98440 99887',
+        whatsapp: '+91 98440 99887',
+        email: 'events@grandheritagepalace.com',
+        website: 'https://qroutex.com/v/grand-heritage',
+        address: 'Hebbal, Near Airport Expressway',
+        city: 'Bengaluru',
+        state: 'Karnataka',
+        isVerified: true,
+        isActive: true,
+        services: [
+          BusinessServiceModel(id: 7, name: 'Full Day Hall & Lawn Rental', description: 'Includes 10 guest rooms, electricity backup & valet', priceDisplay: '₹2,50,000 / day', isAvailable: true),
+        ],
+      ),
+    ];
   }
 
   static Future<BusinessModel> getPublicBusiness(String slug) async {

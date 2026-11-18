@@ -16,8 +16,10 @@ class RideOption {
   final double perKmRate;
   final String? badge; // 'Cheapest', 'Fastest', '100% Eco Green', 'Best Value'
   final Color brandColor;
-  final String deepLinkScheme;
-  final String webFallback;
+  final String packageName;
+  final String nativeUrl;
+  final String webUrl;
+  final String playStoreUrl;
 
   const RideOption({
     required this.provider,
@@ -29,8 +31,10 @@ class RideOption {
     required this.perKmRate,
     this.badge,
     required this.brandColor,
-    required this.deepLinkScheme,
-    required this.webFallback,
+    required this.packageName,
+    required this.nativeUrl,
+    required this.webUrl,
+    required this.playStoreUrl,
   });
 
   int calculateFare(double distanceKm) {
@@ -104,8 +108,10 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
         perKmRate: 6.8,
         badge: 'Lowest Fare',
         brandColor: const Color(0xFFF59E0B),
-        deepLinkScheme: 'rapido://booking?destination=$encodedDest',
-        webFallback: 'https://rapido.bike',
+        packageName: 'com.rapido.passenger',
+        nativeUrl: 'rapido://booking?destination=$encodedDest',
+        webUrl: 'https://www.rapido.bike',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=com.rapido.passenger',
       ),
 
       // 🛵 UBER MOTO
@@ -119,8 +125,10 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
         perKmRate: 7.5,
         badge: 'Fast Pickup',
         brandColor: Colors.black,
-        deepLinkScheme: 'uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=$encodedDest',
-        webFallback: 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=$encodedDest',
+        packageName: 'com.ubercab',
+        nativeUrl: 'uber://?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=$encodedDest',
+        webUrl: 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=$encodedDest',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=com.ubercab',
       ),
 
       // 🛺 UBER AUTO
@@ -134,8 +142,10 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
         perKmRate: 13.5,
         badge: 'Popular',
         brandColor: Colors.black,
-        deepLinkScheme: 'uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=$encodedDest',
-        webFallback: 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=$encodedDest',
+        packageName: 'com.ubercab',
+        nativeUrl: 'uber://?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=$encodedDest',
+        webUrl: 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=$encodedDest',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=com.ubercab',
       ),
 
       // 🛺 OLA AUTO
@@ -148,8 +158,10 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
         baseFare: 30,
         perKmRate: 14.0,
         brandColor: const Color(0xFF15803D),
-        deepLinkScheme: 'ola://book?drop_name=$encodedDest',
-        webFallback: 'https://book.olacabs.com/?drop_name=$encodedDest',
+        packageName: 'com.olacabs.customer',
+        nativeUrl: 'ola://book?drop_name=$encodedDest',
+        webUrl: 'https://book.olacabs.com/?drop_name=$encodedDest',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=com.olacabs.customer',
       ),
 
       // ⚡ GREEN SM / BLUSMART EV (ZERO EMISSION)
@@ -163,8 +175,10 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
         perKmRate: 18.0,
         badge: '100% Eco Green',
         brandColor: const Color(0xFF0D9488),
-        deepLinkScheme: 'blusmart://ride?destination=$encodedDest',
-        webFallback: 'https://blu-smart.com',
+        packageName: 'com.blusmart',
+        nativeUrl: 'blusmart://ride?destination=$encodedDest',
+        webUrl: 'https://blu-smart.com',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=com.blusmart',
       ),
 
       // 🚗 UBER GO
@@ -178,8 +192,10 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
         perKmRate: 16.5,
         badge: 'Best Value Cab',
         brandColor: Colors.black,
-        deepLinkScheme: 'uber://?action=setPickup&pickup=my_location&dropoff[formatted_address]=$encodedDest',
-        webFallback: 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=$encodedDest',
+        packageName: 'com.ubercab',
+        nativeUrl: 'uber://?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=$encodedDest',
+        webUrl: 'https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff%5Bformatted_address%5D=$encodedDest',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=com.ubercab',
       ),
 
       // 🚗 OLA PRIME SEDAN
@@ -192,35 +208,146 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
         baseFare: 75,
         perKmRate: 21.0,
         brandColor: const Color(0xFF15803D),
-        deepLinkScheme: 'ola://book?drop_name=$encodedDest',
-        webFallback: 'https://book.olacabs.com/?drop_name=$encodedDest',
+        packageName: 'com.olacabs.customer',
+        nativeUrl: 'ola://book?drop_name=$encodedDest',
+        webUrl: 'https://book.olacabs.com/?drop_name=$encodedDest',
+        playStoreUrl: 'https://play.google.com/store/apps/details?id=com.olacabs.customer',
       ),
     ];
   }
 
   Future<void> _launchRideApp(RideOption ride) async {
-    final nativeUri = Uri.parse(ride.deepLinkScheme);
-    final webUri = Uri.parse(ride.webFallback);
-
+    // 1. Try native mobile app intent first
     try {
-      if (await canLaunchUrl(nativeUri)) {
-        await launchUrl(nativeUri, mode: LaunchMode.externalApplication);
-        return;
+      final nativeUri = Uri.tryParse(ride.nativeUrl);
+      if (nativeUri != null) {
+        final launched = await launchUrl(nativeUri, mode: LaunchMode.externalNonBrowserApplication);
+        if (launched) return;
       }
     } catch (_) {}
 
-    // Fallback to official web portal or app store
-    if (await canLaunchUrl(webUri)) {
-      await launchUrl(webUri, mode: LaunchMode.externalApplication);
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not open ${ride.provider}. Please install the app from Google Play Store.'),
-          backgroundColor: AppConstants.warningColor,
-        ),
-      );
+    // 2. Try web universal link (automatically handles app handoff or web booking)
+    try {
+      final webUri = Uri.tryParse(ride.webUrl);
+      if (webUri != null) {
+        final launched = await launchUrl(webUri, mode: LaunchMode.externalApplication);
+        if (launched) return;
+      }
+    } catch (_) {
+      try {
+        final webUri = Uri.tryParse(ride.webUrl);
+        if (webUri != null) {
+          final launched = await launchUrl(webUri, mode: LaunchMode.platformDefault);
+          if (launched) return;
+        }
+      } catch (_) {}
     }
+
+    // 3. Try Play Store market intent
+    try {
+      final marketUri = Uri.tryParse('market://details?id=${ride.packageName}');
+      if (marketUri != null) {
+        final launched = await launchUrl(marketUri, mode: LaunchMode.externalApplication);
+        if (launched) return;
+      }
+    } catch (_) {}
+
+    // 4. Try Web Play Store link
+    try {
+      final playStoreUri = Uri.tryParse(ride.playStoreUrl);
+      if (playStoreUri != null) {
+        final launched = await launchUrl(playStoreUri, mode: LaunchMode.externalApplication);
+        if (launched) return;
+      }
+    } catch (_) {}
+
+    // 5. Open user-friendly interactive fallback modal
+    if (!mounted) return;
+    _showRideFallbackModal(ride);
+  }
+
+  void _showRideFallbackModal(RideOption ride) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: ride.brandColor.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(ride.iconEmoji, style: const TextStyle(fontSize: 24)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Book Ride on ${ride.provider}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text('${ride.vehicleName} • Destination Pre-Filled', style: const TextStyle(fontSize: 12, color: AppConstants.textMuted)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ride.brandColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.open_in_browser),
+                label: Text('Open ${ride.provider} Web Booking'),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  final uri = Uri.tryParse(ride.webUrl);
+                  if (uri != null) launchUrl(uri, mode: LaunchMode.externalApplication);
+                },
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.shop),
+                label: Text('Install ${ride.provider} App from Google Play'),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  final uri = Uri.tryParse(ride.playStoreUrl);
+                  if (uri != null) launchUrl(uri, mode: LaunchMode.externalApplication);
+                },
+              ),
+              const SizedBox(height: 10),
+              TextButton.icon(
+                icon: const Icon(Icons.copy, size: 16),
+                label: const Text('Copy Destination Address to Clipboard'),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: '$_destName, $_destAddress'));
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Destination address copied! Paste it in your ride app.')),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _openGoogleMaps() async {

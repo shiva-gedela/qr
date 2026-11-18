@@ -37,48 +37,46 @@ jobs:
 
       - name: Rename APK for release
         run: |
-          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.5.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.6.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QRouteX-v1.0.5-apk
+          name: QRouteX-v1.0.6-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.5
+      - name: Publish GitHub Release v1.0.6
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.5
-          name: "QRouteX v1.0.5 - Gallery QR Scanner, Turn-by-Turn GPS & Multi-Provider Ride Booking"
+          tag_name: v1.0.6
+          name: "QRouteX v1.0.6 - Official App Logo, Vendor Add Registration & Direct Ride Booking"
           body: |
-            ## QRouteX Mobile App (v1.0.5) • Passvanta Edition • qroutex.com
+            ## QRouteX Mobile App (v1.0.6) • Passvanta Edition • qroutex.com
             
-            ### ✨ What's New in v1.0.5:
-            - **Universal QR Scanner Enhancements**:
-              - Instant full-screen camera launch with PhonePe-style glowing reticle.
-              - **Scan QR from Gallery**: Pick and scan QR codes directly from photos and screenshots in your phone gallery.
-              - Direct action buttons upon scan: Open URL, Google Maps GPS Turn-by-Turn Navigation, or Book Ride.
-            - **Event Location & Navigation**:
-              - Real-time GPS pickup point detection with ability to change pickup point.
-              - Event destination display with venue name, address, distance (km), and estimated travel time (ETA in mins).
-              - Direct **Start Google Maps Turn-by-Turn GPS Directions** integration.
-            - **Multi-Provider Ride Booking**:
-              - Support for **Uber, Rapido, Ola, and Green SM** (100% Eco Green Electric Vehicles).
-              - Vehicle categories: 🛵 Bike Taxi, 🛺 Auto Rickshaw, 🚗 AC Cabs & Sedans, ⚡ Green SM Electric EV.
-              - Deep link buttons with direct app launching and web portal fallback.
-            - **Fare Comparison Engine**:
-              - Calculated fare estimates in ₹ based on transit distance and duration.
-              - "Cheapest", "Fastest", "Popular", and "100% Eco Green" badges.
-              - "Check Fare in App" toggle to compare real-time dynamic surge prices directly in official ride apps.
-              - Share ETA and live navigation via WhatsApp to event hosts and friends.
+            ### ✨ What's New in v1.0.6:
+            - **Official App Logo & HD Launcher Icons**:
+              - Custom designed high-resolution QRouteX app logo (Royal Purple, Gold Compass, GPS Navigation Pin & QR dot matrix).
+              - Generated full set of Android mipmap launcher icons (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`, and adaptive round icon).
+              - Integrated official logo badge into the Home header and Sign In screens.
+            - **Vendor Add Option (Business Profile Registration)**:
+              - Added "+ Add Vendor" option in the Vendors & Services section and floating button.
+              - Dedicated 3-step Vendor Registration form: Category (Catering, Photography, Decoration, DJ & Sound, Venues, Makeup, Planners, Bakeries), Contact & Location, Pricing & Packages.
+              - Live vendor card preview that updates dynamically as you type.
+              - Category filter bar (All, 🍽️ Catering, 📸 Photography, 🎨 Decor, 🎵 DJ, 🏰 Venues, 💄 Makeup, 📋 Planners, 🎂 Cakes) and instant keyword search.
+              - 1-tap direct Call and WhatsApp chat buttons on all vendor cards.
+            - **Direct Ride Booking Fixes & Deep Linking**:
+              - Added comprehensive Android `<queries>` permissions for Uber (`com.ubercab`), Rapido (`com.rapido.passenger`), Ola (`com.olacabs.customer`), and Green SM (`com.blusmart`).
+              - Fixed URI encoding for destination coordinates and addresses across all providers.
+              - Multi-tier intelligent launch: Native App Intent ➔ Web Universal Link ➔ Google Play Store Market Fallback ➔ Interactive Ride Options Modal.
+              - Guaranteed 100% reliable booking whether the cab app is installed or not.
             
             ### 📱 Android Installation Instructions:
-            1. Download `QRouteX-v1.0.5.apk` directly to your Android device.
+            1. Download `QRouteX-v1.0.6.apk` directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
-            3. Open the app to experience the brand-new QR Scanner, GPS Routing, and Ride Booking!
+            3. Open the app to experience the brand-new app logo, vendor registration, and direct ride booking!
           files: |
-            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.5.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.6.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk

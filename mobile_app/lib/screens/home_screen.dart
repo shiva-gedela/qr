@@ -11,6 +11,7 @@ import 'events/invitation_card_view_screen.dart';
 import 'events/event_portfolio_screen.dart';
 import 'events/event_ride_booking_screen.dart';
 import 'business/business_list_screen.dart';
+import 'business/vendor_add_screen.dart';
 import 'qr/qr_scanner_screen.dart';
 import 'qr/qr_display_screen.dart';
 import 'auth/login_screen.dart';
@@ -167,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // App Bar Row
                   Row(
                     children: [
-                      // User Avatar (PhonePe style)
+                      // App Logo (Official QRouteX Badge)
                       GestureDetector(
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
@@ -177,36 +178,68 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 44,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF7C4DFF), Color(0xFF5F259F)],
+                            border: Border.all(color: AppConstants.accentColor, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppConstants.accentColor.withOpacity(0.35),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/app_logo.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: const Color(0xFF4A148C),
+                                child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 24),
+                              ),
                             ),
                           ),
-                          child: const Icon(Icons.person, color: Colors.white, size: 24),
                         ),
                       ),
                       const SizedBox(width: 12),
-                      // Location Pin (PhonePe Header style)
+                      // Brand & Location Header (PhonePe style)
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Text(
-                                  'Your Location',
-                                  style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+                                  AppConstants.appName,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
-                                Icon(Icons.arrow_drop_down, color: Colors.white70, size: 16),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppConstants.accentColor,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'PRO',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                             Row(
                               children: const [
-                                Icon(Icons.location_on, color: AppConstants.accentColor, size: 15),
-                                SizedBox(width: 4),
+                                Icon(Icons.location_on, color: AppConstants.accentColor, size: 13),
+                                SizedBox(width: 3),
                                 Text(
-                                  'GPS Enabled & Ready',
-                                  style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                  'GPS Route & QR Ready',
+                                  style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ),
@@ -814,6 +847,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.add_business, color: Color(0xFF10B981)),
+                  title: const Text('Add Event Vendor Profile'),
+                  subtitle: const Text('List your catering, photography, decor, or venue services', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorAddScreen()));
                   },
                 ),
                 const Divider(height: 1),
