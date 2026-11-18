@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 import '../../models/event_model.dart';
-import '../qr/qr_display_screen.dart';
+import 'invitation_card_view_screen.dart';
+import 'event_portfolio_screen.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final EventModel event;
@@ -16,155 +18,252 @@ class EventDetailScreen extends StatelessWidget {
     }
   }
 
+  void _shareViaWhatsApp(BuildContext context) async {
+    final message = event.shareMessage;
+    final whatsappUrl = "whatsapp://send?text=${Uri.encodeComponent(message)}";
+    final webUrl = "https://api.whatsapp.com/send?text=${Uri.encodeComponent(message)}";
+    if (await canLaunchUrl(Uri.parse(whatsappUrl))) {
+      await launchUrl(Uri.parse(whatsappUrl));
+    } else if (await canLaunchUrl(Uri.parse(webUrl))) {
+      await launchUrl(Uri.parse(webUrl), mode: LaunchMode.externalApplication);
+    } else {
+      Clipboard.setData(ClipboardData(text: message));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invitation copied to clipboard!')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final eventUrl = '${AppConstants.baseUrl}/events/e/${event.slug}/';
-    final gpsUrl = event.googleMapsDirectionsUrl ?? event.googleMapsUrl ?? 'https://maps.google.com/?q=${Uri.encodeComponent("${event.venueName ?? ''} ${event.venueAddress ?? ''}")}';
+    final eventUrl = event.targetUrl ?? '${AppConstants.baseUrl}/events/e/${event.slug}/';
+    final gpsUrl = event.googleMapsDirectionsUrl ??
+        event.googleMapsUrl ??
+        'https://maps.google.com/?q=${Uri.encodeComponent("${event.venueName} ${event.venueAddress}")}';
 
     return Scaffold(
+      backgroundColor: AppConstants.backgroundColor,
       appBar: AppBar(
-        title: Text(event.title),
+        title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppConstants.primaryDark,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.qr_code_2),
-            tooltip: 'View QR Code',
+            icon: const Icon(Icons.share),
+            tooltip: 'Share',
+            onPressed: () => _shareViaWhatsApp(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: 'Event Portfolio',
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => QrDisplayScreen(
-                    title: event.title,
-                    subtitle: 'Event Invitation QR',
-                    qrData: eventUrl,
-                    qrImageUrl: event.qrImageUrl,
-                  ),
-                ),
+                MaterialPageRoute(builder: (_) => EventPortfolioScreen(event: event)),
               );
             },
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Header card
-            Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const Icon(Icons.celebration, size: 54, color: AppConstants.primaryColor),
-                    const SizedBox(height: 8),
-                    Text(
-                      event.title,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            // ── Hero Banner Card ──
+            Container(
+              decoration: BoxDecoration(
+                gradient: AppConstants.passvantaCardGradient,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(color: AppConstants.primaryColor.withOpacity(0.2), blurRadius: 16),
+                ],
+              ),
+              padding: const EdgeInsets.all(22),
+              child: Column(
+                children: [
+                  Text(event.eventTypeIcon, style: const TextStyle(fontSize: 48)),
+                  const SizedBox(height: 8),
+                  Text(
+                    event.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Hosted with love by ${event.hostNames}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppConstants.accentColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppConstants.accentColor),
                     ),
-                    const SizedBox(height: 4),
-                    Text('Hosted by ${event.hostNames}', style: const TextStyle(color: AppConstants.textMuted)),
-                    const SizedBox(height: 16),
-                    Chip(
-                      label: Text(
-                        event.isPublished ? 'Published & Live' : 'Draft Invitation',
-                        style: TextStyle(color: event.isPublished ? Colors.green.shade800 : Colors.grey.shade800),
-                      ),
-                      backgroundColor: event.isPublished ? Colors.green.shade100 : Colors.grey.shade200,
+                    child: Text(
+                      'STATUS: ${event.statusText.toUpperCase()}',
+                      style: const TextStyle(color: AppConstants.accentColor, fontWeight: FontWeight.bold, fontSize: 11),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
-            // Date & Venue Details
-            Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.calendar_today, color: AppConstants.primaryColor),
-                      title: const Text('Date & Time'),
-                      subtitle: Text('${event.eventDate} ${event.eventTime ?? ""}'),
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.location_on, color: AppConstants.dangerColor),
-                      title: Text(event.venueName),
-                      subtitle: Text(event.venueAddress),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Action Buttons
+            // ── Primary Actions: View Invitation Card & Event Portfolio ──
             ElevatedButton.icon(
-              icon: const Icon(Icons.qr_code, color: Colors.white),
-              label: const Text('Display Invitation QR Code', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppConstants.primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 4,
+              ),
+              icon: const Icon(Icons.style, color: AppConstants.accentColor),
+              label: const Text(
+                'View Digital Invitation Card (4 Themes)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => QrDisplayScreen(
-                      title: event.title,
-                      subtitle: 'Event Invitation QR',
-                      qrData: eventUrl,
-                      qrImageUrl: event.qrImageUrl,
-                    ),
-                  ),
+                  MaterialPageRoute(builder: (_) => InvitationCardViewScreen(event: event)),
                 );
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
-            OutlinedButton.icon(
-              icon: const Icon(Icons.navigation, color: AppConstants.dangerColor),
-              label: const Text('Start GPS Turn-by-Turn Navigation', style: TextStyle(fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0284C7),
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
-              onPressed: () => _openUrl(gpsUrl),
+              icon: const Icon(Icons.photo_library),
+              label: const Text(
+                'Event Portfolio & Moments Gallery',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => EventPortfolioScreen(event: event)),
+                );
+              },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
 
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              icon: const Icon(Icons.chat),
+              label: const Text(
+                'Share Invitation via WhatsApp',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              onPressed: () => _shareViaWhatsApp(context),
+            ),
+            const SizedBox(height: 18),
+
+            // ── Venue & GPS Navigation Card ──
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.directions, color: AppConstants.primaryColor),
+                      SizedBox(width: 8),
+                      Text('Venue & Driving Navigation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(event.venueName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text(event.venueAddress, style: const TextStyle(color: AppConstants.textMuted, fontSize: 12)),
+                  const SizedBox(height: 14),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppConstants.primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    icon: const Icon(Icons.navigation, color: AppConstants.accentColor, size: 18),
+                    label: const Text('Start GPS Turn-by-Turn in Google Maps', style: TextStyle(fontWeight: FontWeight.bold)),
+                    onPressed: () => _openUrl(gpsUrl),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // ── Date & Time Card ──
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_month, color: AppConstants.primaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Date: ${event.eventDate}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      if (event.eventTime != null) ...[
+                        const SizedBox(width: 8),
+                        Text('• ${event.eventTime}', style: const TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+                      ],
+                    ],
+                  ),
+                  const Divider(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Guest Capacity: ${event.capacity} Passes', style: const TextStyle(fontSize: 13)),
+                      Text('Confirmed: ${event.guestCount}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppConstants.primaryColor)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // Open Public Mini-Website
             OutlinedButton.icon(
-              icon: const Icon(Icons.open_in_browser),
-              label: const Text('Open Event Mini-Website'),
+              icon: const Icon(Icons.public),
+              label: const Text('Open Public Web Invitation'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: () => _openUrl(eventUrl),
             ),
-
-            if (event.instagramUrl != null && event.instagramUrl!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.camera_alt, color: Colors.purple),
-                label: const Text('Event Instagram Page'),
-                onPressed: () => _openUrl(event.instagramUrl!),
-              ),
-            ],
-            if (event.youtubeUrl != null && event.youtubeUrl!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              OutlinedButton.icon(
-                icon: const Icon(Icons.live_tv, color: Colors.red),
-                label: const Text('Watch Live Stream'),
-                onPressed: () => _openUrl(event.youtubeUrl!),
-              ),
-            ],
+            const SizedBox(height: 30),
           ],
         ),
       ),

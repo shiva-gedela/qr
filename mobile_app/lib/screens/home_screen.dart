@@ -7,6 +7,8 @@ import '../services/auth_service.dart';
 import 'events/event_list_screen.dart';
 import 'events/event_create_screen.dart';
 import 'events/event_detail_screen.dart';
+import 'events/invitation_card_view_screen.dart';
+import 'events/event_portfolio_screen.dart';
 import 'business/business_list_screen.dart';
 import 'qr/qr_scanner_screen.dart';
 import 'qr/qr_display_screen.dart';
@@ -642,7 +644,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     onPressed: () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (_) => EventDetailScreen(event: event)),
+                                        MaterialPageRoute(builder: (_) => InvitationCardViewScreen(event: event)),
                                       );
                                     },
                                     child: const Text('View Card'),

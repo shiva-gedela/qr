@@ -40,16 +40,36 @@ class AppConstants {
   static String get businessUrl => '$apiBaseUrl/business/';
   static String get subscriptionsUrl => '$apiBaseUrl/subscriptions/';
 
-  // Branding Colors - Signature PhonePe Royal Purple Theme
-  static const Color primaryColor = Color(0xFF5F259F); // PhonePe Royal Purple
-  static const Color primaryDark = Color(0xFF4A148C);  // PhonePe Deep Violet
-  static const Color primaryLight = Color(0xFF7C4DFF); // PhonePe Vibrant Violet
-  static const Color accentColor = Color(0xFFFFB703);  // PhonePe Reward Gold
-  static const Color purpleSurface = Color(0xFFF3E8FF);// PhonePe Soft Violet Tint
-  static const Color backgroundColor = Color(0xFFF4F4F8); // Clean PhonePe Background
+  // Branding Colors - Passvanta Premium Purple & Blue Gradient Theme
+  static const Color primaryColor = Color(0xFF5F259F); // Signature Royal Purple
+  static const Color primaryDark = Color(0xFF4A148C);  // Deep Violet Indigo
+  static const Color primaryLight = Color(0xFF7C4DFF); // Vibrant Violet
+  static const Color passvantaBlue = Color(0xFF2563EB);// Electric Blue
+  static const Color accentColor = Color(0xFFFFB703);  // Luxury Gold / Amber
+  static const Color purpleSurface = Color(0xFFF3E8FF);// Soft Violet Tint
+  static const Color backgroundColor = Color(0xFFF4F4F8); // Clean Light Background
   static const Color cardColor = Colors.white;
   static const Color textDark = Color(0xFF1F1F24);
   static const Color textMuted = Color(0xFF6B7280);
-  static const Color successColor = Color(0xFF00BFA5); // PhonePe Verified Teal / Green
+  static const Color successColor = Color(0xFF00BFA5); // Verified Teal
   static const Color dangerColor = Color(0xFFE53935);
+
+  // Passvanta Premium Gradients
+  static const LinearGradient passvantaGradient = LinearGradient(
+    colors: [Color(0xFF5F259F), Color(0xFF4F46E5), Color(0xFF2563EB)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient passvantaCardGradient = LinearGradient(
+    colors: [Color(0xFF4A148C), Color(0xFF312E81)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient goldGradient = LinearGradient(
+    colors: [Color(0xFFFFB703), Color(0xFFF59E0B)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }

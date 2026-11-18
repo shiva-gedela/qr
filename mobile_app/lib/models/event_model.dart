@@ -19,6 +19,14 @@ class EventModel {
   final bool isPublished;
   final String? qrImageUrl;
   final String? targetUrl;
+  final int capacity;
+  final int guestCount;
+  final String? organizerName;
+  final String? organizerContact;
+  final String? qrUuid;
+  final String? downloadPngUrl;
+  final String? downloadPdfUrl;
+  final List<Map<String, dynamic>> photos;
 
   EventModel({
     required this.id,
@@ -41,14 +49,36 @@ class EventModel {
     required this.isPublished,
     this.qrImageUrl,
     this.targetUrl,
+    this.capacity = 100,
+    this.guestCount = 0,
+    this.organizerName,
+    this.organizerContact,
+    this.qrUuid,
+    this.downloadPngUrl,
+    this.downloadPdfUrl,
+    this.photos = const [],
   });
 
   factory EventModel.fromJson(Map<String, dynamic> json) {
     String? qrImg;
     String? target;
+    String? qrId;
+    String? pngUrl;
+    String? pdfUrl;
+
     if (json['qr_code'] != null && json['qr_code'] is Map) {
-      qrImg = json['qr_code']['qr_image_url'] ?? json['qr_code']['qr_image'];
-      target = json['qr_code']['target_url'];
+      final qr = json['qr_code'];
+      qrImg = qr['image_url'] ?? qr['qr_image_url'] ?? qr['qr_image'];
+      target = qr['target_url'];
+      qrId = qr['uuid']?.toString();
+      pngUrl = qr['download_png_url'];
+      pdfUrl = qr['download_pdf_url'];
+    }
+
+    final rawPhotos = json['photos'];
+    List<Map<String, dynamic>> photoList = [];
+    if (rawPhotos is List) {
+      photoList = rawPhotos.map((p) => Map<String, dynamic>.from(p is Map ? p : {})).toList();
     }
 
     return EventModel(
@@ -72,11 +102,19 @@ class EventModel {
       isPublished: json['is_published'] ?? false,
       qrImageUrl: qrImg,
       targetUrl: target,
+      capacity: json['capacity'] ?? 100,
+      guestCount: json['guest_count'] ?? json['confirmed_guests'] ?? 0,
+      organizerName: json['organizer_name'],
+      organizerContact: json['organizer_contact'],
+      qrUuid: qrId,
+      downloadPngUrl: pngUrl,
+      downloadPdfUrl: pdfUrl,
+      photos: photoList,
     );
   }
 
   String get eventTypeName {
-    switch (eventType) {
+    switch (eventType.toLowerCase()) {
       case 'wedding': return 'Wedding';
       case 'birthday': return 'Birthday';
       case 'engagement': return 'Engagement';
@@ -88,7 +126,7 @@ class EventModel {
   }
 
   String get eventTypeIcon {
-    switch (eventType) {
+    switch (eventType.toLowerCase()) {
       case 'wedding': return '💍';
       case 'birthday': return '🎂';
       case 'engagement': return '💑';
@@ -97,6 +135,42 @@ class EventModel {
       case 'graduation': return '🎓';
       default: return '🎉';
     }
+  }
+
+  String get statusText {
+    try {
+      final now = DateTime.now();
+      final todayStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      if (eventDate == todayStr) return 'Live Today';
+      final evDate = DateTime.parse(eventDate);
+      if (evDate.isAfter(now)) return 'Upcoming';
+      return 'Completed';
+    } catch (_) {
+      return isPublished ? 'Live' : 'Draft';
+    }
+  }
+
+  String get shareMessage {
+    final navUrl = googleMapsDirectionsUrl ?? googleMapsUrl ?? 'https://maps.google.com/?q=${Uri.encodeComponent("$venueName $venueAddress")}';
+    final invUrl = targetUrl ?? 'https://qroutex.com/events/e/$slug/';
+
+    return '''
+$eventTypeIcon *You're Cordially Invited!* $eventTypeIcon
+*$title*
+Hosted with love by: $hostNames
+
+📅 *Date:* $eventDate ${eventTime != null ? "at $eventTime" : ""}
+📍 *Venue:* $venueName
+$venueAddress
+
+🗺️ *Turn-by-Turn GPS Navigation:*
+$navUrl
+
+💌 *Digital Invitation & QR Pass:*
+$invUrl
+
+_Powered by QRouteX (qroutex.com)_
+'''.trim();
   }
 
   Map<String, dynamic> toJson() {
@@ -119,10 +193,18 @@ class EventModel {
       'dress_code': dressCode,
       'cover_image_url': coverImageUrl,
       'is_published': isPublished,
-      if (qrImageUrl != null || targetUrl != null)
+      'capacity': capacity,
+      'guest_count': guestCount,
+      'organizer_name': organizerName,
+      'organizer_contact': organizerContact,
+      'photos': photos,
+      if (qrImageUrl != null || targetUrl != null || qrUuid != null)
         'qr_code': {
-          'qr_image_url': qrImageUrl,
+          'uuid': qrUuid,
+          'image_url': qrImageUrl,
           'target_url': targetUrl,
+          'download_png_url': downloadPngUrl,
+          'download_pdf_url': downloadPdfUrl,
         },
     };
   }

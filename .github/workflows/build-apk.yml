@@ -37,43 +37,53 @@ jobs:
 
       - name: Rename APK for release
         run: |
-          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.3.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.4.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QRouteX-v1.0.3-apk
+          name: QRouteX-v1.0.4-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.3
+      - name: Publish GitHub Release v1.0.4
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.3
-          name: "QRouteX v1.0.3 - PhonePe Model UI/UX & Universal QR Scanner"
+          tag_name: v1.0.4
+          name: "QRouteX v1.0.4 - Premium Event Section, 4 Card Themes & Portfolio Gallery"
           body: |
-            ## QRouteX Mobile App (v1.0.3) • PhonePe Model • qroutex.com
+            ## QRouteX Mobile App (v1.0.4) • Passvanta Edition • qroutex.com
             
-            ### 🟣 What's New in v1.0.3:
-            - **PhonePe Model UI/UX Redesign**:
-              - Signature PhonePe Royal Purple header with User Profile avatar & GPS location detector.
-              - **4 Quick Action Buttons**: 📷 Scan Any QR, 💍 Create Event, 🗺️ GPS Route, 💌 My Invites.
-              - **PhonePe 6-Occasion Category Grid**: 💍 Wedding, 🎂 Birthday, 💑 Engagement, ❤️ Anniversary, 🏠 Housewarming, 🎓 Graduation.
-              - **PhonePe Bottom Navigation Bar**: Home, Events, Raised Floating Center QR Scanner, Vendors, Account.
-            - **Universal QR Code Scanner**:
-              - Instantly scans **ANY QR Code** (no longer blocked by preselected event).
-              - Turn-by-Turn Google Maps GPS launch directly from scanned QR codes or geo links.
-              - Handles guest check-in verification seamlessly online and offline.
-            - **No More Login Block**:
-              - Launches straight into the PhonePe dashboard.
-              - Fully offline-first: create events, generate QR codes, and navigate GPS without waiting for server sync.
+            ### ✨ What's New in v1.0.4:
+            - **Event Section UI/UX Redesign**:
+              - Beautiful responsive event cards displaying banner cover, date, venue, live status, and guest capacity count.
+              - 1-tap **View Card**, **Edit**, **WhatsApp Share**, and **Manage** options.
+              - Category filter bar for all 6 occasions (💍 Wedding, 🎂 Birthday, 💑 Engagement, ❤️ Anniversary, 🏠 Housewarming, 🎓 Graduation).
+            - **Create New Event Form**:
+              - Clean step-by-step layout: 1. Basic Details & Occasion, 2. Venue & Google Maps GPS, 3. Capacity & Live Preview.
+              - Live interactive invitation card preview that updates dynamically as you type.
+              - Camera/Gallery photo upload & curated occasion presets.
+            - **Event Portfolio Section**:
+              - Dedicated organizer showcase gallery for past events and live celebration moments.
+              - Staggered photo grid, category filters (Ceremony, Reception, Decor, Food, Candid), lightbox viewer, add/edit/delete options.
+            - **Digital Invitation Card View (4 Premium Themes)**:
+              - 👑 **Royal Purple & Gold** (Passvanta Luxury Velvet & Gold foil)
+              - 🌌 **Midnight Obsidian** (Deep dark cyan glassmorphism)
+              - 🌸 **Rose Bloom** (Romantic rose gold floral)
+              - 🌿 **Emerald Prestige** (Forest emerald & champagne gold)
+              - Unique QR code and guest pass display on each invitation.
+            - **QR Code & Download Options**:
+              - Download QR (PNG)
+              - Download Printable Vector A4 PDF Card
+              - Direct WhatsApp Share with pre-formatted invitation text & Google Maps driving link
+              - Direct Print option
             
             ### 📱 Android Installation Instructions:
-            1. Download `QRouteX-v1.0.3.apk` directly to your Android device.
+            1. Download `QRouteX-v1.0.4.apk` directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
-            3. Open the app to experience the PhonePe-model dashboard immediately!
+            3. Open the app to experience the brand-new Event Section and Invitation Card View!
           files: |
-            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.3.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.4.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk

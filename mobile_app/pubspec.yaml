@@ -1,7 +1,7 @@
 name: qroutex
 description: "QRouteX - Smart Event QR & Turn-by-Turn GPS Navigation App (qroutex.com)"
 publish_to: 'none'
-version: 1.0.3+3
+version: 1.0.4+4
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
