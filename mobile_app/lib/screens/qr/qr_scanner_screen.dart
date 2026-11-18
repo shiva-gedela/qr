@@ -22,6 +22,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   String? _summaryError;
   bool _isProcessing = false;
   bool _isSyncing = false;
+  bool _isTorchOn = false;
   Timer? _summaryTimer;
   int _pendingCount = 0;
 
@@ -319,14 +320,12 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: ValueListenableBuilder(
-              valueListenable: _controller.torchState,
-              builder: (context, state, child) {
-                return Icon(state == TorchState.on ? Icons.flash_on : Icons.flash_off);
-              },
-            ),
+            icon: Icon(_isTorchOn ? Icons.flash_on : Icons.flash_off),
             tooltip: 'Toggle Flash',
-            onPressed: () => _controller.toggleTorch(),
+            onPressed: () {
+              _controller.toggleTorch();
+              setState(() => _isTorchOn = !_isTorchOn);
+            },
           ),
           IconButton(
             icon: const Icon(Icons.flip_camera_android),

@@ -62,7 +62,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
     try {
       final dateStr = "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
       final timeStr = "${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}:00";
-      await ApiService.createEvent({
+      final created = await ApiService.createEvent({
         'title': _titleController.text.trim(),
         'host_names': _hostNamesController.text.trim(),
         'description': _descriptionController.text.trim(),
