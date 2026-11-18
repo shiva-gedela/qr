@@ -37,42 +37,48 @@ jobs:
 
       - name: Rename APK for release
         run: |
-          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.7.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.8.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QRouteX-v1.0.7-apk
+          name: QRouteX-v1.0.8-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.7
+      - name: Publish GitHub Release v1.0.8
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.7
-          name: "QRouteX v1.0.7 - Official Branded Logo Edition, Vendor Add & Direct Ride Booking"
+          tag_name: v1.0.8
+          name: "QRouteX v1.0.8 - OLX Option Details UI/UX Architecture & Universal Mobile Fit"
           body: |
-            ## QRouteX Mobile App (v1.0.7) • Official Branded Logo Edition • qroutex.com
+            ## QRouteX Mobile App (v1.0.8) • OLX Option Details Edition • qroutex.com
             
-            ### ✨ What's New in v1.0.7:
-            - **Official User-Provided Logo Integration**:
-              - Converted and processed the official Qroutex logo (Cyan, Blue, Purple & Flame-Orange dynamic 'Q' with integrated QR Code viewfinder reticle).
-              - Updated all Android launcher mipmap densities (`mipmap-mdpi`, `mipmap-hdpi`, `mipmap-xhdpi`, `mipmap-xxhdpi`, `mipmap-xxxhdpi`) with square squircle and circular icons (`ic_launcher.png` and `ic_launcher_round.png`).
-              - Replaced all in-app logo assets, app header emblem, sign-in badge, and web navbar branding with the official logo.
-            - **Vendor Add Option (Event Services Registration)**:
-              - Full Vendor Add wizard allowing catering, photography, decor, DJ, venue, and makeup vendors to register their profiles.
-              - Live preview, service packages, direct Call & WhatsApp buttons.
-              - Category filter chips (All, Catering, Photography, Decor, DJ, Venues, Makeup, Planners, Cakes).
-            - **Direct Ride Booking (Uber • Rapido • Ola • Green SM)**:
-              - Comprehensive Android `<queries>` intent declarations for all providers.
-              - Multi-tier direct app opening with fallback to mobile web booking and Play Store.
+            ### ✨ What's New in v1.0.8:
+            - **OLX-Style Option Details & Specifications Grid**:
+              - Completely redesigned **Event Details** and **Vendor Details** (`EventDetailScreen` & `BusinessDetailScreen`) matching OLX's iconic structured attribute grid.
+              - Parameter chips with custom colored icons, uppercase attribute labels, and bold values (Occasion, Date, Time, Guest Limit, Confirmed Guests, Dress Code, Distance, Cab Booking, Entry Gate, Security, Category, Response Time, etc.).
+              - Expandable description with "Read More / Read Less" toggle.
+              - Prominent pricing & status highlight (`₹ Free Guest Pass • Slots` / `Starting from ₹... / plate`).
+            - **OLX Signature Fixed Bottom Sticky Action Bar**:
+              - Pinned at the bottom with SafeArea padding.
+              - Instant **WhatsApp Chat**, direct **Call / Cab Ride Booking**, and primary **View QR Card / Business Card** buttons.
+            - **OLX 2-Column Responsive Marketplace Feeds**:
+              - Added OLX Grid / List view toggle in both **Events** (`EventListScreen`) and **Vendors** (`BusinessListScreen`).
+              - 2-Column Marketplace Cards displaying cover thumbnails, verified badges, bold price/slots tag, 2-line title, and location footer.
+            - **OLX Top Location Selector & Global Search**:
+              - Location picker in Home header (`📍 Bengaluru, KA ▼`) with instant city switcher modal.
+              - Clean search bar with QR scanning integration.
+            - **Universal Mobile Device Fit (Any Mobile Screen)**:
+              - Dynamically adapts to any Android or iOS screen width (from compact 320px devices up to large 480px+ phablets and foldables).
+              - Zero text truncation or yellow-black `RenderFlex overflow` bars.
             
             ### 📱 Android Installation Instructions:
-            1. Download `QRouteX-v1.0.7.apk` directly to your Android device.
+            1. Download `QRouteX-v1.0.8.apk` directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
-            3. Open the app to experience the brand-new official logo and all features!
+            3. Open the app to experience the brand-new OLX Option Details UI/UX!
           files: |
-            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.7.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.8.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk
