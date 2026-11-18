@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 import '../../models/event_model.dart';
 import '../../services/api_service.dart';
@@ -18,11 +20,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   EventModel? _selectedEvent;
   Map<String, dynamic> _summary = {};
   String? _summaryError;
-  String? _loadError;
-  bool _isLoadingEvents = true;
   bool _isProcessing = false;
   bool _isSyncing = false;
-  bool _isRefreshingSummary = false;
   Timer? _summaryTimer;
   int _pendingCount = 0;
 
@@ -35,54 +34,39 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   }
 
   Future<void> _loadEvents() async {
-    setState(() {
-      _isLoadingEvents = true;
-      _loadError = null;
-    });
     try {
       final events = await ApiService.getCheckInEvents();
       if (!mounted) return;
       setState(() {
         _events = events;
-        _selectedEvent = events.isNotEmpty ? events.first : null;
-        _isLoadingEvents = false;
+        if (events.isNotEmpty && _selectedEvent == null) {
+          _selectedEvent = events.first;
+        }
       });
       if (_selectedEvent != null) await _refreshSummary();
-    } catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _loadError = error.toString();
-        _isLoadingEvents = false;
-      });
+    } catch (_) {
+      // Camera continues running smoothly
     }
   }
 
   Future<void> _loadPendingCount() async {
     final count = await ApiService.pendingCheckInCount();
-    if (mounted) setState(() => _pendingCount = count);
+    if (!mounted) return;
+    setState(() => _pendingCount = count);
   }
 
   Future<void> _refreshSummary() async {
-    final event = _selectedEvent;
-    if (event == null || _isRefreshingSummary) return;
-    _isRefreshingSummary = true;
+    if (_selectedEvent == null) return;
     try {
-      final summary = await ApiService.getCheckInSummary(event.id);
-      if (mounted) {
-        setState(() {
-          _summary = summary;
-          _summaryError = null;
-        });
-      }
+      final summary = await ApiService.getCheckInSummary(_selectedEvent!.id);
+      if (!mounted) return;
+      setState(() {
+        _summary = summary;
+        _summaryError = null;
+      });
     } catch (error) {
-      if (mounted) {
-        setState(() {
-          _summary = {};
-          _summaryError = error.toString();
-        });
-      }
-    } finally {
-      _isRefreshingSummary = false;
+      if (!mounted) return;
+      setState(() => _summaryError = error.toString());
     }
   }
 
@@ -115,18 +99,26 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     return null;
   }
 
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   Future<void> _onDetect(BarcodeCapture capture) async {
-    if (_isProcessing || _selectedEvent == null || capture.barcodes.isEmpty) return;
+    if (_isProcessing || capture.barcodes.isEmpty) return;
     final code = capture.barcodes.first.rawValue;
-    if (code == null || code.isEmpty) return;
+    if (code == null || code.trim().isEmpty) return;
 
     setState(() => _isProcessing = true);
     await _controller.stop();
+
     final token = _extractToken(code);
-    Map<String, dynamic> result;
-    if (token == null) {
-      result = {'result': 'rejected', 'reason': 'invalid_qr'};
-    } else {
+
+    // If an event is selected and it looks like a check-in token, process check-in
+    if (_selectedEvent != null && token != null) {
+      Map<String, dynamic> result;
       try {
         result = await ApiService.verifyInvitation(_selectedEvent!.id, token);
       } on ApiConnectionException {
@@ -136,75 +128,177 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       } catch (error) {
         result = {'result': 'error', 'reason': error.toString()};
       }
-    }
 
-    if (!mounted) return;
-    final status = result['result'] as String? ?? 'error';
-    final Color color;
-    if (status == 'approved') {
-      color = AppConstants.successColor;
-    } else if (status == 'already_checked_in' || status == 'pending') {
-      color = AppConstants.accentColor;
-    } else {
-      color = AppConstants.dangerColor;
-    }
-    final title = switch (status) {
-      'approved' => 'Entry approved',
-      'already_checked_in' => 'Already checked in',
-      'pending' => 'Saved for sync — not approved',
-      'rejected' => 'Entry rejected',
-      _ => 'Could not verify entry',
-    };
+      if (!mounted) return;
+      final status = result['result'] as String? ?? 'error';
+      final Color color = status == 'approved'
+          ? AppConstants.successColor
+          : (status == 'already_checked_in' || status == 'pending')
+              ? AppConstants.accentColor
+              : AppConstants.dangerColor;
 
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        final guest = result['guest'] as Map<String, dynamic>?;
-        final checkedInAt = result['checked_in_at']?.toString();
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                status == 'approved'
-                    ? Icons.check_circle
-                    : status == 'already_checked_in'
-                        ? Icons.info
-                        : Icons.cancel,
-                color: color,
-              ),
-              const SizedBox(width: 8),
-              Expanded(child: Text(title)),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (guest != null) ...[
-                Text('Guest: ${guest['name'] ?? ''}'),
-                Text('Admits: ${guest['guest_count'] ?? 1}'),
-                Text('Type: ${guest['invitation_type'] ?? 'general'}'),
+      final title = switch (status) {
+        'approved' => 'Entry Approved',
+        'already_checked_in' => 'Already Checked In',
+        'pending' => 'Saved for Sync (Offline)',
+        'rejected' => 'Entry Rejected',
+        _ => 'Could Not Verify Entry',
+      };
+
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) {
+          final guest = result['guest'] as Map<String, dynamic>?;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Icon(
+                  status == 'approved' ? Icons.check_circle : Icons.info,
+                  color: color,
+                  size: 28,
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold))),
               ],
-              if (checkedInAt != null) Text('Check-in time: $checkedInAt'),
-              if (result['reason'] != null)
-                Text('Reason: ${result['reason']}', style: const TextStyle(color: AppConstants.textMuted)),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (guest != null) ...[
+                  Text('Guest: ${guest['name'] ?? 'N/A'}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  const SizedBox(height: 4),
+                  Text('Passes: ${guest['guest_count'] ?? 1} • Type: ${(guest['invitation_type'] ?? 'Standard').toString().toUpperCase()}'),
+                ],
+                const SizedBox(height: 8),
+                Text('Scanned: $code', style: const TextStyle(fontSize: 12, color: AppConstants.textMuted)),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() => _isProcessing = false);
+                  _controller.start();
+                },
+                child: const Text('Scan Next', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
+    // Generic QR Scan / URL / GPS Route Sheet (PhonePe Style)
+    if (!mounted) return;
+    final isUrl = code.startsWith('http://') || code.startsWith('https://');
+    final isGps = code.contains('maps.google.com') || code.contains('goo.gl/maps') || code.startsWith('geo:');
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isDismissible: false,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: const BoxDecoration(
+                      color: AppConstants.purpleSurface,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.qr_code_scanner, color: AppConstants.primaryColor),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isGps ? '📍 GPS Route Location' : (isUrl ? '🌐 Event Link Scanned' : '📄 Scanned QR Code'),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        const Text('QRouteX Universal Scanner', style: TextStyle(fontSize: 12, color: AppConstants.textMuted)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppConstants.backgroundColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Text(
+                  code,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (isGps || isUrl)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppConstants.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: Icon(isGps ? Icons.directions : Icons.open_in_browser),
+                  label: Text(
+                    isGps ? 'Start GPS Navigation (Google Maps)' : 'Open Event Invitation',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  onPressed: () {
+                    _openUrl(code);
+                    Navigator.pop(context);
+                  },
+                ),
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                icon: const Icon(Icons.copy),
+                label: const Text('Copy to Clipboard'),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: code));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Copied to clipboard!')),
+                  );
+                  Navigator.pop(context);
+                },
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Scan Another QR', style: TextStyle(color: AppConstants.textMuted)),
+              ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Continue scanning'),
-            ),
-          ],
         );
       },
     );
 
     if (mounted) {
       setState(() => _isProcessing = false);
-      await _refreshSummary();
-      await _controller.start();
+      _controller.start();
     }
   }
 
@@ -218,111 +312,123 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Guest entry scanner'),
+        title: const Text('Scan Any QR Code', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: AppConstants.primaryDark,
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.flash_on),
-            tooltip: 'Toggle flashlight',
+            icon: ValueListenableBuilder(
+              valueListenable: _controller.torchState,
+              builder: (context, state, child) {
+                return Icon(state == TorchState.on ? Icons.flash_on : Icons.flash_off);
+              },
+            ),
+            tooltip: 'Toggle Flash',
             onPressed: () => _controller.toggleTorch(),
           ),
           IconButton(
             icon: const Icon(Icons.flip_camera_android),
-            tooltip: 'Switch camera',
+            tooltip: 'Switch Camera',
             onPressed: () => _controller.switchCamera(),
           ),
         ],
       ),
-      body: _isLoadingEvents
-          ? const Center(child: CircularProgressIndicator())
-          : _loadError != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_loadError!, textAlign: TextAlign.center),
-                        const SizedBox(height: 12),
-                        ElevatedButton(onPressed: _loadEvents, child: const Text('Retry')),
-                      ],
-                    ),
+      body: Stack(
+        children: [
+          // Full Screen Camera Feed
+          MobileScanner(
+            controller: _controller,
+            onDetect: _onDetect,
+          ),
+
+          // PhonePe-Style Glowing Reticle Overlay
+          Center(
+            child: Container(
+              width: 270,
+              height: 270,
+              decoration: BoxDecoration(
+                border: Border.all(color: AppConstants.accentColor, width: 3),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppConstants.primaryColor.withOpacity(0.35),
+                    blurRadius: 20,
+                    spreadRadius: 2,
                   ),
-                )
-              : _events.isEmpty
-                  ? const Center(child: Text('No events are assigned to this account.'))
-                  : Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                          child: Column(
-                            children: [
-                              DropdownButtonFormField<EventModel>(
-                                value: _selectedEvent,
-                                decoration: const InputDecoration(labelText: 'Select event'),
-                                items: _events.map((event) {
-                                  return DropdownMenuItem(value: event, child: Text(event.title, overflow: TextOverflow.ellipsis));
-                                }).toList(),
-                                onChanged: (event) async {
-                                  setState(() => _selectedEvent = event);
-                                  await _refreshSummary();
-                                },
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      _summaryError == null
-                                          ? 'Checked in: ${_summary['checked_in_guests'] ?? 0}'
-                                          : 'Live count unavailable',
-                                      style: const TextStyle(fontWeight: FontWeight.w600),
-                                    ),
-                                  ),
-                                  if (_pendingCount > 0)
-                                    TextButton.icon(
-                                      onPressed: _isSyncing ? null : _syncPending,
-                                      icon: _isSyncing
-                                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                                          : const Icon(Icons.sync),
-                                      label: Text('Sync $_pendingCount pending'),
-                                    ),
-                                ],
-                              ),
-                            ],
-                          ),
+                ],
+              ),
+            ),
+          ),
+
+          // Top Event Selector Bar (If host wants check-in mode)
+          if (_events.isNotEmpty)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.75),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.how_to_reg, color: AppConstants.accentColor, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<EventModel>(
+                          value: _selectedEvent,
+                          dropdownColor: const Color(0xFF1E1B4B),
+                          style: const TextStyle(color: Colors.white, fontSize: 13),
+                          isExpanded: true,
+                          items: _events.map((e) {
+                            return DropdownMenuItem(
+                              value: e,
+                              child: Text('${e.eventTypeIcon} ${e.title}', overflow: TextOverflow.ellipsis),
+                            );
+                          }).toList(),
+                          onChanged: (e) {
+                            setState(() => _selectedEvent = e);
+                            _refreshSummary();
+                          },
                         ),
-                        Expanded(
-                          child: Stack(
-                            children: [
-                              MobileScanner(controller: _controller, onDetect: _onDetect),
-                              Center(
-                                child: Container(
-                                  width: 250,
-                                  height: 250,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: AppConstants.primaryColor, width: 3),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                              ),
-                              const Positioned(
-                                bottom: 24,
-                                left: 20,
-                                right: 20,
-                                child: Center(
-                                  child: Text(
-                                    'Scan a guest invitation QR. Offline scans stay pending until the server verifies them.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
+                    if (_pendingCount > 0)
+                      TextButton(
+                        onPressed: _isSyncing ? null : _syncPending,
+                        child: Text('Sync ($_pendingCount)', style: const TextStyle(color: AppConstants.accentColor, fontSize: 12)),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Bottom Helper Instructions
+          Positioned(
+            bottom: 30,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'Point camera at any Event QR, Google Maps GPS code, or Guest Pass',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

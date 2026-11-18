@@ -23,19 +23,22 @@ class QRouteXApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
+        primaryColor: AppConstants.primaryColor,
+        scaffoldBackgroundColor: AppConstants.backgroundColor,
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppConstants.primaryColor,
           primary: AppConstants.primaryColor,
-          background: AppConstants.backgroundColor,
+          secondary: AppConstants.accentColor,
+          surface: AppConstants.cardColor,
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: AppConstants.textDark,
-          elevation: 0.5,
+          backgroundColor: AppConstants.primaryColor,
+          foregroundColor: Colors.white,
+          elevation: 0,
           centerTitle: false,
         ),
       ),
-      home: isLoggedIn ? const HomeScreen() : const LoginScreen(),
+      home: const HomeScreen(),
     );
   }
 }

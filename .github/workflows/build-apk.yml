@@ -37,42 +37,43 @@ jobs:
 
       - name: Rename APK for release
         run: |
-          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.2.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.3.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QRouteX-v1.0.2-apk
+          name: QRouteX-v1.0.3-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.2
+      - name: Publish GitHub Release v1.0.3
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.2
-          name: "QRouteX v1.0.2 - Smart Event QR & GPS Route Navigation"
+          tag_name: v1.0.3
+          name: "QRouteX v1.0.3 - PhonePe Model UI/UX & Universal QR Scanner"
           body: |
-            ## QRouteX Mobile App (v1.0.2) • qroutex.com
+            ## QRouteX Mobile App (v1.0.3) • PhonePe Model • qroutex.com
             
-            ### ✨ What's New in v1.0.2:
-            - **Complete QRouteX Brand Upgrade**: Sleek new identity, modern iconography, and high-performance routing.
-            - **All 6 Event Occasions Supported**:
-              - 💍 Wedding
-              - 🎂 Birthday
-              - 💑 Engagement
-              - ❤️ Anniversary
-              - 🏠 Housewarming
-              - 🎓 Graduation
-            - **Turn-by-Turn GPS Navigation**: 1-tap route launch to Google Maps directly from any QR code or event card.
-            - **Instant Offline Demo Mode**: Test all 6 occasions, invitations, and scanner without requiring backend connection.
-            - **Dynamic Backend Server Switcher**: Easily connect to `https://qroutex.com`, your Render server, or local IP via the ⚙️ Settings dialog on the sign-in screen.
+            ### 🟣 What's New in v1.0.3:
+            - **PhonePe Model UI/UX Redesign**:
+              - Signature PhonePe Royal Purple header with User Profile avatar & GPS location detector.
+              - **4 Quick Action Buttons**: 📷 Scan Any QR, 💍 Create Event, 🗺️ GPS Route, 💌 My Invites.
+              - **PhonePe 6-Occasion Category Grid**: 💍 Wedding, 🎂 Birthday, 💑 Engagement, ❤️ Anniversary, 🏠 Housewarming, 🎓 Graduation.
+              - **PhonePe Bottom Navigation Bar**: Home, Events, Raised Floating Center QR Scanner, Vendors, Account.
+            - **Universal QR Code Scanner**:
+              - Instantly scans **ANY QR Code** (no longer blocked by preselected event).
+              - Turn-by-Turn Google Maps GPS launch directly from scanned QR codes or geo links.
+              - Handles guest check-in verification seamlessly online and offline.
+            - **No More Login Block**:
+              - Launches straight into the PhonePe dashboard.
+              - Fully offline-first: create events, generate QR codes, and navigate GPS without waiting for server sync.
             
             ### 📱 Android Installation Instructions:
-            1. Download `QRouteX-v1.0.2.apk` directly to your Android device.
+            1. Download `QRouteX-v1.0.3.apk` directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
-            3. Open the app and tap **"Explore in Offline Demo Mode"** to explore right away!
+            3. Open the app to experience the PhonePe-model dashboard immediately!
           files: |
-            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.2.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.3.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk

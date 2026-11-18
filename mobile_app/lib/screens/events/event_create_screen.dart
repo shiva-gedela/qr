@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../constants.dart';
 import '../../services/api_service.dart';
+import 'event_detail_screen.dart';
 
 class EventCreateScreen extends StatefulWidget {
-  const EventCreateScreen({Key? key}) : super(key: key);
+  final String? initialEventType;
+  const EventCreateScreen({Key? key, this.initialEventType}) : super(key: key);
 
   @override
   State<EventCreateScreen> createState() => _EventCreateScreenState();
@@ -28,8 +30,14 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
   TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
   DateTime? _registrationStart;
   DateTime? _registrationEnd;
-  String _eventType = 'wedding';
+  late String _eventType;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventType = widget.initialEventType ?? 'wedding';
+  }
 
   final List<Map<String, String>> _eventTypes = [
     {'code': 'wedding', 'label': '💍 Wedding'},
@@ -78,9 +86,12 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Event created successfully!'), backgroundColor: AppConstants.successColor),
+          const SnackBar(content: Text('🎉 Event & QR Code created successfully!'), backgroundColor: AppConstants.successColor),
         );
-        Navigator.pop(context, true);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => EventDetailScreen(event: created)),
+        );
       }
     } catch (e) {
       if (mounted) {

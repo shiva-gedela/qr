@@ -40,14 +40,16 @@ class AppConstants {
   static String get businessUrl => '$apiBaseUrl/business/';
   static String get subscriptionsUrl => '$apiBaseUrl/subscriptions/';
 
-  // Branding Colors
-  static const Color primaryColor = Color(0xFF4F46E5);
-  static const Color primaryDark = Color(0xFF3730A3);
-  static const Color accentColor = Color(0xFFF59E0B);
-  static const Color backgroundColor = Color(0xFFF8FAFC);
+  // Branding Colors - Signature PhonePe Royal Purple Theme
+  static const Color primaryColor = Color(0xFF5F259F); // PhonePe Royal Purple
+  static const Color primaryDark = Color(0xFF4A148C);  // PhonePe Deep Violet
+  static const Color primaryLight = Color(0xFF7C4DFF); // PhonePe Vibrant Violet
+  static const Color accentColor = Color(0xFFFFB703);  // PhonePe Reward Gold
+  static const Color purpleSurface = Color(0xFFF3E8FF);// PhonePe Soft Violet Tint
+  static const Color backgroundColor = Color(0xFFF4F4F8); // Clean PhonePe Background
   static const Color cardColor = Colors.white;
-  static const Color textDark = Color(0xFF1E293B);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color successColor = Color(0xFF10B981);
-  static const Color dangerColor = Color(0xFFEF4444);
+  static const Color textDark = Color(0xFF1F1F24);
+  static const Color textMuted = Color(0xFF6B7280);
+  static const Color successColor = Color(0xFF00BFA5); // PhonePe Verified Teal / Green
+  static const Color dangerColor = Color(0xFFE53935);
 }

@@ -74,4 +74,56 @@ class EventModel {
       targetUrl: target,
     );
   }
+
+  String get eventTypeName {
+    switch (eventType) {
+      case 'wedding': return 'Wedding';
+      case 'birthday': return 'Birthday';
+      case 'engagement': return 'Engagement';
+      case 'anniversary': return 'Anniversary';
+      case 'housewarming': return 'Housewarming';
+      case 'graduation': return 'Graduation';
+      default: return 'Celebration';
+    }
+  }
+
+  String get eventTypeIcon {
+    switch (eventType) {
+      case 'wedding': return '💍';
+      case 'birthday': return '🎂';
+      case 'engagement': return '💑';
+      case 'anniversary': return '❤️';
+      case 'housewarming': return '🏠';
+      case 'graduation': return '🎓';
+      default: return '🎉';
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'slug': slug,
+      'event_type': eventType,
+      'host_names': hostNames,
+      'description': description,
+      'event_date': eventDate,
+      'event_time': eventTime,
+      'venue_name': venueName,
+      'venue_address': venueAddress,
+      'maps_url': googleMapsUrl,
+      'google_maps_directions_url': googleMapsDirectionsUrl,
+      'instagram_url': instagramUrl,
+      'youtube_url': youtubeUrl,
+      'event_hashtag': eventHashtag,
+      'dress_code': dressCode,
+      'cover_image_url': coverImageUrl,
+      'is_published': isPublished,
+      if (qrImageUrl != null || targetUrl != null)
+        'qr_code': {
+          'qr_image_url': qrImageUrl,
+          'target_url': targetUrl,
+        },
+    };
+  }
 }

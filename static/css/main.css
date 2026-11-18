@@ -6,28 +6,29 @@
 
 /* ══ Brand Tokens & Variables ══════════════════════════════════════════════ */
 :root {
-    --qrx-primary: #4f46e5;
-    --qrx-primary-glow: #6366f1;
-    --qrx-primary-deep: #312e81;
-    --qrx-route-cyan: #06b6d4;
-    --qrx-route-blue: #2563eb;
-    --qrx-gps-red: #ef4444;
-    --qrx-amber-gold: #f59e0b;
+    --qrx-primary: #5f259f; /* PhonePe Royal Purple */
+    --qrx-primary-glow: #7c4dff;
+    --qrx-primary-deep: #4a148c; /* PhonePe Deep Violet */
+    --qrx-route-cyan: #00bfa5;   /* PhonePe Teal / UPI Green */
+    --qrx-route-blue: #673ab7;
+    --qrx-gps-red: #e53935;
+    --qrx-amber-gold: #ffb703;  /* PhonePe Reward Gold */
     --qrx-rose: #f43f5e;
-    --qrx-emerald: #10b981;
-    --qrx-obsidian: #090d16;
-    --qrx-dark-slate: #0f172a;
+    --qrx-emerald: #00bfa5;
+    --qrx-obsidian: #120326;
+    --qrx-dark-slate: #1f0b38;
     --qrx-surface: #ffffff;
-    --qrx-bg-light: #f8fafc;
-    --qrx-text-main: #0f172a;
-    --qrx-text-muted: #64748b;
+    --qrx-bg-light: #f4f4f8;   /* PhonePe Clean Light Gray */
+    --qrx-text-main: #1f1f24;
+    --qrx-text-muted: #6b7280;
+    --qrx-purple-surface: #f3e8ff;
     
-    /* Luxury Gradients */
-    --qrx-gradient-hero: radial-gradient(circle at 15% 20%, #312e81 0%, #1e1b4b 45%, #090d16 100%);
-    --qrx-gradient-accent: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%);
-    --qrx-gradient-route: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
-    --qrx-gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
-    --qrx-gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+    /* PhonePe Luxury Gradients */
+    --qrx-gradient-hero: radial-gradient(circle at 15% 20%, #5f259f 0%, #3b0764 55%, #15002b 100%);
+    --qrx-gradient-accent: linear-gradient(135deg, #ffb703 0%, #f43f5e 50%, #7c4dff 100%);
+    --qrx-gradient-route: linear-gradient(135deg, #5f259f 0%, #00bfa5 100%);
+    --qrx-gradient-card: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+    --qrx-gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%);
     
     /* Shadows & Glows */
     --qrx-shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
