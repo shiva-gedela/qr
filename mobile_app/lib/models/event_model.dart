@@ -113,6 +113,8 @@ class EventModel {
     );
   }
 
+  bool get isActive => isPublished;
+
   String get eventTypeName {
     switch (eventType.toLowerCase()) {
       case 'wedding': return 'Wedding';

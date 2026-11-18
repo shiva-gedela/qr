@@ -199,8 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(backgroundColor: AppConstants.primaryColor),
-                  onPressed: () {
-                    AppConstants.baseUrl = urlController.text.trim();
+                  onPressed: () async {
+                    await AppConstants.setBaseUrl(urlController.text.trim());
+                    if (!mounted) return;
                     Navigator.pop(context);
                     _loadDashboardData();
                     ScaffoldMessenger.of(context).showSnackBar(

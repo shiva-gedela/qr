@@ -17,6 +17,17 @@ class ApiConnectionException implements Exception {
 }
 
 class ApiService {
+  static Future<bool> testConnection(String url) async {
+    try {
+      String clean = url.trim();
+      if (clean.endsWith('/')) clean = clean.substring(0, clean.length - 1);
+      final response = await http.get(Uri.parse('$clean/api/events/')).timeout(const Duration(seconds: 4));
+      return response.statusCode == 200 || response.statusCode == 401;
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
