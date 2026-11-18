@@ -168,31 +168,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   // App Bar Row
                   Row(
                     children: [
-                      // App Logo (Official QRouteX Badge)
+                      // App Logo (Official Qroutex Badge)
                       GestureDetector(
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
                         },
                         child: Container(
-                          width: 44,
-                          height: 44,
+                          width: 46,
+                          height: 46,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
+                            color: Colors.white,
                             border: Border.all(color: AppConstants.accentColor, width: 2),
                             boxShadow: [
                               BoxShadow(
-                                color: AppConstants.accentColor.withOpacity(0.35),
+                                color: Colors.black.withOpacity(0.2),
                                 blurRadius: 8,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
+                          padding: const EdgeInsets.all(3),
                           child: ClipOval(
                             child: Image.asset(
-                              'assets/images/app_logo.png',
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                color: const Color(0xFF4A148C),
-                                child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 24),
+                              'assets/images/app_logo_symbol.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                'assets/images/app_logo.png',
+                                fit: BoxFit.contain,
                               ),
                             ),
                           ),

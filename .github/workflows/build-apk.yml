@@ -37,46 +37,42 @@ jobs:
 
       - name: Rename APK for release
         run: |
-          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.6.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.7.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QRouteX-v1.0.6-apk
+          name: QRouteX-v1.0.7-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.6
+      - name: Publish GitHub Release v1.0.7
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.6
-          name: "QRouteX v1.0.6 - Official App Logo, Vendor Add Registration & Direct Ride Booking"
+          tag_name: v1.0.7
+          name: "QRouteX v1.0.7 - Official Branded Logo Edition, Vendor Add & Direct Ride Booking"
           body: |
-            ## QRouteX Mobile App (v1.0.6) • Passvanta Edition • qroutex.com
+            ## QRouteX Mobile App (v1.0.7) • Official Branded Logo Edition • qroutex.com
             
-            ### ✨ What's New in v1.0.6:
-            - **Official App Logo & HD Launcher Icons**:
-              - Custom designed high-resolution QRouteX app logo (Royal Purple, Gold Compass, GPS Navigation Pin & QR dot matrix).
-              - Generated full set of Android mipmap launcher icons (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`, and adaptive round icon).
-              - Integrated official logo badge into the Home header and Sign In screens.
-            - **Vendor Add Option (Business Profile Registration)**:
-              - Added "+ Add Vendor" option in the Vendors & Services section and floating button.
-              - Dedicated 3-step Vendor Registration form: Category (Catering, Photography, Decoration, DJ & Sound, Venues, Makeup, Planners, Bakeries), Contact & Location, Pricing & Packages.
-              - Live vendor card preview that updates dynamically as you type.
-              - Category filter bar (All, 🍽️ Catering, 📸 Photography, 🎨 Decor, 🎵 DJ, 🏰 Venues, 💄 Makeup, 📋 Planners, 🎂 Cakes) and instant keyword search.
-              - 1-tap direct Call and WhatsApp chat buttons on all vendor cards.
-            - **Direct Ride Booking Fixes & Deep Linking**:
-              - Added comprehensive Android `<queries>` permissions for Uber (`com.ubercab`), Rapido (`com.rapido.passenger`), Ola (`com.olacabs.customer`), and Green SM (`com.blusmart`).
-              - Fixed URI encoding for destination coordinates and addresses across all providers.
-              - Multi-tier intelligent launch: Native App Intent ➔ Web Universal Link ➔ Google Play Store Market Fallback ➔ Interactive Ride Options Modal.
-              - Guaranteed 100% reliable booking whether the cab app is installed or not.
+            ### ✨ What's New in v1.0.7:
+            - **Official User-Provided Logo Integration**:
+              - Converted and processed the official Qroutex logo (Cyan, Blue, Purple & Flame-Orange dynamic 'Q' with integrated QR Code viewfinder reticle).
+              - Updated all Android launcher mipmap densities (`mipmap-mdpi`, `mipmap-hdpi`, `mipmap-xhdpi`, `mipmap-xxhdpi`, `mipmap-xxxhdpi`) with square squircle and circular icons (`ic_launcher.png` and `ic_launcher_round.png`).
+              - Replaced all in-app logo assets, app header emblem, sign-in badge, and web navbar branding with the official logo.
+            - **Vendor Add Option (Event Services Registration)**:
+              - Full Vendor Add wizard allowing catering, photography, decor, DJ, venue, and makeup vendors to register their profiles.
+              - Live preview, service packages, direct Call & WhatsApp buttons.
+              - Category filter chips (All, Catering, Photography, Decor, DJ, Venues, Makeup, Planners, Cakes).
+            - **Direct Ride Booking (Uber • Rapido • Ola • Green SM)**:
+              - Comprehensive Android `<queries>` intent declarations for all providers.
+              - Multi-tier direct app opening with fallback to mobile web booking and Play Store.
             
             ### 📱 Android Installation Instructions:
-            1. Download `QRouteX-v1.0.6.apk` directly to your Android device.
+            1. Download `QRouteX-v1.0.7.apk` directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
-            3. Open the app to experience the brand-new app logo, vendor registration, and direct ride booking!
+            3. Open the app to experience the brand-new official logo and all features!
           files: |
-            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.6.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.7.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk
