@@ -55,6 +55,11 @@ class Event(models.Model):
     venue_name = models.CharField(max_length=300, blank=True)
     venue_address = models.TextField(blank=True)
     maps_url = models.URLField(blank=True, help_text="Google Maps URL for the venue")
+    organizer_name = models.CharField(max_length=200, blank=True)
+    organizer_contact = models.CharField(max_length=30, blank=True)
+    capacity = models.PositiveIntegerField(null=True, blank=True)
+    registration_start = models.DateTimeField(null=True, blank=True)
+    registration_end = models.DateTimeField(null=True, blank=True)
 
     # Social Pages & Event Community
     instagram_url = models.URLField(blank=True, help_text="Instagram event profile or page URL")
@@ -189,6 +194,122 @@ class Event(models.Model):
                 'count': counts.get(code, 0),
             })
         return result
+
+
+class EventGuest(models.Model):
+    INVITATION_TYPES = [
+        ('vip', 'VIP'),
+        ('general', 'General'),
+        ('family', 'Family'),
+        ('staff', 'Staff'),
+    ]
+    STATUSES = [
+        ('invited', 'Invited'),
+        ('registered', 'Registered'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='guests')
+    name = models.CharField(max_length=200)
+    mobile = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(blank=True)
+    guest_count = models.PositiveSmallIntegerField(default=1)
+    invitation_type = models.CharField(max_length=10, choices=INVITATION_TYPES, default='general')
+    status = models.CharField(max_length=12, choices=STATUSES, default='invited')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name', 'pk']
+        indexes = [models.Index(fields=['event', 'status'])]
+        constraints = [
+            models.CheckConstraint(condition=models.Q(guest_count__gte=1), name='event_guest_count_positive'),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.event.title}"
+
+
+class Invitation(models.Model):
+    STATUSES = [
+        ('active', 'Active'),
+        ('cancelled', 'Cancelled'),
+        ('expired', 'Expired'),
+    ]
+
+    guest = models.OneToOneField(EventGuest, on_delete=models.CASCADE, related_name='invitation')
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    status = models.CharField(max_length=10, choices=STATUSES, default='active')
+    expires_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Invitation for {self.guest.name}"
+
+    @property
+    def is_expired(self):
+        from django.utils import timezone
+        return self.expires_at is not None and self.expires_at <= timezone.now()
+
+
+class EventStaff(models.Model):
+    ROLES = [
+        ('scanner', 'Scanner'),
+        ('manager', 'Manager'),
+    ]
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='staff_members')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='event_staff_assignments')
+    role = models.CharField(max_length=10, choices=ROLES, default='scanner')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['event', 'user'], name='unique_event_staff_member'),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.event.title} ({self.role})"
+
+
+class EventCheckIn(models.Model):
+    invitation = models.OneToOneField(Invitation, on_delete=models.PROTECT, related_name='check_in')
+    checked_in_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='event_check_ins'
+    )
+    checked_in_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-checked_in_at']
+
+    def __str__(self):
+        return f"{self.invitation.guest.name} - {self.checked_in_at}"
+
+
+class QRScanLog(models.Model):
+    RESULTS = [
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('already_checked_in', 'Already checked in'),
+    ]
+
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='scan_logs')
+    invitation = models.ForeignKey(
+        Invitation, on_delete=models.SET_NULL, null=True, blank=True, related_name='scan_logs'
+    )
+    scanned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='qr_scan_logs'
+    )
+    result = models.CharField(max_length=20, choices=RESULTS)
+    reason = models.CharField(max_length=100, blank=True)
+    scanned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-scanned_at']
+        indexes = [models.Index(fields=['event', 'scanned_at'])]
+
+    def __str__(self):
+        return f"{self.event.title}: {self.result} at {self.scanned_at}"
 
 
 def event_media_upload_path(instance, filename):

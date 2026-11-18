@@ -3,7 +3,8 @@ apps/events/serializers.py - DRF serializers for events.
 """
 
 from rest_framework import serializers
-from .models import Event, EventMedia
+from django.urls import reverse
+from .models import Event, EventGuest, EventMedia, EventStaff
 
 
 class EventMediaSerializer(serializers.ModelSerializer):
@@ -61,6 +62,7 @@ class EventSerializer(serializers.ModelSerializer):
             'title', 'host_names', 'description',
             'event_date', 'event_time', 'event_end_date', 'event_end_time',
             'venue_name', 'venue_address', 'maps_url', 'google_maps_directions_url',
+            'organizer_name', 'organizer_contact', 'capacity', 'registration_start', 'registration_end',
             'instagram_url', 'facebook_url', 'youtube_url', 'event_hashtag', 'dress_code',
             'cover_image_url', 'is_published', 'is_private',
             'allow_guest_uploads', 'require_media_approval', 'max_storage_mb',
@@ -137,6 +139,88 @@ class EventCreateSerializer(serializers.ModelSerializer):
             'event_type', 'title', 'host_names', 'description',
             'event_date', 'event_time', 'event_end_date', 'event_end_time',
             'venue_name', 'venue_address', 'maps_url',
+            'organizer_name', 'organizer_contact', 'capacity', 'registration_start', 'registration_end',
             'instagram_url', 'facebook_url', 'youtube_url', 'event_hashtag', 'dress_code',
             'is_published', 'is_private', 'private_password',
         ]
+
+    def validate(self, data):
+        registration_start = data.get('registration_start')
+        registration_end = data.get('registration_end')
+        if registration_start and registration_end and registration_end < registration_start:
+            raise serializers.ValidationError(
+                {'registration_end': 'Registration must end after it starts.'}
+            )
+        return data
+
+
+class EventGuestSerializer(serializers.ModelSerializer):
+    invitation_url = serializers.SerializerMethodField()
+    qr_image_url = serializers.SerializerMethodField()
+    qr_download_url = serializers.SerializerMethodField()
+    pdf_download_url = serializers.SerializerMethodField()
+    invitation_status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EventGuest
+        fields = [
+            'id', 'name', 'mobile', 'email', 'guest_count', 'invitation_type', 'status',
+            'invitation_status', 'invitation_url', 'qr_image_url', 'qr_download_url',
+            'pdf_download_url', 'created_at',
+        ]
+        read_only_fields = ['id', 'invitation_status', 'invitation_url', 'qr_image_url', 'qr_download_url', 'pdf_download_url', 'created_at']
+
+    def get_invitation_status(self, obj):
+        invitation = getattr(obj, 'invitation', None)
+        if not invitation:
+            return None
+        return 'expired' if invitation.is_expired and invitation.status == 'active' else invitation.status
+
+    def _get_invitation_url(self, obj):
+        invitation = getattr(obj, 'invitation', None)
+        if not invitation:
+            return ''
+        path = reverse('event_invitation', kwargs={'token': invitation.token})
+        request = self.context.get('request')
+        return request.build_absolute_uri(path) if request else path
+
+    def get_invitation_url(self, obj):
+        return self._get_invitation_url(obj)
+
+    def get_qr_image_url(self, obj):
+        qr = getattr(getattr(obj, 'invitation', None), 'qr_code', None)
+        request = self.context.get('request')
+        if not qr or not qr.qr_image:
+            return ''
+        return request.build_absolute_uri(qr.qr_image.url) if request else qr.qr_image.url
+
+    def get_qr_download_url(self, obj):
+        qr = getattr(getattr(obj, 'invitation', None), 'qr_code', None)
+        if not qr:
+            return ''
+        path = qr.get_download_png_url()
+        request = self.context.get('request')
+        return request.build_absolute_uri(path) if request else path
+
+    def get_pdf_download_url(self, obj):
+        qr = getattr(getattr(obj, 'invitation', None), 'qr_code', None)
+        if not qr:
+            return ''
+        path = qr.get_download_pdf_url()
+        request = self.context.get('request')
+        return request.build_absolute_uri(path) if request else path
+
+    def validate_guest_count(self, value):
+        if value < 1:
+            raise serializers.ValidationError('Guest count must be at least one.')
+        return value
+
+
+class EventStaffSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='user.email', read_only=True)
+    name = serializers.CharField(source='user.get_full_name', read_only=True)
+
+    class Meta:
+        model = EventStaff
+        fields = ['id', 'email', 'name', 'role', 'created_at']
+        read_only_fields = ['id', 'name', 'created_at']

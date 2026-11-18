@@ -13,7 +13,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'demo@eventconnect.com');
+  final _emailController = TextEditingController(text: 'demo@qroutex.com');
   final _passwordController = TextEditingController(text: 'Demo@1234Password');
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -225,11 +225,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
                   const Text(
-                    'EventConnect QR',
+                    'QRouteX',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 26,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
                       color: AppConstants.textDark,
                     ),
                   ),

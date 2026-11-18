@@ -17,11 +17,17 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
   final _venueNameController = TextEditingController();
   final _venueAddressController = TextEditingController();
   final _mapsUrlController = TextEditingController();
+  final _organizerNameController = TextEditingController();
+  final _organizerContactController = TextEditingController();
+  final _capacityController = TextEditingController();
   final _instagramController = TextEditingController();
   final _youtubeController = TextEditingController();
   final _hashtagController = TextEditingController();
   final _dressCodeController = TextEditingController();
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 14));
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
+  DateTime? _registrationStart;
+  DateTime? _registrationEnd;
   String _eventType = 'wedding';
   bool _isLoading = false;
 
@@ -37,19 +43,32 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
 
   void _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_registrationStart != null && _registrationEnd != null && _registrationEnd!.isBefore(_registrationStart!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration must end after it starts.'), backgroundColor: AppConstants.dangerColor),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
     try {
       final dateStr = "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
+      final timeStr = "${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}:00";
       await ApiService.createEvent({
         'title': _titleController.text.trim(),
         'host_names': _hostNamesController.text.trim(),
         'description': _descriptionController.text.trim(),
         'event_type': _eventType,
         'event_date': dateStr,
+        'event_time': timeStr,
         'venue_name': _venueNameController.text.trim(),
         'venue_address': _venueAddressController.text.trim(),
         'maps_url': _mapsUrlController.text.trim(),
+        'organizer_name': _organizerNameController.text.trim(),
+        'organizer_contact': _organizerContactController.text.trim(),
+        if (_capacityController.text.trim().isNotEmpty) 'capacity': int.parse(_capacityController.text.trim()),
+        if (_registrationStart != null) 'registration_start': _registrationStart!.toIso8601String(),
+        if (_registrationEnd != null) 'registration_end': _registrationEnd!.toIso8601String(),
         'instagram_url': _instagramController.text.trim(),
         'youtube_url': _youtubeController.text.trim(),
         'event_hashtag': _hashtagController.text.trim(),
@@ -72,6 +91,48 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _selectRegistrationDate(bool isStart) async {
+    final initial = isStart ? _registrationStart : _registrationEnd;
+    final date = await showDatePicker(
+      context: context,
+      initialDate: initial ?? DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 730)),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: initial == null ? TimeOfDay.now() : TimeOfDay.fromDateTime(initial),
+    );
+    if (time == null || !mounted) return;
+    final selected = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    setState(() {
+      if (isStart) {
+        _registrationStart = selected;
+      } else {
+        _registrationEnd = selected;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _hostNamesController.dispose();
+    _descriptionController.dispose();
+    _venueNameController.dispose();
+    _venueAddressController.dispose();
+    _mapsUrlController.dispose();
+    _organizerNameController.dispose();
+    _organizerContactController.dispose();
+    _capacityController.dispose();
+    _instagramController.dispose();
+    _youtubeController.dispose();
+    _hashtagController.dispose();
+    _dressCodeController.dispose();
+    super.dispose();
   }
 
   @override
@@ -119,6 +180,16 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
                   if (picked != null) setState(() => _selectedDate = picked);
                 },
               ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Event Time'),
+                subtitle: Text(_selectedTime.format(context)),
+                trailing: const Icon(Icons.access_time, color: AppConstants.primaryColor),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: _selectedTime);
+                  if (picked != null) setState(() => _selectedTime = picked);
+                },
+              ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _venueNameController,
@@ -135,6 +206,43 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
               TextFormField(
                 controller: _mapsUrlController,
                 decoration: const InputDecoration(labelText: 'Google Maps GPS Navigation URL', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _organizerNameController,
+                decoration: const InputDecoration(labelText: 'Organizer Name', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _organizerContactController,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(labelText: 'Organizer Contact', border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _capacityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Event Capacity (optional)', border: OutlineInputBorder()),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  final capacity = int.tryParse(value.trim());
+                  return capacity == null || capacity < 1 ? 'Enter a positive capacity.' : null;
+                },
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Registration Opens (optional)'),
+                subtitle: Text(_registrationStart?.toLocal().toString() ?? 'Not set'),
+                trailing: const Icon(Icons.event_available, color: AppConstants.primaryColor),
+                onTap: () => _selectRegistrationDate(true),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Registration Closes (optional)'),
+                subtitle: Text(_registrationEnd?.toLocal().toString() ?? 'Not set'),
+                trailing: const Icon(Icons.event_busy, color: AppConstants.primaryColor),
+                onTap: () => _selectRegistrationDate(false),
               ),
               const SizedBox(height: 16),
               TextFormField(

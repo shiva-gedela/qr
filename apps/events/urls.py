@@ -13,6 +13,8 @@ urlpatterns = [
     path('<int:pk>/edit/', views.event_edit, name='event_edit'),
     path('<int:pk>/delete/', views.event_delete, name='event_delete'),
     path('<int:pk>/toggle-publish/', views.event_toggle_publish, name='event_toggle_publish'),
+    path('<int:pk>/guests/', views.event_guest_dashboard, name='event_guest_dashboard'),
+    path('<int:pk>/guests/<int:guest_id>/status/', views.event_guest_status, name='event_guest_status'),
     path('<int:pk>/upload/', views.media_upload, name='media_upload'),
     path('<int:pk>/media/<int:media_id>/delete/', views.media_delete, name='media_delete'),
     path('<int:pk>/media/<int:media_id>/toggle-approval/', views.media_toggle_approval, name='media_toggle_approval'),
@@ -22,6 +24,7 @@ urlpatterns = [
 
     # Public event mini-website (QR landing page)
     path('e/<slug:slug>/', views.event_public, name='event_public'),
+    path('invitation/<uuid:token>/', views.event_invitation, name='event_invitation'),
     path('e/<slug:slug>/gps/', views.event_gps_redirect, name='event_gps_redirect'),
     path('e/<slug:slug>/navigate/', views.event_gps_redirect, name='event_navigate'),
     path('e/<slug:slug>/calendar.ics', views.event_calendar_ics, name='event_calendar_ics'),

@@ -7,7 +7,7 @@ Event creation and editing forms with Bootstrap 5 crispy layout.
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column, Field, Fieldset, HTML
-from .models import Event, EventMedia
+from .models import Event, EventGuest, EventMedia
 
 
 class MultipleFileInput(forms.FileInput):
@@ -18,12 +18,24 @@ class MultipleFileInput(forms.FileInput):
 class EventForm(forms.ModelForm):
     """Create / edit an event."""
 
+    registration_start = forms.DateTimeField(
+        required=False,
+        input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S'],
+        widget=forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local', 'class': 'form-control'}),
+    )
+    registration_end = forms.DateTimeField(
+        required=False,
+        input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S'],
+        widget=forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local', 'class': 'form-control'}),
+    )
+
     class Meta:
         model = Event
         fields = [
             'event_type', 'title', 'host_names', 'description',
             'event_date', 'event_time', 'event_end_date', 'event_end_time',
-            'venue_name', 'venue_address', 'maps_url',
+            'venue_name', 'venue_address', 'maps_url', 'organizer_name', 'organizer_contact',
+            'capacity', 'registration_start', 'registration_end',
             'instagram_url', 'facebook_url', 'youtube_url', 'event_hashtag', 'dress_code',
             'cover_image', 'is_published', 'is_private', 'private_password',
             'allow_guest_uploads', 'require_media_approval',
@@ -75,6 +87,11 @@ class EventForm(forms.ModelForm):
                 'venue_name',
                 'venue_address',
                 'maps_url',
+                Row(Column('organizer_name', css_class='col-md-6'),
+                    Column('organizer_contact', css_class='col-md-6')),
+                Row(Column('capacity', css_class='col-md-4'),
+                    Column('registration_start', css_class='col-md-4'),
+                    Column('registration_end', css_class='col-md-4')),
             ),
             Fieldset('Social Pages & Live Stream',
                 Row(Column('instagram_url', css_class='col-md-4'),
@@ -92,6 +109,10 @@ class EventForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        registration_start = cleaned.get('registration_start')
+        registration_end = cleaned.get('registration_end')
+        if registration_start and registration_end and registration_end < registration_start:
+            self.add_error('registration_end', 'Registration must end after it starts.')
         is_private = cleaned.get('is_private')
         password = cleaned.get('private_password')
         if is_private and not password:
@@ -148,6 +169,25 @@ class GuestMediaUploadForm(forms.Form):
         widget=forms.TextInput(attrs={'placeholder': 'Add a wish or message...', 'class': 'form-control'}),
         label='Wishes / Caption',
     )
+
+
+class EventGuestForm(forms.ModelForm):
+    class Meta:
+        model = EventGuest
+        fields = ['name', 'mobile', 'email', 'guest_count', 'invitation_type']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'mobile': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'guest_count': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
+            'invitation_type': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def clean_guest_count(self):
+        count = self.cleaned_data['guest_count']
+        if count < 1:
+            raise forms.ValidationError('Guest count must be at least one.')
+        return count
 
 
 class MediaEditForm(forms.ModelForm):

@@ -146,7 +146,8 @@ def generate_event_qr_pdf(qr_instance):
     Generate an elegant printable invitation card PDF featuring the custom QR code.
     Designed for print (A4 / Portrait), events invitations, or table cards.
     """
-    event = qr_instance.event
+    invitation = getattr(qr_instance, 'invitation', None)
+    event = invitation.guest.event if invitation else qr_instance.event
     buf = io.BytesIO()
 
     # Setup canvas (A4 size: 595.27 x 841.89 points)
@@ -193,7 +194,10 @@ def generate_event_qr_pdf(qr_instance):
 
     c.setFillColor(colors.HexColor('#f1f1f1'))
     c.setFont("Helvetica-Oblique", 13)
-    hosts_text = f"Hosted by {event.host_names}" if (event and event.host_names) else ""
+    if invitation:
+        hosts_text = f"Invited Guest: {invitation.guest.name} • Admission: {invitation.guest.guest_count}"
+    else:
+        hosts_text = f"Hosted by {event.host_names}" if (event and event.host_names) else ""
     c.drawCentredString(page_w / 2, page_h - 124, hosts_text)
 
     # Decorative separator
@@ -280,7 +284,7 @@ def generate_event_qr_pdf(qr_instance):
     # Footer note
     c.setFillColor(colors.HexColor('#888888'))
     c.setFont("Helvetica", 9)
-    c.drawCentredString(page_w / 2, 45, "Created with EventConnect QR • Beautiful Digital Invitations")
+    c.drawCentredString(page_w / 2, 45, "Powered by QRouteX (qroutex.com) - Smart Event QR & GPS Route Navigation")
 
     c.showPage()
     c.save()
@@ -448,7 +452,7 @@ def generate_business_qr_pdf(qr_instance):
     # Footer
     c.setFillColor(colors.HexColor('#94a3b8'))
     c.setFont("Helvetica", 9)
-    c.drawCentredString(page_w / 2, 45, "Powered by EventConnect QR Digital Business Profiles")
+    c.drawCentredString(page_w / 2, 45, "Powered by QRouteX (qroutex.com) - Digital Business & Event QR")
 
     c.showPage()
     c.save()

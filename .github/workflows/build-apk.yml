@@ -37,35 +37,42 @@ jobs:
 
       - name: Rename APK for release
         run: |
-          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/EventConnectQR-v1.0.1.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.2.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: EventConnectQR-release-apk
+          name: QRouteX-v1.0.2-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.1
+      - name: Publish GitHub Release v1.0.2
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.1
-          name: "EventConnect QR v1.0.1 - Mobile App Release"
+          tag_name: v1.0.2
+          name: "QRouteX v1.0.2 - Smart Event QR & GPS Route Navigation"
           body: |
-            ## EventConnect QR Mobile App (v1.0.1)
+            ## QRouteX Mobile App (v1.0.2) • qroutex.com
             
-            ### Fixes & Enhancements:
-            - **Custom Server URL Configuration**: Configure your backend URL (Render Cloud or Wi-Fi IP) via the ⚙️ Settings dialog on the login screen.
-            - **Offline Demo Mode**: Test all 6 occasion templates, QR code scanner, and GPS navigation instantly without waiting for a server.
-            - **Crash & Timeout Protection**: Added error boundaries so the app never freezes or crashes when offline.
-            - **Google Maps GPS Navigation**: Seamless one-click turn-by-turn navigation.
+            ### ✨ What's New in v1.0.2:
+            - **Complete QRouteX Brand Upgrade**: Sleek new identity, modern iconography, and high-performance routing.
+            - **All 6 Event Occasions Supported**:
+              - 💍 Wedding
+              - 🎂 Birthday
+              - 💑 Engagement
+              - ❤️ Anniversary
+              - 🏠 Housewarming
+              - 🎓 Graduation
+            - **Turn-by-Turn GPS Navigation**: 1-tap route launch to Google Maps directly from any QR code or event card.
+            - **Instant Offline Demo Mode**: Test all 6 occasions, invitations, and scanner without requiring backend connection.
+            - **Dynamic Backend Server Switcher**: Easily connect to `https://qroutex.com`, your Render server, or local IP via the ⚙️ Settings dialog on the sign-in screen.
             
-            ### Installation Instructions for Android:
-            1. Download `EventConnectQR-v1.0.1.apk` on your mobile phone.
+            ### 📱 Android Installation Instructions:
+            1. Download `QRouteX-v1.0.2.apk` directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
-            3. Open the app and tap **"Explore in Offline Demo Mode"** to start exploring immediately!
+            3. Open the app and tap **"Explore in Offline Demo Mode"** to explore right away!
           files: |
-            mobile_app/build/app/outputs/flutter-apk/EventConnectQR-v1.0.1.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.2.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk

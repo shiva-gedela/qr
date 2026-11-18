@@ -3,7 +3,7 @@ apps/events/admin.py - Admin panel configuration for events.
 """
 
 from django.contrib import admin
-from .models import Event, EventMedia
+from .models import Event, EventCheckIn, EventGuest, EventMedia, EventStaff, Invitation, QRScanLog
 
 
 class EventMediaInline(admin.TabularInline):
@@ -48,3 +48,41 @@ class EventMediaAdmin(admin.ModelAdmin):
     def unapprove_media(self, request, queryset):
         queryset.update(is_approved=False)
     unapprove_media.short_description = "Unapprove selected media"
+
+
+@admin.register(EventGuest)
+class EventGuestAdmin(admin.ModelAdmin):
+    list_display = ['name', 'event', 'invitation_type', 'guest_count', 'status']
+    list_filter = ['invitation_type', 'status']
+    search_fields = ['name', 'email', 'mobile', 'event__title']
+
+
+@admin.register(Invitation)
+class InvitationAdmin(admin.ModelAdmin):
+    list_display = ['guest', 'status', 'expires_at', 'created_at']
+    list_filter = ['status']
+    search_fields = ['guest__name', 'guest__event__title']
+    readonly_fields = ['token', 'created_at']
+
+
+@admin.register(EventStaff)
+class EventStaffAdmin(admin.ModelAdmin):
+    list_display = ['event', 'user', 'role', 'created_at']
+    list_filter = ['role']
+    search_fields = ['event__title', 'user__email']
+
+
+@admin.register(EventCheckIn)
+class EventCheckInAdmin(admin.ModelAdmin):
+    list_display = ['invitation', 'checked_in_by', 'checked_in_at']
+    list_filter = ['checked_in_at']
+    search_fields = ['invitation__guest__name', 'invitation__guest__event__title']
+    readonly_fields = ['checked_in_at']
+
+
+@admin.register(QRScanLog)
+class QRScanLogAdmin(admin.ModelAdmin):
+    list_display = ['event', 'invitation', 'scanned_by', 'result', 'reason', 'scanned_at']
+    list_filter = ['result', 'scanned_at']
+    search_fields = ['event__title', 'invitation__guest__name', 'scanned_by__email']
+    readonly_fields = ['event', 'invitation', 'scanned_by', 'result', 'reason', 'scanned_at']

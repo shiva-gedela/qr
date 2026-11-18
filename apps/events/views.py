@@ -7,6 +7,7 @@ All private/owner views are login-required with ownership enforcement.
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.http import Http404, JsonResponse, HttpResponse, FileResponse
 from django.conf import settings
@@ -14,9 +15,17 @@ from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 import os
 import io
+import uuid
+from django.core.mail import send_mail
+from django.db.models import Sum
+from django.db import transaction
+from django.http import HttpResponseForbidden
+from django.utils import timezone
 
-from .models import Event, EventMedia
-from .forms import EventForm, MediaUploadForm
+from .forms import EventForm, EventGuestForm, MediaUploadForm
+from .invitation_services import ensure_invitation_qr
+from .models import Event, EventCheckIn, EventGuest, EventMedia, EventStaff, Invitation
+from .permissions import can_manage_guests
 
 
 # ─── Event CRUD ──────────────────────────────────────────────────────────────
@@ -85,8 +94,168 @@ def event_detail(request, pk):
         'media_form': media_form,
         'qr': qr,
         'site_url': settings.SITE_URL,
+        'guest_count': event.guests.count(),
+        'checked_in_count': EventCheckIn.objects.filter(invitation__guest__event=event).count(),
     }
     return render(request, 'events/event_detail.html', context)
+
+
+@login_required
+def event_guest_dashboard(request, pk):
+    event = get_object_or_404(Event, pk=pk)
+    if not can_manage_guests(request.user, event):
+        return HttpResponseForbidden("You do not have permission to manage this event's guests.")
+
+    form = EventGuestForm(request.POST or None)
+    if request.method == 'POST':
+        remove_staff_id = request.POST.get('remove_staff_id')
+        if remove_staff_id:
+            if event.owner_id != request.user.pk:
+                return HttpResponseForbidden("Only the event owner can manage staff.")
+            get_object_or_404(EventStaff, pk=remove_staff_id, event=event).delete()
+            messages.success(request, "Event staff access removed.")
+            return redirect('event_guest_dashboard', pk=event.pk)
+
+        staff_email = request.POST.get('add_staff_email', '').strip().lower()
+        if staff_email:
+            if event.owner_id != request.user.pk:
+                return HttpResponseForbidden("Only the event owner can manage staff.")
+            user = get_user_model().objects.filter(email=staff_email).first()
+            role = request.POST.get('staff_role', 'scanner')
+            if not user:
+                messages.error(request, "No user account exists for that email.")
+            elif role not in dict(EventStaff.ROLES):
+                messages.error(request, "Select a valid staff role.")
+            else:
+                EventStaff.objects.update_or_create(event=event, user=user, defaults={'role': role})
+                messages.success(request, f"{staff_email} can now access this event.")
+            return redirect('event_guest_dashboard', pk=event.pk)
+
+        guest_id = request.POST.get('send_invitation_guest_id')
+        if guest_id:
+            guest = get_object_or_404(EventGuest, pk=guest_id, event=event)
+            if guest.status == 'cancelled':
+                messages.error(request, f"{guest.name}'s invitation is cancelled. Reissue it first.")
+            elif not guest.email:
+                messages.error(request, f"{guest.name} does not have an email address.")
+            else:
+                invitation, _qr = ensure_invitation_qr(guest, request.build_absolute_uri('/').rstrip('/'))
+                link = request.build_absolute_uri(f"/events/invitation/{invitation.token}/")
+                send_mail(
+                    subject=f"You're invited: {event.title}",
+                    message=f"Hello {guest.name},\n\nYou're invited to {event.title} on {event.event_date}.\nYour invitation: {link}",
+                    from_email=None,
+                    recipient_list=[guest.email],
+                    fail_silently=False,
+                )
+                messages.success(request, f"Invitation sent to {guest.email}.")
+            return redirect('event_guest_dashboard', pk=event.pk)
+
+        if form.is_valid():
+            guest = form.save(commit=False)
+            with transaction.atomic():
+                locked_event = Event.objects.select_for_update().get(pk=event.pk)
+                guest.event = locked_event
+                if locked_event.capacity:
+                    reserved = locked_event.guests.exclude(status='cancelled').aggregate(total=Sum('guest_count'))['total'] or 0
+                    if reserved + guest.guest_count > locked_event.capacity:
+                        form.add_error('guest_count', 'This invitation would exceed event capacity.')
+                    else:
+                        guest.save()
+                else:
+                    guest.save()
+            if guest.pk:
+                ensure_invitation_qr(guest, request.build_absolute_uri('/').rstrip('/'))
+                messages.success(request, f"Invitation created for {guest.name}.")
+                return redirect('event_guest_dashboard', pk=event.pk)
+
+    guests = EventGuest.objects.filter(event=event).select_related('invitation', 'invitation__qr_code')
+    search = request.GET.get('search', '').strip()
+    if search:
+        guests = guests.filter(name__icontains=search) | guests.filter(email__icontains=search) | guests.filter(mobile__icontains=search)
+    check_ins = EventCheckIn.objects.filter(invitation__guest__event=event)
+    context = {
+        'event': event,
+        'form': form,
+        'guests': guests.distinct(),
+        'search': search,
+        'total_invitations': event.guests.count(),
+        'chart_total': max(event.guests.count(), 1),
+        'registered_guests': event.guests.filter(status='registered').count(),
+        'checked_in': check_ins.count(),
+        'checked_in_guests': check_ins.aggregate(total=Sum('invitation__guest__guest_count'))['total'] or 0,
+        'pending': event.guests.filter(status='invited').count(),
+        'rejected_scans': event.scan_logs.filter(result='rejected').count(),
+        'vip_entries': check_ins.filter(invitation__guest__invitation_type='vip').aggregate(
+            total=Sum('invitation__guest__guest_count')
+        )['total'] or 0,
+        'staff_members': event.staff_members.select_related('user').all(),
+        'recent_scans': event.scan_logs.select_related('invitation__guest', 'scanned_by')[:20],
+    }
+    return render(request, 'events/event_guests.html', context)
+
+
+@login_required
+def event_guest_status(request, pk, guest_id):
+    event = get_object_or_404(Event, pk=pk)
+    if request.method != 'POST':
+        return HttpResponseForbidden("POST is required.")
+    if not can_manage_guests(request.user, event):
+        return HttpResponseForbidden("You do not have permission to manage this event's guests.")
+    guest = get_object_or_404(EventGuest.objects.select_related('invitation'), pk=guest_id, event=event)
+    if guest.status == 'cancelled':
+        with transaction.atomic():
+            locked_event = Event.objects.select_for_update().get(pk=event.pk)
+            if locked_event.capacity:
+                reserved = locked_event.guests.exclude(status='cancelled').exclude(pk=guest.pk).aggregate(total=Sum('guest_count'))['total'] or 0
+                if reserved + guest.guest_count > locked_event.capacity:
+                    messages.error(request, "Reissuing this invitation would exceed event capacity.")
+                    return redirect('event_guest_dashboard', pk=event.pk)
+            guest.status = 'invited'
+            guest.save(update_fields=['status', 'updated_at'])
+            invitation = getattr(guest, 'invitation', None)
+            if invitation:
+                invitation.status = 'active'
+                invitation.token = uuid.uuid4()
+                invitation.expires_at = None
+                invitation.save(update_fields=['status', 'token', 'expires_at'])
+                ensure_invitation_qr(guest, request.build_absolute_uri('/').rstrip('/'))
+    else:
+        guest.status = 'cancelled'
+        guest.save(update_fields=['status', 'updated_at'])
+        invitation = getattr(guest, 'invitation', None)
+        if invitation:
+            invitation.status = 'cancelled'
+            invitation.save(update_fields=['status'])
+    messages.success(request, f"Invitation for {guest.name} is now {guest.get_status_display().lower()}.")
+    return redirect('event_guest_dashboard', pk=event.pk)
+
+
+def event_invitation(request, token):
+    invitation = get_object_or_404(
+        Invitation.objects.select_related('guest', 'guest__event', 'qr_code'), token=token
+    )
+    if invitation.status != 'active' or invitation.is_expired or invitation.guest.status == 'cancelled':
+        return render(request, 'events/guest_invitation_unavailable.html', status=410)
+    if request.method == 'POST' and request.POST.get('action') == 'confirm':
+        now = timezone.now()
+        if invitation.guest.event.registration_start and now < invitation.guest.event.registration_start:
+            messages.error(request, "Registration has not opened yet.")
+        elif invitation.guest.event.registration_end and now > invitation.guest.event.registration_end:
+            messages.error(request, "Registration is closed.")
+        else:
+            invitation.guest.status = 'registered'
+            invitation.guest.save(update_fields=['status', 'updated_at'])
+            messages.success(request, "Your attendance is confirmed.")
+        return redirect('event_invitation', token=token)
+    response = render(request, 'events/guest_invitation.html', {
+        'invitation': invitation,
+        'guest': invitation.guest,
+        'event': invitation.guest.event,
+        'qr': invitation.qr_code,
+    })
+    response['X-Robots-Tag'] = 'noindex, nofollow'
+    return response
 
 
 @login_required
@@ -221,11 +390,11 @@ def event_calendar_ics(request, slug):
     ics_content = (
         "BEGIN:VCALENDAR\r\n"
         "VERSION:2.0\r\n"
-        "PRODID:-//EventConnect QR//Event Invitation//EN\r\n"
+        "PRODID:-//QRouteX//Event Invitation//EN\r\n"
         "CALSCALE:GREGORIAN\r\n"
         "METHOD:PUBLISH\r\n"
         "BEGIN:VEVENT\r\n"
-        f"UID:{event.uuid}@eventconnect.com\r\n"
+        f"UID:{event.uuid}@qroutex.com\r\n"
         f"DTSTAMP:{datetime.now().strftime(dt_format)}\r\n"
         f"DTSTART:{start_str}\r\n"
         f"DTEND:{end_str}\r\n"

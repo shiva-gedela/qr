@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: const [
             Icon(Icons.qr_code_scanner, color: AppConstants.accentColor),
             SizedBox(width: 8),
-            Text('EventConnect QR', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('QRouteX', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ],
         ),
         actions: [
@@ -39,12 +39,20 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
             onPressed: () async {
-              await AuthService.logout();
+              String? logoutWarning;
+              try {
+                await AuthService.logout();
+              } catch (error) {
+                logoutWarning = error.toString();
+              }
               if (mounted) {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
                 );
+                if (logoutWarning != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(logoutWarning)));
+                }
               }
             },
           ),

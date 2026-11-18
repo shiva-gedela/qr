@@ -32,7 +32,14 @@ def download_qr_png(request, qr_uuid):
     """Serve QR code PNG as a direct downloadable attachment."""
     qr = get_object_or_404(QRCode, uuid=qr_uuid)
 
-    slug_name = qr.event.slug if qr.event else (qr.business.slug if qr.business else 'qrcode')
+    if qr.event:
+        slug_name = qr.event.slug
+    elif qr.business:
+        slug_name = qr.business.slug
+    elif qr.invitation:
+        slug_name = f"{qr.invitation.guest.event.slug}-guest-{qr.invitation.guest_id}"
+    else:
+        slug_name = 'qrcode'
     filename = f"{slug_name}-qr.png"
 
     # Ensure QR image exists

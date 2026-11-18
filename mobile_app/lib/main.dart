@@ -8,18 +8,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConstants.initBaseUrl();
   final loggedIn = await AuthService.isLoggedIn();
-  runApp(EventConnectApp(isLoggedIn: loggedIn));
+  runApp(QRouteXApp(isLoggedIn: loggedIn));
 }
 
-class EventConnectApp extends StatelessWidget {
+class QRouteXApp extends StatelessWidget {
   final bool isLoggedIn;
 
-  const EventConnectApp({Key? key, required this.isLoggedIn}) : super(key: key);
+  const QRouteXApp({Key? key, required this.isLoggedIn}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'EventConnect QR',
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

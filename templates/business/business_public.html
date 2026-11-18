@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ business.name }} - Digital Business Profile | EventConnect QR</title>
+    <title>{{ business.name }} - Digital Business Profile | QRouteX</title>
 
     <!-- OpenGraph Meta Tags for Rich Social Sharing -->
     <meta property="og:title" content="{{ business.name }}{% if business.tagline %} - {{ business.tagline }}{% endif %}">
@@ -285,7 +285,7 @@
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <span class="fw-bold text-primary small">{{ service.price_display }}</span>
                                 {% if business.whatsapp %}
-                                <a href="https://wa.me/{{ business.clean_whatsapp_number }}?text=Hello%2C%20I%20am%20interested%20in%20'{{ service.name|urlencode }}'%20from%20your%20EventConnect%20catalog."
+                                <a href="https://wa.me/{{ business.clean_whatsapp_number }}?text=Hello%2C%20I%20am%20interested%20in%20'{{ service.name|urlencode }}'%20from%20your%20QRouteX%20catalog."
                                    target="_blank"
                                    class="btn btn-outline-success btn-sm py-1 px-2 rounded-pill small">
                                     <i class="bi bi-whatsapp me-1"></i>Enquire
@@ -398,7 +398,7 @@
             <a href="{% url 'business_vcard' slug=business.slug %}" class="btn btn-outline-primary rounded-pill btn-sm px-4 mb-3">
                 <i class="bi bi-person-lines-fill me-1"></i>Save Contact to Phonebook (.vcf)
             </a>
-            <p class="text-muted small mb-0">Powered by <a href="/" class="text-decoration-none fw-bold text-primary">EventConnect QR</a></p>
+            <p class="text-muted small mb-0">Powered by <a href="/" class="text-decoration-none fw-bold text-primary">QRouteX (qroutex.com)</a></p>
         </div>
     </div>
 </div>
@@ -434,7 +434,7 @@
 document.getElementById('shareBtn')?.addEventListener('click', async () => {
     const shareData = {
         title: '{{ business.name|escapejs }}',
-        text: 'Check out {{ business.name|escapejs }} on EventConnect QR',
+        text: 'Check out {{ business.name|escapejs }} on QRouteX',
         url: window.location.href,
     };
     if (navigator.share) {

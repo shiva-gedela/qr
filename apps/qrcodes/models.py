@@ -42,6 +42,13 @@ class QRCode(models.Model):
         blank=True,
         related_name='qr_code'
     )
+    invitation = models.OneToOneField(
+        'events.Invitation',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='qr_code'
+    )
 
     target_url = models.URLField(max_length=500, help_text="Destination URL opened when QR is scanned")
 

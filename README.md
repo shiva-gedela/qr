@@ -180,6 +180,8 @@ qr/
 | `/events/` | List user's events |
 | `/events/create/` | Create new event |
 | `/events/<pk>/` | Manage event (owner) |
+| `/events/<pk>/guests/` | Manage guest invitations, scanners, analytics & reports |
+| `/events/invitation/<token>/` | Guest invitation page and RSVP |
 | `/events/<pk>/edit/` | Edit event |
 | `/events/<pk>/delete/` | Delete event |
 | `/events/<pk>/toggle-publish/` | Publish/unpublish |
@@ -207,6 +209,12 @@ qr/
 | GET/POST | `/api/events/` | List/create events |
 | GET/PUT/DELETE | `/api/events/<pk>/` | Event detail (includes QR & storage info) |
 | POST | `/api/events/<pk>/publish/` | Toggle publish |
+| GET/POST | `/api/events/<pk>/guests/` | List or invite event guests |
+| PATCH | `/api/events/<pk>/guests/<guest_id>/` | Edit or cancel/reissue a guest invitation |
+| GET/POST | `/api/events/<pk>/check-in/` | Get live check-in totals or verify a guest QR |
+| GET | `/api/events/<pk>/reports/` | Event statistics; add `?history=true` for scan history or `?download=csv` to download |
+| GET/POST | `/api/events/<pk>/staff/` | List or assign event scanners/managers (owner only) |
+| DELETE | `/api/events/<pk>/staff/<staff_id>/` | Remove event staff (owner only) |
 | GET/POST | `/api/events/<pk>/media/` | List / Upload event media |
 | DELETE | `/api/events/<pk>/media/<id>/` | Delete event media file |
 | POST | `/api/events/<pk>/media/<id>/toggle-approval/` | Toggle media approval status |
@@ -224,6 +232,7 @@ qr/
 ### Key Tables
 - **users** — Custom user model (email login, avatar, email_verified, is_premium)
 - **events** — Event records with slug, type, date, venue, permanent public URL, storage quota & approval settings
+- **EventGuest**, **Invitation**, **EventStaff**, **EventCheckIn**, **QRScanLog** — Guest records, bearer QR tokens, event roles, unique check-ins, and scan history
 - **event_media** — Photos and videos with categories, thumbnails, approval flags & file size tracking
 - **qr_codes** — Normalized QR codes for events & businesses (colors, center logo, PNG, scan metrics)
 
@@ -243,6 +252,32 @@ qr/
 
 ---
 
+## Guest Invitations & Entry Check-in
+
+The existing event pages and QR records are retained. Run the new additive migrations, then open an event's **Guests & Check-in** page at `/events/<pk>/guests/` to add guests, share invitation links, email invitations, and download per-guest PNG/PDF codes. The event owner can assign scanner or manager accounts by email. A guest invitation link is a bearer credential; keep it private and cancel/reissue it if it is shared improperly.
+
+The mobile login endpoint now returns the DRF token used by the app's `Authorization: Token <key>` header. Event staff sign in, choose an assigned event in the scanner, then scan a guest's invitation. Online scans are verified immediately; offline scans are labeled pending and only resolve after synchronization with the server.
+
+Use the following PowerShell commands from the repository root to upgrade an existing local SQLite database and run the focused tests without replacing its records:
+
+```powershell
+.\venv\Scripts\activate
+$env:DJANGO_SETTINGS_MODULE = "eventconnect.settings_test"
+python manage.py migrate
+python manage.py test apps.events.tests
+python manage.py runserver
+```
+
+In another terminal, build/run the existing Flutter app:
+
+```powershell
+cd mobile_app
+flutter pub get
+flutter run
+```
+
+For an Android emulator, set the app API base URL to `http://10.0.2.2:8000`; for a physical device, use the development computer's LAN IP and ensure both devices can reach it. Assign the signed-in user to the event before scanning.
+
 ## 🛡️ Security Notes
 
 - Never commit `.env` to Git — add it to `.gitignore`
@@ -251,6 +286,8 @@ qr/
 - All private views enforce ownership checks
 - File uploads are validated for type and size
 - CSRF protection is active on all forms
+- Invitation QR codes carry random UUID tokens, not guest contact details; treat invitation links as private bearer credentials
+- Configure a shared Django cache (such as Redis) in multi-worker deployments so login and scan rate limits are consistent across workers
 
 ---
 

@@ -245,7 +245,7 @@ class Payment(models.Model):
             leading=26,
             textColor=colors.HexColor('#1e293b')
         )
-        elements.append(Paragraph(f"<b>EventConnect QR</b> - Tax Invoice", title_style))
+        elements.append(Paragraph(f"<b>QRouteX (qroutex.com)</b> - Tax Invoice", title_style))
         elements.append(Spacer(1, 10))
 
         # Invoice Metadata & Billed To
@@ -299,7 +299,7 @@ class Payment(models.Model):
 
         # Footer notes
         footer_style = ParagraphStyle('FooterNote', parent=styles['Normal'], fontSize=9, textColor=colors.HexColor('#64748b'))
-        elements.append(Paragraph("Thank you for choosing EventConnect QR! For billing inquiries or GST support, contact support@eventconnect.com.", footer_style))
+        elements.append(Paragraph("Thank you for choosing QRouteX! For billing inquiries or GST support, contact billing@qroutex.com • https://qroutex.com", footer_style))
 
         doc.build(elements)
         buf.seek(0)

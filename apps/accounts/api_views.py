@@ -8,6 +8,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login, logout
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
+from rest_framework.authtoken.models import Token
 
 from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
 
@@ -28,6 +31,7 @@ class RegisterAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@method_decorator(ratelimit(key='ip', rate='10/m', method='POST', block=True), name='dispatch')
 class LoginAPIView(APIView):
     """POST /api/auth/login/ - Login and start session."""
 
@@ -39,7 +43,11 @@ class LoginAPIView(APIView):
             user = serializer.validated_data['user']
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return Response(
-                {'message': 'Login successful.', 'user': UserSerializer(user).data},
+                {
+                    'message': 'Login successful.',
+                    'token': Token.objects.get_or_create(user=user)[0].key,
+                    'user': UserSerializer(user).data,
+                },
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -51,6 +59,7 @@ class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        Token.objects.filter(user=request.user).delete()
         logout(request)
         return Response({'message': 'Logged out successfully.'}, status=status.HTTP_200_OK)
 

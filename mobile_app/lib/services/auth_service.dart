@@ -139,7 +139,7 @@ class AuthService {
     if (prefs.getBool('is_offline_demo') == true) {
       return UserModel(
         id: 999,
-        email: 'demo@eventconnect.com',
+        email: 'demo@qroutex.com',
         firstName: 'Guest',
         lastName: 'Demo',
         phone: '+91 98765 43210',
@@ -152,8 +152,26 @@ class AuthService {
 
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    String? revocationError;
+    if (token != null) {
+      try {
+        final response = await http.post(
+          Uri.parse(AppConstants.logoutUrl),
+          headers: {'Authorization': 'Token $token', 'Accept': 'application/json'},
+        ).timeout(const Duration(seconds: 8));
+        if (response.statusCode != 200) {
+          revocationError = 'Server returned HTTP ${response.statusCode}.';
+        }
+      } catch (error) {
+        revocationError = error.toString();
+      }
+    }
     await prefs.remove('auth_token');
     await prefs.remove('user_data');
     await prefs.remove('is_offline_demo');
+    if (revocationError != null) {
+      throw Exception('Local session cleared, but server token revocation failed: $revocationError');
+    }
   }
 }

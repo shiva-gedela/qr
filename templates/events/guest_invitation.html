@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Invitation - {{ event.title }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="card border-0 shadow mx-auto text-center" style="max-width: 640px">
+        {% if event.cover_image %}<img src="{{ event.cover_image.url }}" class="card-img-top" alt="{{ event.title }}">{% endif %}
+        <div class="card-body p-4 p-md-5">
+            <p class="text-uppercase text-primary fw-bold">{{ event.get_event_type_display }} invitation</p>
+            <h1 class="h2">{{ event.title }}</h1>
+            <p class="lead">Dear {{ guest.name }}, you are invited.</p>
+            <p>{{ event.event_date|date:"l, d F Y" }}{% if event.event_time %} at {{ event.event_time|time:"g:i A" }}{% endif %}</p>
+            {% if event.venue_name %}<p class="mb-1">{{ event.venue_name }}</p>{% endif %}
+            {% if event.venue_address %}<p class="text-muted">{{ event.venue_address }}</p>{% endif %}
+            <p>Admission for {{ guest.guest_count }} guest{{ guest.guest_count|pluralize }}</p>
+            {% if guest.status == 'registered' %}
+            <p class="text-success fw-semibold">Attendance confirmed</p>
+            {% elif guest.status == 'invited' %}
+            <form method="post" class="my-3">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="confirm">
+                <button type="submit" class="btn btn-success">Confirm attendance</button>
+            </form>
+            {% endif %}
+            {% if qr.qr_image %}<img src="{{ qr.qr_image.url }}" alt="Invitation QR code" width="240" height="240" class="img-fluid my-3">{% endif %}
+            {% if event.google_maps_directions_url %}<p><a href="{{ event.google_maps_directions_url }}" rel="noopener">Get directions</a></p>{% endif %}
+            <button type="button" class="btn btn-primary" onclick="window.print()">Print invitation</button>
+        </div>
+    </div>
+</div>
+<style>@media print { nav, footer, button { display: none !important; } .card { box-shadow: none !important; } }</style>
+{% endblock %}

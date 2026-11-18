@@ -18,7 +18,7 @@ class UserAdmin(BaseUserAdmin):
     readonly_fields = ['created_at', 'updated_at', 'email_verification_token']
 
     fieldsets = BaseUserAdmin.fieldsets + (
-        ('EventConnect QR Fields', {
+        ('QRouteX Fields', {
             'fields': ('phone', 'avatar', 'bio', 'email_verified', 'email_verification_token', 'is_premium'),
         }),
         ('Timestamps', {

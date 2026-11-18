@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% block title %}Guests - {{ event.title }}{% endblock %}
+{% block content %}
+<div class="container py-4" data-live-dashboard data-report-url="{% url 'api_event_reports' event.pk %}?history=true">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <a href="{% url 'event_detail' event.pk %}" class="text-decoration-none">&larr; {{ event.title }}</a>
+            <h1 class="h2 mt-2 mb-0">Guest invitations</h1>
+        </div>
+        <a class="btn btn-outline-primary" href="{% url 'api_event_reports' event.pk %}?download=csv">Download report</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg"><div class="card h-100"><div class="card-body"><small class="text-muted">Invitations</small><div class="h3 mb-0" data-stat-value="total_invitations">{{ total_invitations }}</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card h-100"><div class="card-body"><small class="text-muted">Registered</small><div class="h3 mb-0" data-stat-value="registered_guests">{{ registered_guests }}</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card h-100"><div class="card-body"><small class="text-muted">Checked in</small><div class="h3 mb-0" data-stat-value="checked_in_guests">{{ checked_in_guests }}</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card h-100"><div class="card-body"><small class="text-muted">Pending</small><div class="h3 mb-0" data-stat-value="pending_guests">{{ pending }}</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card h-100"><div class="card-body"><small class="text-muted">Rejected scans</small><div class="h3 mb-0" data-stat-value="rejected_scans">{{ rejected_scans }}</div></div></div></div>
+        <div class="col-6 col-lg"><div class="card h-100"><div class="card-body"><small class="text-muted">VIP checked in</small><div class="h3 mb-0" data-stat-value="vip_entries">{{ vip_entries }}</div></div></div></div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h2 class="h5">Attendance overview</h2>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between"><span>RSVP registered</span><strong><span data-stat-value="registered_guests">{{ registered_guests }}</span> / <span data-stat-value="total_invitations">{{ total_invitations }}</span></strong></div>
+                <div class="progress" role="progressbar" aria-label="Registered guests" aria-valuenow="{{ registered_guests }}" aria-valuemin="0" aria-valuemax="{{ chart_total }}">
+                    <div class="progress-bar bg-info" data-stat-bar="registered_guests" style="width: {% widthratio registered_guests chart_total 100 %}%"></div>
+                </div>
+            </div>
+            <div>
+                <div class="d-flex justify-content-between"><span>Checked-in invitations</span><strong><span data-stat-value="approved_entries">{{ checked_in }}</span> / <span data-stat-value="total_invitations">{{ total_invitations }}</span></strong></div>
+                <div class="progress" role="progressbar" aria-label="Checked-in invitations" aria-valuenow="{{ checked_in }}" aria-valuemin="0" aria-valuemax="{{ chart_total }}">
+                    <div class="progress-bar bg-success" data-stat-bar="approved_entries" style="width: {% widthratio checked_in chart_total 100 %}%"></div>
+                </div>
+            </div>
+            <p class="small text-muted mb-0 mt-2" data-refresh-status>Live dashboard updates every 15 seconds.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Add a guest</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-body">
+                                <h2 class="h5">Recent scan history</h2>
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead><tr><th>Time</th><th>Guest</th><th>Result</th><th>Scanner</th></tr></thead>
+                                        <tbody data-scan-history>
+                                        {% for scan in recent_scans %}
+                                            <tr>
+                                                <td>{{ scan.scanned_at|date:"M j, H:i:s" }}</td>
+                                                <td>{{ scan.invitation.guest.name|default:"Unknown QR" }}</td>
+                                                <td><span class="badge {% if scan.result == 'approved' %}text-bg-success{% elif scan.result == 'already_checked_in' %}text-bg-warning{% else %}text-bg-danger{% endif %}">{{ scan.get_result_display }}{% if scan.reason %}: {{ scan.reason }}{% endif %}</span></td>
+                                                <td>{{ scan.scanned_by.email|default:"—" }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr><td colspan="4" class="text-muted text-center py-3">No QR scans yet.</td></tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <button class="btn btn-primary w-100" type="submit">Create QR invitation</button>
+                    </form>
+                </div>
+            </div>
+            {% if event.owner_id == request.user.id %}
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Event staff</h2>
+                    <form method="post" class="mb-3">
+                        {% csrf_token %}
+                        <label for="staff-email" class="form-label">Assign account by email</label>
+                        <div class="input-group">
+                            <input id="staff-email" class="form-control" type="email" name="add_staff_email" required>
+                            <select class="form-select" name="staff_role" aria-label="Staff role">
+                                <option value="scanner">Scanner</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                            <button class="btn btn-outline-primary" type="submit">Add</button>
+                        </div>
+                    </form>
+                    {% for member in staff_members %}
+                    <div class="d-flex justify-content-between align-items-center border-top py-2">
+                        <span>{{ member.user.email }} <small class="text-muted">({{ member.get_role_display }})</small></span>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="remove_staff_id" value="{{ member.pk }}">
+                            <button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                        </form>
+                    </div>
+                    {% empty %}<p class="text-muted mb-0">No staff assigned.</p>{% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-8">
+            <form method="get" class="input-group mb-3">
+                <input class="form-control" type="search" name="search" value="{{ search }}" placeholder="Search name, email or mobile">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+                {% if search %}<a class="btn btn-outline-secondary" href="{% url 'event_guest_dashboard' event.pk %}">Clear</a>{% endif %}
+            </form>
+            <div class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead><tr><th>Guest</th><th>Type / count</th><th>Status</th><th>Invitation</th></tr></thead>
+                        <tbody>
+                        {% for guest in guests %}
+                            <tr>
+                                <td><strong>{{ guest.name }}</strong><br><small class="text-muted">{{ guest.email|default:guest.mobile|default:"No contact details" }}</small></td>
+                                <td>{{ guest.get_invitation_type_display }}<br><small>{{ guest.guest_count }} guest{{ guest.guest_count|pluralize }}</small></td>
+                                <td><span class="badge {% if guest.status == 'registered' %}text-bg-success{% elif guest.status == 'cancelled' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">{{ guest.get_status_display }}</span></td>
+                                <td>
+                                    {% if guest.invitation %}
+                                    {% if guest.status != 'cancelled' %}
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'qr_download_png' guest.invitation.qr_code.uuid %}">PNG</a>
+                                        <a class="btn btn-sm btn-outline-primary" href="{% url 'qr_download_pdf' guest.invitation.qr_code.uuid %}">PDF</a>
+                                        <a class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener" href="{% url 'event_invitation' guest.invitation.token %}">Preview / Print</a>
+                                        <a class="btn btn-sm btn-success" target="_blank" rel="noopener" href="https://wa.me/?text={{ event.title|urlencode }}%20invitation%3A%20{{ request.scheme }}%3A%2F%2F{{ request.get_host|urlencode }}%2Fevents%2Finvitation%2F{{ guest.invitation.token }}%2F">WhatsApp</a>
+                                        {% if guest.email %}
+                                        <form method="post">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="send_invitation_guest_id" value="{{ guest.pk }}">
+                                            <button class="btn btn-sm btn-outline-success" type="submit">Email</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}<span class="text-muted me-2">Cancelled</span>{% endif %}
+                                    <form method="post" action="{% url 'event_guest_status' event.pk guest.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">
+                                            {% if guest.status == 'cancelled' %}Reissue{% else %}Cancel{% endif %}
+                                        </button>
+                                    </form>
+                                    {% else %}<span class="text-muted">Not generated</span>{% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted py-5">No guests yet. Add one to generate a unique invitation QR.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+(() => {
+    const dashboard = document.querySelector('[data-live-dashboard]');
+    if (!dashboard) return;
+    const status = dashboard.querySelector('[data-refresh-status]');
+    const history = dashboard.querySelector('[data-scan-history]');
+    const reportUrl = dashboard.dataset.reportUrl;
+    const names = {
+        total_invitations: 'total_invitations',
+        registered_guests: 'registered_guests',
+        checked_in_guests: 'checked_in_guests',
+        pending_guests: 'pending_guests',
+        rejected_scans: 'rejected_scans',
+        vip_entries: 'vip_entries',
+    };
+    const updateHistory = (scans) => {
+        history.replaceChildren();
+        if (!scans.length) {
+            const row = history.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 4;
+            cell.className = 'text-muted text-center py-3';
+            cell.textContent = 'No QR scans yet.';
+            return;
+        }
+        scans.forEach((scan) => {
+            const row = history.insertRow();
+            const time = row.insertCell();
+            time.textContent = scan.scanned_at ? new Date(scan.scanned_at).toLocaleString() : '';
+            row.insertCell().textContent = scan.invitation__guest__name || 'Unknown QR';
+            const result = row.insertCell();
+            result.textContent = `${scan.result}${scan.reason ? `: ${scan.reason}` : ''}`;
+            result.className = `text-${scan.result === 'approved' ? 'success' : scan.result === 'already_checked_in' ? 'warning' : 'danger'}`;
+            row.insertCell().textContent = scan.scanned_by__email || '—';
+        });
+    };
+    const refresh = async () => {
+        try {
+            const response = await fetch(reportUrl, {credentials: 'same-origin', headers: {'Accept': 'application/json'}});
+            if (!response.ok) throw new Error(`Refresh failed (HTTP ${response.status})`);
+            const data = await response.json();
+            Object.keys(names).forEach((key) => {
+                dashboard.querySelectorAll(`[data-stat-value="${key}"]`).forEach((node) => {
+                    node.textContent = data[names[key]] ?? 0;
+                });
+            });
+            dashboard.querySelectorAll('[data-stat-value="approved_entries"]').forEach((node) => {
+                node.textContent = data.approved_entries ?? 0;
+            });
+            const total = Number(data.total_invitations || 0);
+            ['registered_guests', 'approved_entries'].forEach((key) => {
+                const value = Number(data[key] || 0);
+                const bar = dashboard.querySelector(`[data-stat-bar="${key}"]`);
+                if (bar) bar.style.width = `${Math.min(100, total ? value / total * 100 : 0)}%`;
+            });
+            updateHistory(data.scan_history || []);
+            status.textContent = `Updated ${new Date().toLocaleTimeString()}.`;
+        } catch (error) {
+            status.textContent = `${error.message}. Showing the last loaded data.`;
+        }
+    };
+    refresh();
+    window.setInterval(refresh, 15000);
+})();
+</script>
+{% endblock %}

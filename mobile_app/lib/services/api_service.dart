@@ -1,10 +1,20 @@
 import 'dart:convert';
+import 'dart:async';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
 import '../models/event_model.dart';
 import '../models/business_model.dart';
 import '../models/subscription_model.dart';
+
+class ApiConnectionException implements Exception {
+  final String message;
+  ApiConnectionException(this.message);
+
+  @override
+  String toString() => message;
+}
 
 class ApiService {
   static Future<Map<String, String>> _getHeaders() async {
@@ -30,41 +40,124 @@ class ApiService {
         final List results = decoded is List ? decoded : (decoded['results'] ?? []);
         return results.map((e) => EventModel.fromJson(e)).toList();
       }
+      throw Exception('Unable to load events (HTTP ${response.statusCode})');
     } catch (_) {
-      // Offline fallback: return offline events
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('is_offline_demo') != true) rethrow;
+      return _getOfflineDemoEvents();
     }
-    return _getOfflineDemoEvents();
+  }
+
+  static Future<List<EventModel>> getCheckInEvents() async {
+    final events = <EventModel>[];
+    final baseUri = Uri.parse(AppConstants.eventsUrl);
+    String? nextUrl = baseUri.toString();
+    while (nextUrl != null) {
+      final response = await http.get(
+        Uri.parse(nextUrl),
+        headers: await _getHeaders(),
+      ).timeout(const Duration(seconds: 8));
+      if (response.statusCode != 200) {
+        throw Exception('Unable to load assigned events (HTTP ${response.statusCode})');
+      }
+      final decoded = jsonDecode(response.body);
+      final List results = decoded is List ? decoded : (decoded['results'] ?? []);
+      events.addAll(results.map((event) => EventModel.fromJson(event)));
+      final next = decoded is Map ? decoded['next'] : null;
+      if (next is String) {
+        final nextUri = baseUri.resolve(next);
+        if (nextUri.origin != baseUri.origin) {
+          throw Exception('Event API returned a pagination link to an unexpected host.');
+        }
+        nextUrl = nextUri.toString();
+      } else {
+        nextUrl = null;
+      }
+    }
+    return events;
+  }
+
+  static Future<Map<String, dynamic>> verifyInvitation(int eventId, String token) async {
+    late final http.Response response;
+    try {
+      response = await http.post(
+        Uri.parse('${AppConstants.eventsUrl}$eventId/check-in/'),
+        headers: await _getHeaders(),
+        body: jsonEncode({'token': token}),
+      ).timeout(const Duration(seconds: 10));
+    } on SocketException catch (error) {
+      throw ApiConnectionException(error.message);
+    } on TimeoutException {
+      throw ApiConnectionException('Connection timed out.');
+    } on http.ClientException catch (error) {
+      throw ApiConnectionException(error.message);
+    }
+    final decoded = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      throw Exception(decoded['detail'] ?? 'Check-in failed (HTTP ${response.statusCode})');
+    }
+    return Map<String, dynamic>.from(decoded);
+  }
+
+  static Future<Map<String, dynamic>> getCheckInSummary(int eventId) async {
+    final response = await http.get(
+      Uri.parse('${AppConstants.eventsUrl}$eventId/check-in/'),
+      headers: await _getHeaders(),
+    ).timeout(const Duration(seconds: 8));
+    if (response.statusCode != 200) {
+      throw Exception('Unable to load check-in summary (HTTP ${response.statusCode})');
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  static Future<void> queuePendingCheckIn(int eventId, String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    final pending = prefs.getStringList('pending_check_ins') ?? [];
+    final entry = jsonEncode({'event_id': eventId, 'token': token});
+    final exists = pending.any((item) {
+      final decoded = jsonDecode(item);
+      return decoded['event_id'] == eventId && decoded['token'] == token;
+    });
+    if (!exists) pending.add(entry);
+    await prefs.setStringList('pending_check_ins', pending);
+  }
+
+  static Future<int> pendingCheckInCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getStringList('pending_check_ins') ?? []).length;
+  }
+
+  static Future<List<Map<String, dynamic>>> syncPendingCheckIns() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pending = prefs.getStringList('pending_check_ins') ?? [];
+    final remaining = <String>[];
+    final results = <Map<String, dynamic>>[];
+    for (final item in pending) {
+      final scan = Map<String, dynamic>.from(jsonDecode(item));
+      try {
+        final result = await verifyInvitation(scan['event_id'] as int, scan['token'] as String);
+        results.add({'scan': scan, 'result': result});
+      } catch (error) {
+        remaining.add(item);
+        results.add({'scan': scan, 'error': error.toString()});
+      }
+    }
+    await prefs.setStringList('pending_check_ins', remaining);
+    return results;
   }
 
   static Future<EventModel> createEvent(Map<String, dynamic> data) async {
-    try {
-      final response = await http.post(
-        Uri.parse(AppConstants.eventsUrl),
-        headers: await _getHeaders(),
-        body: jsonEncode(data),
-      ).timeout(const Duration(seconds: 8));
+    final response = await http.post(
+      Uri.parse(AppConstants.eventsUrl),
+      headers: await _getHeaders(),
+      body: jsonEncode(data),
+    ).timeout(const Duration(seconds: 8));
 
-      if (response.statusCode == 201) {
-        return EventModel.fromJson(jsonDecode(response.body));
-      } else {
-        final error = jsonDecode(response.body);
-        throw Exception(error.toString());
-      }
-    } catch (e) {
-      // Local fallback for offline mode
-      return EventModel(
-        id: DateTime.now().millisecondsSinceEpoch,
-        title: data['title'] ?? 'New Event',
-        slug: 'offline-event-${DateTime.now().millisecondsSinceEpoch}',
-        eventType: data['event_type'] ?? 'wedding',
-        hostNames: data['host_names'] ?? '',
-        description: data['description'] ?? '',
-        eventDate: data['event_date'] ?? '2026-12-01',
-        venueName: data['venue_name'] ?? '',
-        venueAddress: data['venue_address'] ?? '',
-        isPublished: true,
-      );
+    if (response.statusCode == 201) {
+      return EventModel.fromJson(jsonDecode(response.body));
     }
+    final error = jsonDecode(response.body);
+    throw Exception(error.toString());
   }
 
   // Business API

@@ -16,7 +16,7 @@ class QRCodeAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Identifiers & Target', {
-            'fields': ('uuid', 'qr_type', 'event', 'target_url'),
+            'fields': ('uuid', 'qr_type', 'event', 'business', 'invitation', 'target_url'),
         }),
         ('Branding & Colors', {
             'fields': ('fill_color', 'back_color', 'logo', 'qr_image', 'get_qr_preview'),
@@ -32,6 +32,8 @@ class QRCodeAdmin(admin.ModelAdmin):
     def get_target_preview(self, obj):
         if obj.event:
             return obj.event.title
+        if obj.invitation:
+            return f"{obj.invitation.guest.name} - {obj.invitation.guest.event.title}"
         return obj.target_url
     get_target_preview.short_description = 'Target'
 

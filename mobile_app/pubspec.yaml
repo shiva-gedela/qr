@@ -1,7 +1,7 @@
-name: eventconnect_qr
-description: "EventConnect QR - Mobile Android app for event invitations, QR scanner, gallery, and digital business profiles."
+name: qroutex
+description: "QRouteX - Smart Event QR & Turn-by-Turn GPS Navigation App (qroutex.com)"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.2+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

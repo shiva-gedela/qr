@@ -199,11 +199,11 @@ def _send_verification_email(request, user):
         f"/accounts/verify-email/{user.email_verification_token}/"
     )
     send_mail(
-        subject="Verify your EventConnect QR email",
+        subject="Verify your QRouteX email",
         message=(
             f"Hi {user.first_name},\n\n"
             f"Please verify your email by clicking the link below:\n{verify_url}\n\n"
-            "If you did not register, ignore this email.\n\nEventConnect QR Team"
+            "If you did not register, ignore this email.\n\nQRouteX Team • https://qroutex.com"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
@@ -217,11 +217,11 @@ def _send_password_reset_email(request, user):
         f"/accounts/password-reset-confirm/{user.email_verification_token}/"
     )
     send_mail(
-        subject="Reset your EventConnect QR password",
+        subject="Reset your QRouteX password",
         message=(
             f"Hi {user.first_name},\n\n"
             f"Click the link below to reset your password:\n{reset_url}\n\n"
-            "This link expires when you use it.\n\nEventConnect QR Team"
+            "This link expires when you use it.\n\nQRouteX Team • https://qroutex.com"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],

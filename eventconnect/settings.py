@@ -16,8 +16,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ─── Security ────────────────────────────────────────────────────────────────
 SECRET_KEY = os.getenv('SECRET_KEY', 'dev-fallback-secret-change-in-production')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,testserver').split(',') if h.strip()]
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000,https://*.onrender.com').split(',') if o.strip()]
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com,qroutex.com,www.qroutex.com,testserver,*').split(',') if h.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000,http://127.0.0.1:8000,https://*.onrender.com,https://qroutex.com,https://www.qroutex.com').split(',') if o.strip()]
 
 # ─── Application Definition ──────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third party
     'rest_framework',
+    'rest_framework.authtoken',
     'crispy_forms',
     'crispy_bootstrap5',
     # Local apps
@@ -177,7 +178,8 @@ EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'EventConnect QR <noreply@eventconnect.com>')
+# ─── Email ────────────────────────────────────────────────────────────────────
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'QRouteX <noreply@qroutex.com>')
 
 # ─── Crispy Forms ─────────────────────────────────────────────────────────────
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
@@ -186,6 +188,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 # ─── REST Framework ───────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
@@ -197,8 +200,9 @@ REST_FRAMEWORK = {
 }
 
 # ─── Site Settings ────────────────────────────────────────────────────────────
-SITE_NAME = 'EventConnect QR'
-SITE_URL = os.getenv('SITE_URL', 'http://127.0.0.1:8000')
+SITE_NAME = 'QRouteX'
+SITE_DOMAIN = 'qroutex.com'
+SITE_URL = os.getenv('SITE_URL', 'https://qroutex.com')
 GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', '')
 
 # ─── File Upload Limits ───────────────────────────────────────────────────────

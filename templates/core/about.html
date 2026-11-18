@@ -1,21 +1,78 @@
 {% extends 'base.html' %}
-{% block title %}About - {{ SITE_NAME }}{% endblock %}
+{% block title %}About QRouteX - Next-Gen Smart Event QR &amp; GPS Platform{% endblock %}
+
 {% block content %}
-<div class="bg-light py-5 border-bottom text-center">
-    <div class="container">
-        <h1 class="display-4 fw-bold mb-3"><i class="bi bi-info-circle text-primary me-3"></i>About {{ SITE_NAME }}</h1>
-        <p class="lead text-muted">Create beautiful event invitations with QR codes for all your special occasions.</p>
+<!-- ══ Header Banner ═════════════════════════════════════════════════════════ -->
+<div class="py-5 text-white position-relative overflow-hidden" style="background: radial-gradient(circle at 20% 20%, #312e81 0%, #1e1b4b 60%, #090d16 100%);">
+    <div class="container py-4 text-center position-relative" style="z-index:2;">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2);">
+            <div class="qroutex-emblem" style="width:24px; height:24px; font-size:0.75rem;"><i class="bi bi-geo-alt-fill"></i></div>
+            <span class="small text-white-75 fw-bold">ABOUT QROUTEX • qroutex.com</span>
+        </div>
+        <h1 class="display-4 fw-bold mb-3 text-white">Reimagining Event Invitations &amp; Guest Navigation</h1>
+        <p class="lead text-white-75 mx-auto mb-0" style="max-width: 680px;">
+            QRouteX connects event hosts and their guests through smart vector QR invitations, direct turn-by-turn Google Maps GPS navigation, and collaborative live moments.
+        </p>
     </div>
 </div>
+
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <p class="lead">EventConnect QR is a modern platform that lets you create beautiful digital event invitations
-            complete with QR codes, photo galleries and interactive maps.</p>
-            <p>Share your event with guests via a simple QR code. When guests scan it, they land on your beautiful
-            custom event mini-website with all the details they need.</p>
-            <h4 class="mt-4 mb-3 fw-bold">Our Mission</h4>
-            <p>To make every celebration memorable by combining elegant digital design with the convenience of QR technology.</p>
+        <div class="col-lg-10">
+            <!-- Story & Mission -->
+            <div class="row g-4 mb-5 align-items-center">
+                <div class="col-md-6">
+                    <span class="badge bg-primary rounded-pill px-3 py-2 mb-2">OUR VISION</span>
+                    <h2 class="fw-bold mb-3">No More Lost Guests. Ever.</h2>
+                    <p class="text-muted" style="line-height: 1.8;">
+                        Every celebration is unique, yet guests frequently struggle to locate event venues, find parking entrances, or keep track of schedule changes. 
+                    </p>
+                    <p class="text-muted" style="line-height: 1.8;">
+                        <strong>QRouteX</strong> solves this by encoding precise Google Maps GPS coordinates into dynamic QR codes that can be printed on cards or shared digitally on WhatsApp. With one scan, guests launch turn-by-turn GPS driving directions right to your venue.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-lg p-4 rounded-4 position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%); color: white;">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="qroutex-emblem fs-4" style="width: 50px; height: 50px;"><i class="bi bi-geo-alt-fill"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">QRouteX Architecture</h5>
+                                <small class="text-white-75">qroutex.com</small>
+                            </div>
+                        </div>
+                        <ul class="list-unstyled d-flex flex-column gap-3 mb-0 small text-white-75">
+                            <li class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-warning"></i><span><strong>6 Dedicated Occasion Engines:</strong> Wedding, Birthday, Engagement, Anniversary, Housewarming, Graduation.</span></li>
+                            <li class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-warning"></i><span><strong>Instant GPS Launch:</strong> Deep-linked Google Maps turn-by-turn navigation.</span></li>
+                            <li class="d-flex align-items-center gap-2"><i class="bi bi-check-circle-fill text-warning"></i><span><strong>Printable A4 Vectors:</strong> High-resolution vector PDF tabletop standees.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pillars -->
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 border-0 shadow-sm hover-lift rounded-4">
+                        <div class="feature-icon-box bg-primary text-white mx-auto mb-3"><i class="bi bi-qr-code-scan"></i></div>
+                        <h5 class="fw-bold">Smart QR Studio</h5>
+                        <p class="text-muted small mb-0">Customize foreground and background colors with company or couple logos embedded securely.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 border-0 shadow-sm hover-lift rounded-4">
+                        <div class="feature-icon-box bg-danger text-white mx-auto mb-3"><i class="bi bi-cursor-fill text-warning"></i></div>
+                        <h5 class="fw-bold">Precision GPS Navigation</h5>
+                        <p class="text-muted small mb-0">Direct Google Maps turn-by-turn driving navigation ensures seamless guest arrivals.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 p-4 border-0 shadow-sm hover-lift rounded-4">
+                        <div class="feature-icon-box bg-success text-white mx-auto mb-3"><i class="bi bi-images"></i></div>
+                        <h5 class="fw-bold">Collaborative Moments</h5>
+                        <p class="text-muted small mb-0">Guests upload photos and video clips to a moderated live event wall in real time.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

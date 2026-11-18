@@ -144,7 +144,7 @@ class Business(models.Model):
     def whatsapp_url(self):
         num = self.clean_whatsapp_number
         if num:
-            msg = f"Hello {self.name}, I found your profile on EventConnect QR."
+            msg = f"Hello {self.name}, I found your profile on QRouteX (qroutex.com)."
             import urllib.parse
             return f"https://wa.me/{num}?text={urllib.parse.quote(msg)}"
         return ''

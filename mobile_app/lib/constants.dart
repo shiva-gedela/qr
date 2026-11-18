@@ -30,6 +30,7 @@ class AppConstants {
 
   // Dynamic Endpoints
   static String get loginUrl => '$apiBaseUrl/login/';
+  static String get logoutUrl => '$apiBaseUrl/logout/';
   static String get registerUrl => '$apiBaseUrl/register/';
   static String get profileUrl => '$apiBaseUrl/profile/';
   static String get eventsUrl => '$apiBaseUrl/events/';
