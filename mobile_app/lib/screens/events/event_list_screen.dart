@@ -10,6 +10,7 @@ import 'event_create_screen.dart';
 import 'event_detail_screen.dart';
 import 'invitation_card_view_screen.dart';
 import 'event_portfolio_screen.dart';
+import 'event_ride_booking_screen.dart';
 
 class EventListScreen extends StatefulWidget {
   const EventListScreen({Key? key}) : super(key: key);
@@ -141,6 +142,15 @@ class _EventListScreenState extends State<EventListScreen> {
                 onTap: () {
                   Navigator.pop(context);
                   _shareViaWhatsApp(event);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.directions_car, color: Color(0xFF15803D)),
+                title: const Text('Book Ride to Venue (Uber, Rapido, Ola, Green SM)'),
+                subtitle: const Text('Compare vehicle fares, ETA & live booking', style: TextStyle(fontSize: 11)),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => EventRideBookingScreen(event: event)));
                 },
               ),
             ],
@@ -560,7 +570,47 @@ class _EventListScreenState extends State<EventListScreen> {
                     ),
                   ],
                 ),
-                const Divider(height: 22),
+                const SizedBox(height: 12),
+
+                // ── Book Ride & GPS Navigation Chip ──
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => EventRideBookingScreen(event: event)),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF86EFAC)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: const [
+                            Icon(Icons.directions_car, color: Color(0xFF15803D), size: 16),
+                            SizedBox(width: 6),
+                            Text(
+                              'Book Ride to Venue (Uber • Rapido • Ola • Green SM)',
+                              style: TextStyle(
+                                color: Color(0xFF15803D),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Icon(Icons.chevron_right, color: Color(0xFF15803D), size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+                const Divider(height: 20),
 
                 // ── Action Buttons Row: View, Edit, Share, Manage ──
                 Row(

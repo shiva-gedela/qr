@@ -5,6 +5,7 @@ import '../../constants.dart';
 import '../../models/event_model.dart';
 import 'invitation_card_view_screen.dart';
 import 'event_portfolio_screen.dart';
+import 'event_ride_booking_screen.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final EventModel event;
@@ -200,12 +201,34 @@ class EventDetailScreen extends StatelessWidget {
                   const SizedBox(height: 14),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppConstants.primaryColor,
+                      backgroundColor: const Color(0xFF10B981),
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                    ),
+                    icon: const Icon(Icons.directions_car, color: Colors.white, size: 20),
+                    label: const Text(
+                      'Compare Rides & Book (Uber, Rapido, Ola, Green SM)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EventRideBookingScreen(event: event),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppConstants.primaryColor),
+                      foregroundColor: AppConstants.primaryColor,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    icon: const Icon(Icons.navigation, color: AppConstants.accentColor, size: 18),
+                    icon: const Icon(Icons.navigation, color: AppConstants.primaryColor, size: 18),
                     label: const Text('Start GPS Turn-by-Turn in Google Maps', style: TextStyle(fontWeight: FontWeight.bold)),
                     onPressed: () => _openUrl(gpsUrl),
                   ),

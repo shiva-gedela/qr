@@ -9,6 +9,7 @@ import 'events/event_create_screen.dart';
 import 'events/event_detail_screen.dart';
 import 'events/invitation_card_view_screen.dart';
 import 'events/event_portfolio_screen.dart';
+import 'events/event_ride_booking_screen.dart';
 import 'business/business_list_screen.dart';
 import 'qr/qr_scanner_screen.dart';
 import 'qr/qr_display_screen.dart';
@@ -306,18 +307,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       _buildQuickActionItem(
-                        icon: Icons.directions,
-                        label: 'GPS Route',
+                        icon: Icons.directions_car,
+                        label: 'Book Ride',
                         bgColor: const Color(0xFFFEF3C7),
                         iconColor: const Color(0xFFD97706),
                         onTap: () {
-                          if (_recentEvents.isNotEmpty) {
-                            final first = _recentEvents.first;
-                            final url = first.googleMapsDirectionsUrl ?? first.googleMapsUrl ?? 'https://maps.google.com/?q=${Uri.encodeComponent("${first.venueName} ${first.venueAddress}")}';
-                            _openUrl(url);
-                          } else {
-                            _openUrl('https://maps.google.com');
-                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EventRideBookingScreen(
+                                event: _recentEvents.isNotEmpty ? _recentEvents.first : null,
+                              ),
+                            ),
+                          );
                         },
                       ),
                       _buildQuickActionItem(
@@ -619,18 +621,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               Row(
                                 children: [
-                                  // GPS Direct Route Button
+                                  // Book Ride & GPS Route Button
                                   ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppConstants.primaryColor,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                       textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                                     ),
-                                    icon: const Icon(Icons.directions, size: 14),
-                                    label: const Text('GPS Route'),
-                                    onPressed: () => _openUrl(gpsUrl),
+                                    icon: const Icon(Icons.directions_car, size: 14),
+                                    label: const Text('Book Ride & GPS'),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => EventRideBookingScreen(event: event),
+                                        ),
+                                      );
+                                    },
                                   ),
                                   const SizedBox(width: 6),
                                   // Detail Button

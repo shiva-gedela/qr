@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 import '../../models/event_model.dart';
 import '../../services/api_service.dart';
+import '../events/event_ride_booking_screen.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({Key? key}) : super(key: key);
@@ -98,6 +100,41 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
       if (uuidPattern.hasMatch(candidate)) return candidate;
     }
     return null;
+  }
+
+  Future<void> _scanFromGallery() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+
+      setState(() => _isProcessing = true);
+      final BarcodeCapture? capture = await _controller.analyzeImage(image.path);
+
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+
+      if (capture != null && capture.barcodes.isNotEmpty) {
+        await _onDetect(capture);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No QR code detected in the selected image. Please try a clearer photo or screenshot.'),
+            backgroundColor: AppConstants.warningColor,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not scan image: $e'),
+          backgroundColor: AppConstants.dangerColor,
+        ),
+      );
+    }
   }
 
   Future<void> _openUrl(String url) async {
@@ -252,7 +289,7 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              if (isGps || isUrl)
+              if (isGps || isUrl) ...[
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppConstants.primaryColor,
@@ -270,6 +307,34 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                     Navigator.pop(context);
                   },
                 ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.directions_car),
+                  label: const Text(
+                    'Book Ride (Uber / Rapido / Ola / Green SM)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EventRideBookingScreen(
+                          destinationName: isGps ? 'Scanned GPS Destination' : 'Scanned Event Destination',
+                          destinationAddress: code,
+                          customMapsUrl: isGps ? code : null,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
@@ -319,6 +384,11 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         backgroundColor: AppConstants.primaryDark,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.photo_library),
+            tooltip: 'Scan QR from Gallery',
+            onPressed: _scanFromGallery,
+          ),
           IconButton(
             icon: Icon(_isTorchOn ? Icons.flash_on : Icons.flash_off),
             tooltip: 'Toggle Flash',
@@ -408,22 +478,43 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
               ),
             ),
 
-          // Bottom Helper Instructions
+          // Bottom Controls & Gallery Scan Button
           Positioned(
-            bottom: 30,
+            bottom: 24,
             left: 20,
             right: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'Point camera at any Event QR, Google Maps GPS code, or Guest Pass',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppConstants.primaryDark,
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    elevation: 6,
+                  ),
+                  icon: const Icon(Icons.photo_library, color: AppConstants.primaryColor),
+                  label: const Text(
+                    'Scan QR from Gallery or Screenshot',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  onPressed: _scanFromGallery,
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.65),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Text(
+                    'Point camera at any Event QR, GPS code, or choose from Gallery',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

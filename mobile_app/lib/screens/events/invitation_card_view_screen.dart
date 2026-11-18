@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 import '../../models/event_model.dart';
 import 'event_portfolio_screen.dart';
+import 'event_ride_booking_screen.dart';
 
 enum InvitationTheme {
   royalPurpleGold,
@@ -218,6 +219,29 @@ class _InvitationCardViewScreenState extends State<InvitationCardViewScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Ride Booking to Venue Button
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    icon: const Icon(Icons.directions_car, size: 20),
+                    label: const Text(
+                      '🚗 Book Ride to Venue (Uber / Rapido / Ola / Green SM)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => EventRideBookingScreen(event: widget.event),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
