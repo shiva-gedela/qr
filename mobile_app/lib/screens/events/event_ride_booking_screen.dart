@@ -511,7 +511,7 @@ class _EventRideBookingScreenState extends State<EventRideBookingScreen> {
                         child: _buildMetricTile(
                           icon: Icons.timer,
                           title: 'Estimated ETA',
-                          value: '~$(_travelTimeMins) mins',
+                          value: '~${_travelTimeMins} mins',
                           color: const Color(0xFFFBBF24),
                         ),
                       ),

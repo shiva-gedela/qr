@@ -52,6 +52,7 @@ class AppConstants {
   static const Color textDark = Color(0xFF1F1F24);
   static const Color textMuted = Color(0xFF6B7280);
   static const Color successColor = Color(0xFF00BFA5); // Verified Teal
+  static const Color warningColor = Color(0xFFF59E0B); // Amber Warning
   static const Color dangerColor = Color(0xFFE53935);
 
   // Passvanta Premium Gradients
