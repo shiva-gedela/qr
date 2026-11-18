@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppConstants {
+  static const String appName = 'QRouteX';
+  static const String appWebsite = 'qroutex.com';
+
   // Default fallback baseUrl:
   // - Physical devices on local network: use host machine's Wi-Fi IP (e.g. http://10.22.84.118:8000)
   // - Android Studio Emulator: http://10.0.2.2:8000
