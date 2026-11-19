@@ -563,6 +563,205 @@
     }
 </script>
 
+<!-- ═══ FLOATING LIVE CHAT & WHATSAPP HUB ════════════════════════════════════ -->
+<div class="qrx-floating-hub">
+    <!-- WhatsApp Direct Float Button -->
+    <a href="https://wa.me/919876543210?text=Hello%20QRouteX%20Support!%20I%20have%20an%20inquiry%20regarding%20smart%20event%20passes%20and%20bookings." 
+       target="_blank" 
+       class="qrx-whatsapp-btn" 
+       title="Chat with us on WhatsApp"
+       aria-label="WhatsApp Support">
+        <i class="bi bi-whatsapp"></i>
+    </a>
+
+    <!-- Live Chat Trigger Button -->
+    <button type="button" class="qrx-chat-toggle-btn" onclick="toggleQrxChat()" id="qrxChatToggleBtn" aria-label="Toggle Live Chat">
+        <i class="bi bi-chat-dots-fill"></i>
+        <span>Live Chat</span>
+        <span class="badge rounded-circle p-1 bg-success" style="width: 8px; height: 8px;" title="Online"></span>
+    </button>
+</div>
+
+<!-- ═══ INTERACTIVE LIVE CHAT ASSISTANT DRAWER ═══════════════════════════════ -->
+<div class="qrx-chat-window" id="qrxChatWindow" aria-hidden="true">
+    <!-- Header -->
+    <div class="qrx-chat-header">
+        <div class="d-flex align-items-center gap-2">
+            <img src="/static/images/app_logo.png" alt="QRouteX" class="rounded-circle shadow-sm" style="width: 32px; height: 32px; background: white; padding: 1.5px;">
+            <div>
+                <div class="fw-bold text-white small" style="line-height: 1.2;">QRouteX Assistant</div>
+                <div class="d-flex align-items-center gap-1" style="font-size: 0.72rem; color: #86EFAC;">
+                    <span class="badge rounded-circle p-1 bg-success" style="width: 6px; height: 6px;"></span>
+                    <span>Online &bull; Instant Reply</span>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+            <a href="https://wa.me/919876543210?text=Hello%20QRouteX!%20Connecting%20from%20Live%20Chat." target="_blank" class="btn btn-sm btn-outline-light rounded-circle p-1" style="width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;" title="Switch to WhatsApp">
+                <i class="bi bi-whatsapp text-success"></i>
+            </a>
+            <button type="button" class="btn-close btn-close-white" onclick="toggleQrxChat()" aria-label="Close"></button>
+        </div>
+    </div>
+
+    <!-- Message Body -->
+    <div class="qrx-chat-body" id="qrxChatBody">
+        <!-- Incoming Greeting -->
+        <div class="qrx-msg incoming">
+            <div class="qrx-bubble">
+                👋 <strong>Hello! Welcome to QRouteX.</strong><br>
+                How can I assist you with your smart event invitations, turn-by-turn GPS, or vendor bookings today?
+            </div>
+            <small class="text-muted ms-2 mt-1" style="font-size: 0.68rem;">Just now</small>
+        </div>
+
+        <!-- Quick Query Suggestion Chips -->
+        <div class="d-flex flex-wrap gap-1 my-1" id="qrxQuickChips">
+            <button type="button" class="qrx-chip-btn" onclick="askQuickQuery('How do I create a smart event pass?')">
+                🎟️ Create Event Pass
+            </button>
+            <button type="button" class="qrx-chip-btn" onclick="askQuickQuery('How does Turn-by-Turn GPS navigation work?')">
+                📍 GPS &amp; Ride Booking
+            </button>
+            <button type="button" class="qrx-chip-btn" onclick="askQuickQuery('How can I download the Android App APK?')">
+                📱 Android App APK
+            </button>
+            <button type="button" class="qrx-chip-btn" onclick="askQuickQuery('How do I list my business or restaurant?')">
+                🏪 List Business
+            </button>
+            <button type="button" class="qrx-chip-btn" onclick="connectLiveWhatsApp()">
+                💬 Talk to Human on WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Footer Input -->
+    <form class="qrx-chat-footer" onsubmit="handleQrxChatSubmit(event)">
+        <input type="text" id="qrxChatInput" class="form-control rounded-pill border shadow-none px-3 py-2 small" placeholder="Type your message..." autocomplete="off">
+        <button type="submit" class="btn btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px; flex-shrink: 0;" title="Send">
+            <i class="bi bi-send-fill fs-6"></i>
+        </button>
+    </form>
+</div>
+
+<script>
+    function toggleQrxChat() {
+        const win = document.getElementById('qrxChatWindow');
+        if (win) {
+            win.classList.toggle('open');
+            if (win.classList.contains('open')) {
+                const input = document.getElementById('qrxChatInput');
+                if (input) setTimeout(() => input.focus(), 200);
+            }
+        }
+    }
+
+    function askQuickQuery(query) {
+        addUserChatMessage(query);
+        processBotResponse(query);
+    }
+
+    function handleQrxChatSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('qrxChatInput');
+        const text = input.value.trim();
+        if (!text) return;
+        input.value = '';
+
+        addUserChatMessage(text);
+        processBotResponse(text);
+    }
+
+    function addUserChatMessage(text) {
+        const body = document.getElementById('qrxChatBody');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'qrx-msg outgoing';
+        msgDiv.innerHTML = `
+            <div class="qrx-bubble">${escapeHtml(text)}</div>
+            <small class="text-white-50 me-2 mt-1 align-self-end" style="font-size: 0.68rem;">Just now</small>
+        `;
+        body.appendChild(msgDiv);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    function addBotChatMessage(htmlContent) {
+        const body = document.getElementById('qrxChatBody');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'qrx-msg incoming';
+        msgDiv.innerHTML = `
+            <div class="qrx-bubble">${htmlContent}</div>
+            <small class="text-muted ms-2 mt-1" style="font-size: 0.68rem;">Just now</small>
+        `;
+        body.appendChild(msgDiv);
+        body.scrollTop = body.scrollHeight;
+    }
+
+    function processBotResponse(query) {
+        const q = query.toLowerCase();
+        
+        // Show typing indicator
+        const body = document.getElementById('qrxChatBody');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'qrx-msg incoming typing-indicator';
+        typingDiv.id = 'qrxTypingIndicator';
+        typingDiv.innerHTML = `<div class="qrx-bubble text-muted small"><i class="bi bi-three-dots"></i> Assistant is typing...</div>`;
+        body.appendChild(typingDiv);
+        body.scrollTop = body.scrollHeight;
+
+        setTimeout(() => {
+            const ind = document.getElementById('qrxTypingIndicator');
+            if (ind) ind.remove();
+
+            if (q.includes('create') || q.includes('event') || q.includes('pass')) {
+                addBotChatMessage(`
+                    🎉 <strong>Creating an Event Pass is 100% Free:</strong><br>
+                    You can set up date, venue GPS coordinates, invitation cover, guest RSVP capacity, and generate printable PDF / PNG QR cards.<br><br>
+                    👉 <a href="/events/create/" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold text-white mt-1">Create Event Pass &rarr;</a>
+                `);
+            } else if (q.includes('gps') || q.includes('navigation') || q.includes('route') || q.includes('map') || q.includes('uber') || q.includes('ride')) {
+                addBotChatMessage(`
+                    📍 <strong>Turn-by-Turn GPS &amp; Ride Booking:</strong><br>
+                    Every QRouteX pass redirects guests straight to Google Maps navigation with exact venue coordinates.<br><br>
+                    Guests can also compare estimated fares and book <strong>Uber, Rapido, and Ola</strong> directly with 1-click!
+                `);
+            } else if (q.includes('apk') || q.includes('app') || q.includes('download') || q.includes('mobile')) {
+                addBotChatMessage(`
+                    📱 <strong>QRouteX Android Mobile App:</strong><br>
+                    Download our latest production APK directly to experience universal camera QR scanning, offline tickets, and host guest check-in.<br><br>
+                    📥 <a href="https://github.com/shiva-gedela/qr/releases/download/v1.0.9/QRouteX-v1.0.9.apk" class="btn btn-warning btn-sm rounded-pill px-3 py-1 fw-bold text-dark mt-1"><i class="bi bi-android2 me-1"></i>Download v1.0.9 APK</a>
+                `);
+            } else if (q.includes('business') || q.includes('vendor') || q.includes('restaurant') || q.includes('salon')) {
+                addBotChatMessage(`
+                    🏪 <strong>Vendor &amp; Business Profiles:</strong><br>
+                    List your catering, photography, banquet hall, or restaurant on QRouteX to receive table reservations and customer inquiries via WhatsApp.<br><br>
+                    👉 <a href="/business/create/" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 fw-bold mt-1">Register Business Free &rarr;</a>
+                `);
+            } else if (q.includes('whatsapp') || q.includes('human') || q.includes('agent') || q.includes('contact') || q.includes('call') || q.includes('support')) {
+                addBotChatMessage(`
+                    💬 <strong>Chat with our Support Team on WhatsApp:</strong><br>
+                    Our support specialists are available 24/7 to assist with custom event designs and high-capacity QR admissions.<br><br>
+                    <a href="https://wa.me/919876543210?text=Hello%20QRouteX!%20I%20would%20like%20to%20speak%20with%20a%20support%20agent." target="_blank" class="btn btn-success btn-sm rounded-pill px-3 py-1 fw-bold text-white mt-1"><i class="bi bi-whatsapp me-1"></i>Open WhatsApp Chat</a>
+                `);
+            } else {
+                addBotChatMessage(`
+                    Thank you for reaching out! You can easily explore public events, book local services, or generate branded QR passes with turn-by-turn navigation.<br><br>
+                    Need personal assistance? <a href="https://wa.me/919876543210?text=Hello%20QRouteX%20Support!%20My%20question:%20${encodeURIComponent(query)}" target="_blank" class="fw-bold text-success"><i class="bi bi-whatsapp"></i> Chat directly with us on WhatsApp &rarr;</a>
+                `);
+            }
+        }, 600);
+    }
+
+    function connectLiveWhatsApp() {
+        window.open('https://wa.me/919876543210?text=Hello%20QRouteX%20Support!%20I%20am%20chatting%20from%20the%20website%20and%20need%20assistance.', '_blank');
+    }
+
+    function escapeHtml(string) {
+        const div = document.createElement('div');
+        div.innerText = string;
+        return div.innerHTML;
+    }
+</script>
+
 {% block extra_js %}{% endblock %}
 </body>
 </html>
