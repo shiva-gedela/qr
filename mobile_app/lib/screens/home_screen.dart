@@ -583,24 +583,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Row(
                     children: [
-                      // App Logo (High-Res Rounded Badge)
+                      // App Logo (High-Res Rounded Squircle Badge)
                       Container(
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                          border: Border.all(color: AppConstants.accentColor, width: 2),
+                          borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                              color: AppConstants.primaryColor.withOpacity(0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
-                        padding: const EdgeInsets.all(2),
-                        child: ClipOval(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
                           child: Image.asset(
                             'assets/images/app_logo.png',
                             fit: BoxFit.contain,
