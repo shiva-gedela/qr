@@ -6,6 +6,7 @@ import '../../models/event_model.dart';
 import 'invitation_card_view_screen.dart';
 import 'event_portfolio_screen.dart';
 import 'event_ride_booking_screen.dart';
+import 'event_analytics_screen.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final EventModel event;
@@ -88,6 +89,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   content: Text(_isFavorite ? 'Saved to Favorites' : 'Removed from Favorites'),
                   duration: const Duration(seconds: 1),
                 ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.analytics_outlined),
+            tooltip: 'Check-in Analytics',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => EventAnalyticsScreen(event: event)),
               );
             },
           ),

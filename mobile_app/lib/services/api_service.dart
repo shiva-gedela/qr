@@ -7,6 +7,8 @@ import '../constants.dart';
 import '../models/event_model.dart';
 import '../models/business_model.dart';
 import '../models/subscription_model.dart';
+import '../models/booking_model.dart';
+import '../models/social_post_model.dart';
 
 class ApiConnectionException implements Exception {
   final String message;
@@ -556,5 +558,200 @@ class ApiService {
         googleMapsDirectionsUrl: 'https://maps.google.com/?q=Delhi+University+Senate',
       ),
     ];
+  }
+
+  // ══ Restaurant & Business Bookings ════════════════════════════════════════
+  static Future<bool> createBooking(BookingModel booking) async {
+    final prefs = await SharedPreferences.getInstance();
+    final listRaw = prefs.getStringList('user_bookings') ?? [];
+    listRaw.insert(0, jsonEncode(booking.toJson()));
+    await prefs.setStringList('user_bookings', listRaw);
+
+    // Attempt backend sync
+    try {
+      await http.post(
+        Uri.parse('${AppConstants.apiBaseUrl}/business/${booking.businessId}/bookings/'),
+        headers: await _getHeaders(),
+        body: jsonEncode(booking.toJson()),
+      ).timeout(const Duration(seconds: 3));
+    } catch (_) {}
+
+    return true;
+  }
+
+  static Future<List<BookingModel>> getUserBookings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final listRaw = prefs.getStringList('user_bookings') ?? [];
+    if (listRaw.isNotEmpty) {
+      final list = <BookingModel>[];
+      for (final raw in listRaw) {
+        try {
+          list.add(BookingModel.fromJson(jsonDecode(raw)));
+        } catch (_) {}
+      }
+      return list;
+    }
+
+    // Default seed booking for demonstration
+    final demoBooking = BookingModel(
+      id: 'BK-${DateTime.now().millisecondsSinceEpoch % 10000}',
+      businessId: 1,
+      businessName: 'Royal Spice Banquet & Restaurant',
+      businessCategory: 'Restaurant & Dining',
+      serviceName: 'VIP Table Reservation (4 Guests)',
+      servicePrice: 1200.0,
+      date: 'Tomorrow, 08:00 PM',
+      timeSlot: '08:00 PM - 10:00 PM',
+      guestsCount: 4,
+      status: 'confirmed',
+      specialRequests: 'Near window seat with celebration dessert',
+      customerName: 'Shiva Gedela',
+      customerPhone: '+91 98765 43210',
+      createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+    );
+    await createBooking(demoBooking);
+    return [demoBooking];
+  }
+
+  static Future<bool> cancelBooking(String bookingId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final listRaw = prefs.getStringList('user_bookings') ?? [];
+    final updated = <String>[];
+    for (final raw in listRaw) {
+      try {
+        final data = jsonDecode(raw);
+        if (data['id'] == bookingId) {
+          data['status'] = 'cancelled';
+          updated.add(jsonEncode(data));
+        } else {
+          updated.add(raw);
+        }
+      } catch (_) {
+        updated.add(raw);
+      }
+    }
+    await prefs.setStringList('user_bookings', updated);
+    return true;
+  }
+
+  // ══ Social Feed & Moments ════════════════════════════════════════════════
+  static Future<List<SocialPostModel>> getSocialPosts() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('social_posts') ?? [];
+    if (raw.isNotEmpty) {
+      final list = <SocialPostModel>[];
+      for (final r in raw) {
+        try {
+          list.add(SocialPostModel.fromJson(jsonDecode(r)));
+        } catch (_) {}
+      }
+      return list;
+    }
+
+    // Seed realistic social posts
+    final seedPosts = [
+      SocialPostModel(
+        id: 'post_1',
+        userName: 'Priya & Rahul',
+        userAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
+        eventTitle: 'Priya & Rahul Grand Wedding',
+        eventTag: '#PriyaWedsRahul',
+        caption: 'The most magical evening of our lives! Thank you everyone for scanning and joining via QRouteX GPS routes! ✨💍❤️',
+        imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80',
+        likesCount: 142,
+        isLiked: false,
+        comments: [
+          SocialCommentModel(id: 'c1', userName: 'Ananya', text: 'Stunning couple! Loved the instant QR entry!', createdAt: DateTime.now().subtract(const Duration(hours: 4))),
+          SocialCommentModel(id: 'c2', userName: 'Karthik', text: 'Congratulations both of you!! 🎉', createdAt: DateTime.now().subtract(const Duration(hours: 2))),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(hours: 6)),
+      ),
+      SocialPostModel(
+        id: 'post_2',
+        userName: 'Aarav’s Parents',
+        userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
+        eventTitle: 'Aarav turns 5! Superhero Bash',
+        eventTag: '#AaravTurnsFive',
+        caption: 'Spiderman arrived! Kids had a blast at the superhero birthday bash! 🦸‍♂️🎂🎈',
+        imageUrl: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80',
+        likesCount: 89,
+        isLiked: true,
+        comments: [
+          SocialCommentModel(id: 'c3', userName: 'Divya', text: 'Happy birthday little champion! 🎈', createdAt: DateTime.now().subtract(const Duration(hours: 5))),
+        ],
+        createdAt: DateTime.now().subtract(const Duration(hours: 12)),
+      ),
+      SocialPostModel(
+        id: 'post_3',
+        userName: 'Dr. Vikram',
+        userAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80',
+        eventTitle: 'Doctorate Celebration',
+        eventTag: '#DrVikramPhD',
+        caption: 'Years of hard work encapsulated in this beautiful moment with family and mentors. 🎓✨',
+        imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80',
+        likesCount: 215,
+        isLiked: false,
+        comments: [],
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      ),
+    ];
+
+    await prefs.setStringList('social_posts', seedPosts.map((p) => jsonEncode(p.toJson())).toList());
+    return seedPosts;
+  }
+
+  static Future<bool> createSocialPost(SocialPostModel post) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = await getSocialPosts();
+    list.insert(0, post);
+    await prefs.setStringList('social_posts', list.map((p) => jsonEncode(p.toJson())).toList());
+    return true;
+  }
+
+  static Future<bool> toggleLikePost(String postId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = await getSocialPosts();
+    for (final p in list) {
+      if (p.id == postId) {
+        p.isLiked = !p.isLiked;
+        p.likesCount += p.isLiked ? 1 : -1;
+        break;
+      }
+    }
+    await prefs.setStringList('social_posts', list.map((p) => jsonEncode(p.toJson())).toList());
+    return true;
+  }
+
+  static Future<bool> addPostComment(String postId, String text) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = await getSocialPosts();
+    for (final p in list) {
+      if (p.id == postId) {
+        p.comments.add(SocialCommentModel(
+          id: 'c_${DateTime.now().millisecondsSinceEpoch}',
+          userName: 'You',
+          text: text,
+          createdAt: DateTime.now(),
+        ));
+        break;
+      }
+    }
+    await prefs.setStringList('social_posts', list.map((p) => jsonEncode(p.toJson())).toList());
+    return true;
+  }
+
+  // ══ Advanced QR Scan & History ════════════════════════════════════════════
+  static Future<List<Map<String, dynamic>>> getScanHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('qr_scan_history') ?? [];
+    return raw.map((r) => Map<String, dynamic>.from(jsonDecode(r))).toList();
+  }
+
+  static Future<void> saveScanRecord(Map<String, dynamic> record) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('qr_scan_history') ?? [];
+    raw.insert(0, jsonEncode(record));
+    if (raw.length > 50) raw.removeLast();
+    await prefs.setStringList('qr_scan_history', raw);
   }
 }

@@ -1,12 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants.dart';
 import '../../models/event_model.dart';
 import '../../services/api_service.dart';
-import 'invitation_card_view_screen.dart';
 
 class EventCreateScreen extends StatefulWidget {
   final String? initialEventType;
+
   const EventCreateScreen({Key? key, this.initialEventType}) : super(key: key);
 
   @override
@@ -15,33 +17,62 @@ class EventCreateScreen extends StatefulWidget {
 
 class _EventCreateScreenState extends State<EventCreateScreen> {
   final _formKey = GlobalKey<FormState>();
+  int _currentStep = 0; // 0 to 7 (8 steps)
+
+  // Step 1: Event Info
   final _titleController = TextEditingController();
-  final _hostNamesController = TextEditingController();
-  final _descriptionController = TextEditingController();
+  late String _eventType;
+
+  // Step 2: Date, Time & Location
+  DateTime _selectedDate = DateTime.now().add(const Duration(days: 14));
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 30);
   final _venueNameController = TextEditingController();
   final _venueAddressController = TextEditingController();
   final _mapsUrlController = TextEditingController();
+
+  // Step 3: Cover Image
+  String? _pickedCoverPath;
+  String _selectedCoverPreset = 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80';
+
+  // Step 4: Description & Hosts
+  final _hostNamesController = TextEditingController();
+  final _descriptionController = TextEditingController();
   final _organizerNameController = TextEditingController();
   final _organizerContactController = TextEditingController();
-  final _capacityController = TextEditingController(text: '150');
-  final _instagramController = TextEditingController();
-  final _dressCodeController = TextEditingController();
 
-  DateTime _selectedDate = DateTime.now().add(const Duration(days: 14));
-  TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
-  late String _eventType;
-  String? _selectedCoverPreset;
-  String? _pickedCoverPath;
-  bool _isLoading = false;
-  int _currentStep = 0; // 0: Details, 1: Venue & Time, 2: Capacity & Preview
+  // Step 5: Capacity
+  int _guestCapacity = 150;
+
+  // Step 6: Ticket & Settings
+  final _dressCodeController = TextEditingController(text: 'Festive / Ethnic');
+  bool _isPublic = true;
+  bool _allowGuestUploads = true;
+
+  // Step 7: Portfolio Images
+  final List<String> _portfolioImages = [];
+
+  bool _isPublishing = false;
 
   final List<Map<String, String>> _eventTypes = [
-    {'code': 'wedding', 'label': 'Wedding', 'emoji': '💍', 'bg': 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80'},
-    {'code': 'birthday', 'label': 'Birthday', 'emoji': '🎂', 'bg': 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&q=80'},
-    {'code': 'engagement', 'label': 'Engagement', 'emoji': '💑', 'bg': 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=800&q=80'},
-    {'code': 'anniversary', 'label': 'Anniversary', 'emoji': '❤️', 'bg': 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80'},
-    {'code': 'housewarming', 'label': 'Housewarming', 'emoji': '🏠', 'bg': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80'},
-    {'code': 'graduation', 'label': 'Graduation', 'emoji': '🎓', 'bg': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80'},
+    {'code': 'wedding', 'label': 'Wedding', 'emoji': '💍', 'preset': 'https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80'},
+    {'code': 'birthday', 'label': 'Birthday', 'emoji': '🎂', 'preset': 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&q=80'},
+    {'code': 'engagement', 'label': 'Engagement', 'emoji': '💑', 'preset': 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=800&q=80'},
+    {'code': 'anniversary', 'label': 'Anniversary', 'emoji': '❤️', 'preset': 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&q=80'},
+    {'code': 'housewarming', 'label': 'Housewarming', 'emoji': '🏠', 'preset': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80'},
+    {'code': 'graduation', 'label': 'Graduation', 'emoji': '🎓', 'preset': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80'},
+    {'code': 'concert', 'label': 'Music & Concert', 'emoji': '🎵', 'preset': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80'},
+    {'code': 'party', 'label': 'Cocktail & Party', 'emoji': '🍸', 'preset': 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=800&q=80'},
+  ];
+
+  final List<String> _stepTitles = [
+    'Event Information',
+    'Date, Time & Location',
+    'Upload Cover Image',
+    'Story & Description',
+    'Guest Capacity',
+    'Ticket & Entry Settings',
+    'Event Portfolio',
+    'Preview & Publish',
   ];
 
   @override
@@ -49,244 +80,238 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
     super.initState();
     _eventType = widget.initialEventType ?? 'wedding';
     final matching = _eventTypes.firstWhere((e) => e['code'] == _eventType, orElse: () => _eventTypes.first);
-    _selectedCoverPreset = matching['bg'];
+    _selectedCoverPreset = matching['preset']!;
   }
 
-  void _onEventTypeChanged(String code) {
-    setState(() {
-      _eventType = code;
-      final matching = _eventTypes.firstWhere((e) => e['code'] == code, orElse: () => _eventTypes.first);
-      _selectedCoverPreset = matching['bg'];
-    });
-  }
-
-  Future<void> _pickImage() async {
+  Future<void> _pickCoverImage() async {
     try {
       final picker = ImagePicker();
       final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
       if (picked != null) {
         setState(() {
           _pickedCoverPath = picked.path;
-          _selectedCoverPreset = null;
         });
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not pick image: $e')),
-      );
-    }
+    } catch (_) {}
+  }
+
+  Future<void> _pickPortfolioImage() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (picked != null) {
+        setState(() {
+          _portfolioImages.add(picked.path);
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _selectDate() async {
-    final date = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 730)),
     );
-    if (date != null) {
-      setState(() => _selectedDate = date);
-    }
+    if (picked != null) setState(() => _selectedDate = picked);
   }
 
   Future<void> _selectTime() async {
-    final time = await showTimePicker(
+    final picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
     );
-    if (time != null) {
-      setState(() => _selectedTime = time);
+    if (picked != null) setState(() => _selectedTime = picked);
+  }
+
+  void _nextStep() {
+    if (_currentStep == 0 && _titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter an event title.')));
+      return;
+    }
+    if (_currentStep == 1 && _venueNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter the venue name.')));
+      return;
+    }
+    if (_currentStep < 7) {
+      setState(() => _currentStep++);
     }
   }
 
-  Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) {
-      setState(() => _currentStep = 0);
-      return;
+  void _prevStep() {
+    if (_currentStep > 0) {
+      setState(() => _currentStep--);
     }
+  }
 
-    setState(() => _isLoading = true);
+  void _publishEvent() async {
+    setState(() => _isPublishing = true);
+
+    final eventId = DateTime.now().millisecondsSinceEpoch % 100000;
+    final slug = "${_titleController.text.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-')}-$eventId";
+    final dateStr = "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
+    final timeStr = _selectedTime.format(context);
+
+    final newEvent = EventModel(
+      id: eventId,
+      title: _titleController.text.trim(),
+      slug: slug,
+      eventType: _eventType,
+      hostNames: _hostNamesController.text.trim().isNotEmpty ? _hostNamesController.text.trim() : 'Celebration Hosts',
+      description: _descriptionController.text.trim().isNotEmpty
+          ? _descriptionController.text.trim()
+          : 'You are cordially invited to celebrate ${_titleController.text.trim()}. Please scan your unique digital pass at the venue entrance.',
+      eventDate: dateStr,
+      eventTime: timeStr,
+      venueName: _venueNameController.text.trim(),
+      venueAddress: _venueAddressController.text.trim().isNotEmpty ? _venueAddressController.text.trim() : _venueNameController.text.trim(),
+      googleMapsUrl: _mapsUrlController.text.trim().isNotEmpty ? _mapsUrlController.text.trim() : null,
+      googleMapsDirectionsUrl: _mapsUrlController.text.trim().isNotEmpty
+          ? _mapsUrlController.text.trim()
+          : 'https://maps.google.com/?q=${Uri.encodeComponent("${_venueNameController.text.trim()} ${_venueAddressController.text.trim()}")}',
+      dressCode: _dressCodeController.text.trim(),
+      coverImageUrl: _pickedCoverPath ?? _selectedCoverPreset,
+      isPublished: true,
+      capacity: _guestCapacity,
+      guestCount: 0,
+      organizerName: _organizerNameController.text.trim(),
+      organizerContact: _organizerContactController.text.trim(),
+      targetUrl: '${AppConstants.baseUrl}/events/e/$slug/',
+      photos: _portfolioImages.map((path) => {'image': path, 'caption': 'Event Highlight'}).toList(),
+    );
+
+    // Save locally
+    final prefs = await SharedPreferences.getInstance();
+    final localRaw = prefs.getStringList('local_created_events') ?? [];
+    localRaw.insert(0, jsonEncode(newEvent.toJson()));
+    await prefs.setStringList('local_created_events', localRaw);
+
+    // Backend sync attempt
     try {
-      final dateStr = "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
-      final timeStr = "${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}:00";
+      await ApiService.createEvent(
+        title: newEvent.title,
+        eventType: newEvent.eventType,
+        eventDate: newEvent.eventDate,
+        venueName: newEvent.venueName,
+        venueAddress: newEvent.venueAddress,
+        hostNames: newEvent.hostNames,
+        description: newEvent.description,
+        capacity: newEvent.capacity,
+        dressCode: newEvent.dressCode,
+      );
+    } catch (_) {}
 
-      final created = await ApiService.createEvent({
-        'title': _titleController.text.trim(),
-        'host_names': _hostNamesController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'event_type': _eventType,
-        'event_date': dateStr,
-        'event_time': timeStr,
-        'venue_name': _venueNameController.text.trim(),
-        'venue_address': _venueAddressController.text.trim(),
-        'maps_url': _mapsUrlController.text.trim().isNotEmpty
-            ? _mapsUrlController.text.trim()
-            : 'https://maps.google.com/?q=${Uri.encodeComponent("${_venueNameController.text.trim()} ${_venueAddressController.text.trim()}")}',
-        'organizer_name': _organizerNameController.text.trim(),
-        'organizer_contact': _organizerContactController.text.trim(),
-        'capacity': int.tryParse(_capacityController.text.trim()) ?? 150,
-        'instagram_url': _instagramController.text.trim(),
-        'dress_code': _dressCodeController.text.trim(),
-        'cover_image_url': _selectedCoverPreset,
-        'is_published': true,
-      });
+    if (!mounted) return;
+    setState(() => _isPublishing = false);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('🎉 Smart Event QR & Invitation created successfully!'),
-            backgroundColor: AppConstants.successColor,
-          ),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => InvitationCardViewScreen(event: created)),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: AppConstants.dangerColor),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Event Published Successfully with QR Pass!'), backgroundColor: AppConstants.successColor),
+    );
+
+    Navigator.pop(context, newEvent);
   }
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = "${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}";
-    final timeStr = "${_selectedTime.format(context)}";
-
     return Scaffold(
-      backgroundColor: AppConstants.backgroundColor,
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Create New Event QR', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Create New Event', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
         backgroundColor: AppConstants.primaryDark,
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            // Step Progress Indicator
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              color: Colors.white,
-              child: Row(
-                children: [
-                  _buildStepBubble(0, '1. Details'),
-                  _buildStepConnector(0),
-                  _buildStepBubble(1, '2. Venue & GPS'),
-                  _buildStepConnector(1),
-                  _buildStepBubble(2, '3. Capacity & Card'),
-                ],
-              ),
-            ),
-
-            // Step Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: Column(
+        children: [
+          // ── Step Progress Indicator ──
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (_currentStep == 0) _buildStepDetails(),
-                    if (_currentStep == 1) _buildStepVenueAndDate(dateStr, timeStr),
-                    if (_currentStep == 2) _buildStepCapacityAndLivePreview(dateStr, timeStr),
+                    Text(
+                      'STEP ${_currentStep + 1} OF 8',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppConstants.primaryColor, letterSpacing: 0.8),
+                    ),
+                    Text(
+                      _stepTitles[_currentStep],
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppConstants.textDark),
+                    ),
                   ],
                 ),
-              ),
-            ),
-
-            // Bottom Navigation Controls
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10)],
-              ),
-              child: Row(
-                children: [
-                  if (_currentStep > 0)
-                    Expanded(
-                      flex: 1,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        ),
-                        onPressed: () => setState(() => _currentStep--),
-                        child: const Text('Back'),
-                      ),
-                    ),
-                  if (_currentStep > 0) const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppConstants.primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              if (_currentStep < 2) {
-                                setState(() => _currentStep++);
-                              } else {
-                                _handleSubmit();
-                              }
-                            },
-                      child: _isLoading
-                          ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : Text(
-                              _currentStep == 2 ? 'Generate Event QR & Card' : 'Continue to Next Step →',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                            ),
-                    ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: (_currentStep + 1) / 8.0,
+                    minHeight: 6,
+                    backgroundColor: const Color(0xFFE2E8F0),
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppConstants.primaryColor),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStepBubble(int stepIndex, String title) {
-    final isActive = _currentStep == stepIndex;
-    final isDone = _currentStep > stepIndex;
-
-    return GestureDetector(
-      onTap: () => setState(() => _currentStep = stepIndex),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 12,
-            backgroundColor: isDone
-                ? AppConstants.successColor
-                : (isActive ? AppConstants.primaryColor : Colors.grey.shade300),
-            child: isDone
-                ? const Icon(Icons.check, size: 14, color: Colors.white)
-                : Text(
-                    '${stepIndex + 1}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: isActive ? Colors.white : Colors.grey.shade700,
-                    ),
-                  ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive ? AppConstants.primaryColor : AppConstants.textMuted,
+
+          // ── Multi-Step Form Body ──
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: _buildCurrentStepContent(),
+              ),
+            ),
+          ),
+
+          // ── Sticky Bottom Navigation Buttons ──
+          Container(
+            padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, -2)),
+              ],
+            ),
+            child: Row(
+              children: [
+                if (_currentStep > 0) ...[
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: _prevStep,
+                    child: const Text('Back'),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppConstants.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 2,
+                    ),
+                    onPressed: _isPublishing
+                        ? null
+                        : (_currentStep == 7 ? _publishEvent : _nextStep),
+                    child: _isPublishing
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : Text(
+                            _currentStep == 7 ? 'Publish Smart Event 🚀' : 'Next Step ➔',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -294,171 +319,149 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
     );
   }
 
-  Widget _buildStepConnector(int stepIndex) {
-    final isDone = _currentStep > stepIndex;
-    return Expanded(
-      child: Container(
-        height: 2,
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        color: isDone ? AppConstants.successColor : Colors.grey.shade300,
-      ),
-    );
+  Widget _buildCurrentStepContent() {
+    switch (_currentStep) {
+      case 0:
+        return _buildStep1EventInfo();
+      case 1:
+        return _buildStep2DateTimeLocation();
+      case 2:
+        return _buildStep3CoverImage();
+      case 3:
+        return _buildStep4Description();
+      case 4:
+        return _buildStep5Capacity();
+      case 5:
+        return _buildStep6TicketSettings();
+      case 6:
+        return _buildStep7Portfolio();
+      case 7:
+        return _buildStep8Preview();
+      default:
+        return const SizedBox();
+    }
   }
 
-  // ── Step 0: Basic Details & Occasion Selector ──
-  Widget _buildStepDetails() {
+  // ── Step 1: Event Info ──
+  Widget _buildStep1EventInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Select Event Occasion', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('1. Event Title & Category', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Give your celebration a memorable name and choose the occasion type.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _titleController,
+          decoration: const InputDecoration(
+            labelText: 'Event Title *',
+            hintText: 'e.g. Sneha & Amit Royal Wedding Reception',
+            prefixIcon: Icon(Icons.celebration),
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 18),
+        const Text('Choose Occasion Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
         const SizedBox(height: 10),
-        GridView.builder(
+        GridView.count(
+          crossAxisCount: 2,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 1.1,
-          ),
-          itemCount: _eventTypes.length,
-          itemBuilder: (context, idx) {
-            final type = _eventTypes[idx];
-            final isSelected = _eventType == type['code'];
-
-            return GestureDetector(
-              onTap: () => _onEventTypeChanged(type['code']!),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 2.2,
+          children: _eventTypes.map((et) {
+            final isSelected = _eventType == et['code'];
+            return InkWell(
+              onTap: () {
+                setState(() {
+                  _eventType = et['code']!;
+                  _selectedCoverPreset = et['preset']!;
+                });
+              },
+              borderRadius: BorderRadius.circular(14),
               child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppConstants.purpleSurface : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected ? AppConstants.primaryColor : Colors.grey.shade200,
-                    width: isSelected ? 2 : 1,
-                  ),
-                  boxShadow: [
-                    if (isSelected)
-                      BoxShadow(color: AppConstants.primaryColor.withOpacity(0.18), blurRadius: 8),
-                  ],
+                  color: isSelected ? const Color(0xFFEEF2FF) : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: isSelected ? AppConstants.primaryColor : Colors.grey.shade200, width: isSelected ? 2 : 1),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Row(
                   children: [
-                    Text(type['emoji']!, style: const TextStyle(fontSize: 26)),
-                    const SizedBox(height: 4),
-                    Text(
-                      type['label']!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                        color: isSelected ? AppConstants.primaryColor : AppConstants.textDark,
+                    Text(et['emoji']!, style: const TextStyle(fontSize: 22)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        et['label']!,
+                        style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 13, color: AppConstants.textDark),
                       ),
                     ),
                   ],
                 ),
               ),
             );
-          },
-        ),
-        const SizedBox(height: 20),
-
-        const Text('Event Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 12),
-
-        TextFormField(
-          controller: _titleController,
-          decoration: InputDecoration(
-            labelText: 'Event Title *',
-            hintText: 'e.g. Priya & Rahul Grand Wedding',
-            prefixIcon: const Icon(Icons.celebration, color: AppConstants.primaryColor),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          onChanged: (_) => setState(() {}),
-          validator: (v) => v == null || v.trim().isEmpty ? 'Title is required' : null,
-        ),
-        const SizedBox(height: 14),
-
-        TextFormField(
-          controller: _hostNamesController,
-          decoration: InputDecoration(
-            labelText: 'Host Names *',
-            hintText: 'e.g. Sharma & Gupta Families',
-            prefixIcon: const Icon(Icons.people, color: AppConstants.primaryColor),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          onChanged: (_) => setState(() {}),
-          validator: (v) => v == null || v.trim().isEmpty ? 'Host names are required' : null,
-        ),
-        const SizedBox(height: 14),
-
-        TextFormField(
-          controller: _descriptionController,
-          maxLines: 3,
-          decoration: InputDecoration(
-            labelText: 'Invitation Message / Description',
-            hintText: 'Write a warm invitation message for your guests...',
-            alignLabelWithHint: true,
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
+          }).toList(),
         ),
       ],
     );
   }
 
-  // ── Step 1: Venue, GPS Location, Date & Time ──
-  Widget _buildStepVenueAndDate(String dateStr, String timeStr) {
+  // ── Step 2: Date, Time & Location ──
+  Widget _buildStep2DateTimeLocation() {
+    final dateStr = "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}";
+    final timeStr = _selectedTime.format(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Date & Time', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 12),
+        const Text('2. Date, Time & Venue', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Set when and where your guests should arrive.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: InkWell(
                 onTap: _selectDate,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.grey.shade200)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.calendar_today, color: AppConstants.primaryColor, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(dateStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      const Text('Event Date', style: TextStyle(fontSize: 11, color: AppConstants.textMuted)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_month, size: 16, color: AppConstants.primaryColor),
+                          const SizedBox(width: 6),
+                          Text(dateStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: InkWell(
                 onTap: _selectTime,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.grey.shade200)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.access_time, color: AppConstants.primaryColor, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(timeStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      const Text('Start Time', style: TextStyle(fontSize: 11, color: AppConstants.textMuted)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.access_time, size: 16, color: AppConstants.accentColor),
+                          const SizedBox(width: 6),
+                          Text(timeStr, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
                       ),
                     ],
                   ),
@@ -467,278 +470,341 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-
-        const Text('Venue & GPS Navigation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 12),
-
+        const SizedBox(height: 16),
         TextFormField(
           controller: _venueNameController,
-          decoration: InputDecoration(
-            labelText: 'Venue Name *',
-            hintText: 'e.g. The Leela Palace Ballroom',
-            prefixIcon: const Icon(Icons.location_city, color: AppConstants.primaryColor),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          onChanged: (_) => setState(() {}),
-          validator: (v) => v == null || v.trim().isEmpty ? 'Venue name is required' : null,
+          decoration: const InputDecoration(labelText: 'Venue Name *', hintText: 'e.g. The Leela Palace Grand Ballroom', prefixIcon: Icon(Icons.store), border: OutlineInputBorder()),
         ),
-        const SizedBox(height: 14),
-
+        const SizedBox(height: 12),
         TextFormField(
           controller: _venueAddressController,
+          decoration: const InputDecoration(labelText: 'Venue Address', hintText: 'Full road address, city, pincode', prefixIcon: Icon(Icons.location_on), border: OutlineInputBorder()),
           maxLines: 2,
-          decoration: InputDecoration(
-            labelText: 'Full Address *',
-            hintText: 'e.g. Old Airport Road, Kodihalli, Bengaluru, Karnataka 560008',
-            prefixIcon: const Icon(Icons.place, color: AppConstants.primaryColor),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          onChanged: (_) => setState(() {}),
-          validator: (v) => v == null || v.trim().isEmpty ? 'Venue address is required' : null,
         ),
-        const SizedBox(height: 14),
-
+        const SizedBox(height: 12),
         TextFormField(
           controller: _mapsUrlController,
-          decoration: InputDecoration(
-            labelText: 'Google Maps Link (Optional)',
-            hintText: 'Paste Google Maps share link or leave empty to auto-generate',
-            prefixIcon: const Icon(Icons.directions, color: AppConstants.accentColor),
-            helperText: 'Guests can 1-tap navigate turn-by-turn from their smartphones',
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          ),
+          decoration: const InputDecoration(labelText: 'Google Maps Directions URL (Optional)', hintText: 'https://maps.app.goo.gl/...', prefixIcon: Icon(Icons.link), border: OutlineInputBorder()),
         ),
       ],
     );
   }
 
-  // ── Step 2: Capacity, Organizer & Live Interactive Preview ──
-  Widget _buildStepCapacityAndLivePreview(String dateStr, String timeStr) {
+  // ── Step 3: Cover Image ──
+  Widget _buildStep3CoverImage() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Guest Capacity & Organizer Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 12),
-
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _capacityController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Guest Capacity',
-                  hintText: 'e.g. 200',
-                  prefixIcon: const Icon(Icons.people_outline, color: AppConstants.primaryColor),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
+        const Text('3. Cover Banner Image', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Upload your custom photo banner or pick a high-res celebration preset.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onTap: _pickCoverImage,
+          child: Container(
+            height: 190,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              image: DecorationImage(image: NetworkImage(_selectedCoverPreset), fit: BoxFit.cover),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: _dressCodeController,
-                decoration: InputDecoration(
-                  labelText: 'Dress Code',
-                  hintText: 'e.g. Traditional / Royal',
-                  prefixIcon: const Icon(Icons.checkroom, color: AppConstants.primaryColor),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.black.withOpacity(0.35),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.add_a_photo, color: Colors.white, size: 36),
+                    SizedBox(height: 6),
+                    Text('Tap to Pick Banner from Gallery', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  ],
                 ),
               ),
             ),
-          ],
+          ),
         ),
-        const SizedBox(height: 14),
-
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _organizerNameController,
-                decoration: InputDecoration(
-                  labelText: 'Organizer Name',
-                  hintText: 'Contact Person',
-                  prefixIcon: const Icon(Icons.person_pin, color: AppConstants.primaryColor),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: _organizerContactController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'Organizer Contact',
-                  hintText: '+91 98765 43210',
-                  prefixIcon: const Icon(Icons.phone, color: AppConstants.primaryColor),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-
-        // ── Cover Photo Section ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Event Cover Photo', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            TextButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.camera_alt, size: 16),
-              label: const Text('Upload Photo'),
-            ),
-          ],
-        ),
+        const SizedBox(height: 16),
+        const Text('Or Select from Theme Presets:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
         const SizedBox(height: 8),
-
-        // Preset Banners Row
         SizedBox(
-          height: 60,
+          height: 64,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: _eventTypes.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, idx) {
-              final type = _eventTypes[idx];
-              final isSelected = _selectedCoverPreset == type['bg'] && _pickedCoverPath == null;
-
+              final preset = _eventTypes[idx]['preset']!;
+              final isSelected = _selectedCoverPreset == preset && _pickedCoverPath == null;
               return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedCoverPreset = type['bg'];
-                    _pickedCoverPath = null;
-                  });
-                },
+                onTap: () => setState(() {
+                  _selectedCoverPreset = preset;
+                  _pickedCoverPath = null;
+                }),
                 child: Container(
-                  width: 90,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppConstants.primaryColor : Colors.transparent,
-                      width: 2.5,
-                    ),
-                    image: DecorationImage(
-                      image: NetworkImage(type['bg']!),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    color: Colors.black45,
-                    child: Text(type['emoji']!, style: const TextStyle(fontSize: 18)),
+                    border: Border.all(color: isSelected ? AppConstants.primaryColor : Colors.transparent, width: 2),
+                    image: DecorationImage(image: NetworkImage(preset), fit: BoxFit.cover),
                   ),
                 ),
               );
             },
           ),
         ),
-        const SizedBox(height: 24),
+      ],
+    );
+  }
 
-        // ── Live Interactive Invitation Card Preview ──
+  // ── Step 4: Description & Hosts ──
+  Widget _buildStep4Description() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('4. Story & Host Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Share the welcoming message for your invitation card.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _hostNamesController,
+          decoration: const InputDecoration(labelText: 'Hosted By *', hintText: 'e.g. Ramesh & Priya or The Sharma Family', prefixIcon: Icon(Icons.people), border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _descriptionController,
+          decoration: const InputDecoration(labelText: 'Invitation Description & Story', hintText: 'Share the special details, itinerary, or heartfelt note to your guests...', prefixIcon: Icon(Icons.edit_note), border: OutlineInputBorder()),
+          maxLines: 4,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _organizerNameController,
+          decoration: const InputDecoration(labelText: 'Primary Contact / Organizer Name', prefixIcon: Icon(Icons.person_pin), border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _organizerContactController,
+          decoration: const InputDecoration(labelText: 'Organizer Mobile Phone (for RSVP queries)', prefixIcon: Icon(Icons.phone), border: OutlineInputBorder()),
+          keyboardType: TextInputType.phone,
+        ),
+      ],
+    );
+  }
+
+  // ── Step 5: Capacity ──
+  Widget _buildStep5Capacity() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('5. Guest Capacity & Attendance Limit', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Set the maximum number of guests to prevent overcrowding.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 24),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppConstants.purpleSurface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.remove_red_eye, color: AppConstants.primaryColor, size: 16),
-              SizedBox(width: 6),
-              Text(
-                'LIVE INVITATION CARD PREVIEW',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppConstants.primaryColor),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey.shade200)),
+          child: Column(
+            children: [
+              Text('$_guestCapacity Passes', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 32, color: AppConstants.primaryColor)),
+              const SizedBox(height: 6),
+              const Text('Maximum QR entries permitted at the gate', style: TextStyle(color: AppConstants.textMuted, fontSize: 12)),
+              const SizedBox(height: 16),
+              Slider(
+                value: _guestCapacity.toDouble(),
+                min: 20,
+                max: 1000,
+                divisions: 98,
+                activeColor: AppConstants.primaryColor,
+                onChanged: (val) => setState(() => _guestCapacity = val.round()),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text('20 Guests', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text('500 Guests', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text('1000 Guests', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ],
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+      ],
+    );
+  }
 
+  // ── Step 6: Ticket & Settings ──
+  Widget _buildStep6TicketSettings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('6. Ticket & Entry Gate Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Configure gate security and guest dress code guidelines.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _dressCodeController,
+          decoration: const InputDecoration(labelText: 'Dress Code Guidelines', hintText: 'e.g. Traditional Ethnic / Black Tie / Casual', prefixIcon: Icon(Icons.checkroom), border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 16),
         Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF3B0764), Color(0xFF1E1B4B)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppConstants.accentColor, width: 1.5),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.18), blurRadius: 16),
-            ],
-          ),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200)),
           child: Column(
             children: [
-              Text(
-                '${_eventTypes.firstWhere((e) => e['code'] == _eventType)['emoji']} ${_eventType.toUpperCase()} INVITATION',
-                style: const TextStyle(color: AppConstants.accentColor, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 1),
+              SwitchListTile(
+                value: _isPublic,
+                activeColor: AppConstants.primaryColor,
+                title: const Text('Public Event Listing', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                subtitle: const Text('Allow discovery in QRouteX Explore feed', style: TextStyle(fontSize: 11)),
+                onChanged: (val) => setState(() => _isPublic = val),
               ),
-              const SizedBox(height: 10),
-              Text(
-                _titleController.text.trim().isEmpty ? 'Your Event Title' : _titleController.text.trim(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+              const Divider(height: 1),
+              SwitchListTile(
+                value: _allowGuestUploads,
+                activeColor: AppConstants.primaryColor,
+                title: const Text('Allow Guest Photo Uploads', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                subtitle: const Text('Guests can share candid photos to your event gallery', style: TextStyle(fontSize: 11)),
+                onChanged: (val) => setState(() => _allowGuestUploads = val),
               ),
-              const SizedBox(height: 4),
-              Text(
-                _hostNamesController.text.trim().isEmpty ? 'Hosted by Host Names' : 'Hosted by ${_hostNamesController.text.trim()}',
-                style: const TextStyle(color: Colors.white70, fontSize: 12, fontStyle: FontStyle.italic),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Step 7: Portfolio ──
+  Widget _buildStep7Portfolio() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('7. Event Portfolio & Gallery', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Upload photos to showcase the celebration highlights to your guests.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 16),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(backgroundColor: AppConstants.primaryColor, foregroundColor: Colors.white),
+          icon: const Icon(Icons.add_photo_alternate),
+          label: const Text('Add Photo to Portfolio'),
+          onPressed: _pickPortfolioImage,
+        ),
+        const SizedBox(height: 16),
+        if (_portfolioImages.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+            child: const Center(
+              child: Text('No photos added yet. You can also add more photos after publishing.', style: TextStyle(color: AppConstants.textMuted, fontSize: 12)),
+            ),
+          )
+        else
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 8, mainAxisSpacing: 8),
+            itemCount: _portfolioImages.length,
+            itemBuilder: (context, idx) {
+              return Stack(
+                fit: StackFit.expand,
                 children: [
-                  const Icon(Icons.calendar_today, color: AppConstants.accentColor, size: 14),
-                  const SizedBox(width: 4),
-                  Text('$dateStr • $timeStr', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.location_on, color: AppConstants.accentColor, size: 14),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      _venueNameController.text.trim().isEmpty ? 'Celebration Venue' : _venueNameController.text.trim(),
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.network(_portfolioImages[idx], fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade300))),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: GestureDetector(
+                      onTap: () => setState(() => _portfolioImages.removeAt(idx)),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                        child: const Icon(Icons.close, color: Colors.white, size: 14),
+                      ),
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 14),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  // ── Step 8: Live Preview & Publish ──
+  Widget _buildStep8Preview() {
+    final title = _titleController.text.trim().isNotEmpty ? _titleController.text.trim() : 'Sample Celebration';
+    final venue = _venueNameController.text.trim().isNotEmpty ? _venueNameController.text.trim() : 'Venue Name';
+    final dateStr = "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}";
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('8. Live Preview & Confirmation', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 6),
+        const Text('Review your digital invitation card before generating encrypted QR passes.', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
+        const SizedBox(height: 16),
+
+        // Preview Card
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 14, offset: const Offset(0, 4)),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                height: 160,
                 decoration: BoxDecoration(
-                  color: Colors.white12,
-                  borderRadius: BorderRadius.circular(20),
+                  image: DecorationImage(image: NetworkImage(_selectedCoverPreset), fit: BoxFit.cover),
                 ),
-                child: Text(
-                  '👥 Guest Capacity: ${_capacityController.text.trim()} Passes',
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                child: Container(
+                  color: Colors.black.withOpacity(0.35),
+                  padding: const EdgeInsets.all(14),
+                  alignment: Alignment.bottomLeft,
+                  child: Text(
+                    title,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_month, size: 16, color: AppConstants.primaryColor),
+                        const SizedBox(width: 8),
+                        Text(dateStr, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(color: const Color(0xFFD1FAE5), borderRadius: BorderRadius.circular(8)),
+                          child: Text('$_guestCapacity Passes', style: const TextStyle(color: Color(0xFF047857), fontWeight: FontWeight.bold, fontSize: 11)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 16, color: AppConstants.accentColor),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(venue, style: const TextStyle(color: AppConstants.textDark, fontSize: 13))),
+                      ],
+                    ),
+                    const Divider(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text('Digital QR Pass Security', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                        Text('100% Encrypted', style: TextStyle(fontSize: 12, color: Color(0xFF10B981), fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],

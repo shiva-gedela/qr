@@ -3,8 +3,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../models/event_model.dart';
 import '../models/business_model.dart';
+import '../models/booking_model.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/theme_service.dart';
 import 'events/event_list_screen.dart';
 import 'events/event_create_screen.dart';
 import 'events/event_detail_screen.dart';
@@ -14,8 +16,14 @@ import 'events/event_ride_booking_screen.dart';
 import 'business/business_list_screen.dart';
 import 'business/business_detail_screen.dart';
 import 'business/vendor_add_screen.dart';
+import 'booking/business_booking_screen.dart';
+import 'booking/my_bookings_screen.dart';
+import 'social/social_feed_screen.dart';
+import 'social/create_post_screen.dart';
+import 'profile/user_profile_screen.dart';
+import 'profile/qr_tickets_wallet_screen.dart';
 import 'qr/qr_scanner_screen.dart';
-import 'qr/qr_display_screen.dart';
+import 'qr/qr_history_screen.dart';
 import 'auth/login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,7 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentNavIndex = 0;
   List<EventModel> _recentEvents = [];
   List<BusinessModel> _featuredVendors = [];
-  bool _isLoadingEvents = true;
+  List<BookingModel> _userBookings = [];
+  bool _isLoadingDashboard = true;
   String _selectedCity = 'Bengaluru, KA';
 
   final List<String> _popularCities = [
@@ -52,21 +61,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadDashboardData() async {
-    setState(() => _isLoadingEvents = true);
+    setState(() => _isLoadingDashboard = true);
     try {
       final results = await Future.wait([
         ApiService.getEvents(),
         ApiService.getBusinesses(),
+        ApiService.getUserBookings(),
       ]);
       if (!mounted) return;
       setState(() {
         _recentEvents = results[0] as List<EventModel>;
         _featuredVendors = results[1] as List<BusinessModel>;
-        _isLoadingEvents = false;
+        _userBookings = results[2] as List<BookingModel>;
+        _isLoadingDashboard = false;
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() => _isLoadingEvents = false);
+      setState(() => _isLoadingDashboard = false);
     }
   }
 
@@ -80,7 +91,9 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showCityPicker() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -91,13 +104,22 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Select Your Location', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                  const Text(
+                    'Select Your City',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ],
               ),
-              const SizedBox(height: 10),
-              const Text('Personalize events & verified vendors in your region:', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
+              const Text(
+                'Personalize events, restaurants & verified vendors:',
+                style: TextStyle(color: AppConstants.textMuted, fontSize: 13),
+              ),
+              const SizedBox(height: 12),
               Expanded(
                 child: ListView.separated(
                   itemCount: _popularCities.length,
@@ -118,7 +140,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: isSelected ? AppConstants.primaryColor : AppConstants.textDark,
                         ),
                       ),
-                      trailing: isSelected ? const Icon(Icons.check_circle, color: AppConstants.primaryColor) : null,
+                      trailing: isSelected
+                          ? const Icon(Icons.check_circle, color: AppConstants.primaryColor)
+                          : null,
                       onTap: () {
                         setState(() => _selectedCity = city);
                         Navigator.pop(context);
@@ -134,92 +158,225 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showServerSettings() {
-    final urlController = TextEditingController(text: AppConstants.baseUrl);
-    bool testing = false;
-    String? statusMsg;
-    Color statusColor = Colors.grey;
-
-    showDialog(
+  void _showNotificationsSheet() {
+    showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              title: Row(
-                children: const [
-                  Icon(Icons.dns, color: AppConstants.primaryColor),
-                  SizedBox(width: 8),
-                  Text('Server Settings', style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Configure backend server address:', style: TextStyle(fontSize: 13, color: AppConstants.textMuted)),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: urlController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Server URL',
-                      hintText: 'e.g. http://10.22.84.118:8000',
-                      prefixIcon: Icon(Icons.link),
-                    ),
+                  Row(
+                    children: const [
+                      Icon(Icons.notifications, color: AppConstants.primaryColor),
+                      SizedBox(width: 8),
+                      Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  if (statusMsg != null)
-                    Text(statusMsg!, style: TextStyle(color: statusColor, fontSize: 13, fontWeight: FontWeight.bold)),
+                  IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
                 ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+              const Divider(),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: AppConstants.purpleSurface,
+                  child: Icon(Icons.qr_code, color: AppConstants.primaryColor),
                 ),
-                TextButton(
-                  onPressed: testing
-                      ? null
-                      : () async {
-                          setDialogState(() {
-                            testing = true;
-                            statusMsg = 'Testing connection...';
-                            statusColor = Colors.blue;
-                          });
-                          final ok = await ApiService.testConnection(urlController.text.trim());
-                          setDialogState(() {
-                            testing = false;
-                            statusMsg = ok ? '✓ Backend Connected Successfully' : '✗ Server Unreachable';
-                            statusColor = ok ? Colors.green : Colors.red;
-                          });
-                        },
-                  child: const Text('Test Ping'),
+                title: const Text('Smart QR Check-in Ready', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                subtitle: const Text('Offline verification is active for upcoming celebrations.', style: TextStyle(fontSize: 12)),
+                trailing: const Text('Now', style: TextStyle(fontSize: 11, color: AppConstants.textMuted)),
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: Color(0xFFFEF3C7),
+                  child: Icon(Icons.directions_car, color: Color(0xFFD97706)),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppConstants.primaryColor),
-                  onPressed: () async {
-                    await AppConstants.setBaseUrl(urlController.text.trim());
-                    if (!mounted) return;
-                    Navigator.pop(context);
-                    _loadDashboardData();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Server updated: ${AppConstants.baseUrl}')),
-                    );
-                  },
-                  child: const Text('Save', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            );
-          },
+                title: const Text('Ride Comparison Enabled', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                subtitle: const Text('Compare Uber, Rapido, and Ola fares for all venue destinations.', style: TextStyle(fontSize: 12)),
+                trailing: const Text('1h ago', style: TextStyle(fontSize: 11, color: AppConstants.textMuted)),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppConstants.primaryColor),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Dismiss All', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  // ══ OLX & PHONEPE HYBRID DASHBOARD ═════════════════════════════════════════
-  Widget _buildDashboard() {
+  // Floating Create Action Modal Bottom Sheet
+  void _showCreateActionsModal() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Quick Actions',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Create celebrations, scan invitations, or book services',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppConstants.textMuted, fontSize: 12),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEDE9FE),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.celebration, color: AppConstants.primaryColor),
+                  ),
+                  title: const Text('Create Smart Event', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('8-step wizard with digital QR invitations & portfolio', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const EventCreateScreen()),
+                    ).then((_) => _loadDashboardData());
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0F2FE),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.qr_code_scanner, color: Color(0xFF0284C7)),
+                  ),
+                  title: const Text('Scan QR Code', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Scan from camera or upload screenshot from gallery', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.restaurant, color: Color(0xFFD97706)),
+                  ),
+                  title: const Text('Book Table or Reserve Service', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Browse verified restaurants, salons, and banquet halls', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (_featuredVendors.isNotEmpty) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BusinessBookingScreen(business: _featuredVendors.first),
+                        ),
+                      ).then((_) => _loadDashboardData());
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const BusinessListScreen()),
+                      );
+                    }
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFCE7F3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.photo_camera, color: Color(0xFFDB2777)),
+                  ),
+                  title: const Text('Share Celebration Moment', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Post event photos and video highlights to social feed', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CreatePostScreen()),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCFCE7),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.storefront, color: Color(0xFF16A34A)),
+                  ),
+                  title: const Text('Register as Event Vendor', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('List catering, decor, photography or venue services', style: TextStyle(fontSize: 11)),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const VendorAddScreen()),
+                    ).then((_) => _loadDashboardData());
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ══ DASHBOARD TAB (HOME) ═════════════════════════════════════════════════
+  Widget _buildHomeDashboard() {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 360;
 
@@ -231,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Top Header Banner (QRouteX Brand & OLX City Selector) ──
+            // ── Top Gradient Header with QRouteX Branding & Location ──
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 26),
               decoration: const BoxDecoration(
@@ -244,45 +401,40 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Column(
                 children: [
-                  // App Bar Row with City Switcher
                   Row(
                     children: [
-                      // App Logo (Official QRouteX Badge)
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-                        },
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                            border: Border.all(color: AppConstants.accentColor, width: 2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(2),
-                          child: ClipOval(
-                            child: Image.asset(
-                              'assets/images/app_logo_symbol.png',
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) => Image.asset(
-                                'assets/images/app_logo.png',
-                                fit: BoxFit.contain,
-                              ),
+                      // App Logo (High-Res Rounded Badge)
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                          border: Border.all(color: AppConstants.accentColor, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(2),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/app_logo.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.qr_code_2,
+                              color: AppConstants.primaryColor,
+                              size: 28,
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
 
-                      // Brand & OLX City Dropdown
+                      // Brand & City Dropdown
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,7 +468,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ),
-                            // OLX Location Selector Chip
+                            // Location Selector Chip
                             GestureDetector(
                               onTap: _showCityPicker,
                               child: Row(
@@ -344,27 +496,41 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
 
-                      // Scanner & Settings
+                      // Social Moments Feed Shortcut
                       IconButton(
-                        icon: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 24),
-                        tooltip: 'Scan QR',
+                        icon: const Icon(Icons.dynamic_feed, color: Colors.white, size: 22),
+                        tooltip: 'Moments Feed',
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const QrScannerScreen()));
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const SocialFeedScreen()));
                         },
                       ),
+
+                      // Notifications Icon
                       IconButton(
-                        icon: const Icon(Icons.tune, color: Colors.white, size: 22),
-                        tooltip: 'Settings',
-                        onPressed: _showServerSettings,
+                        icon: const Stack(
+                          children: [
+                            Icon(Icons.notifications_outlined, color: Colors.white, size: 24),
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: CircleAvatar(
+                                radius: 4,
+                                backgroundColor: Color(0xFFEF4444),
+                              ),
+                            ),
+                          ],
+                        ),
+                        tooltip: 'Notifications',
+                        onPressed: _showNotificationsSheet,
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // ── OLX-Style Search & Scan Bar ──
+                  // ── Search & Scan Bar ──
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const QrScannerScreen()));
+                      setState(() => _currentNavIndex = 1);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
@@ -380,18 +546,23 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       child: Row(
-                        children: const [
-                          Icon(Icons.search, color: AppConstants.primaryColor, size: 20),
-                          SizedBox(width: 8),
-                          Expanded(
+                        children: [
+                          const Icon(Icons.search, color: AppConstants.primaryColor, size: 20),
+                          const SizedBox(width: 8),
+                          const Expanded(
                             child: Text(
-                              'Find celebrations, vendors, scan QR pass...',
+                              'Search celebrations, vendors, scan pass...',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(color: AppConstants.textMuted, fontSize: 13),
                             ),
                           ),
-                          Icon(Icons.qr_code_2, color: AppConstants.primaryColor, size: 22),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const QrScannerScreen()));
+                            },
+                            child: const Icon(Icons.qr_code_scanner, color: AppConstants.primaryColor, size: 22),
+                          ),
                         ],
                       ),
                     ),
@@ -400,13 +571,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── Quick Actions Card ──
+            // ── Quick Actions Bar ──
             Transform.translate(
               offset: const Offset(0, -12),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -431,7 +602,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       _buildQuickActionItem(
-                        icon: Icons.add_circle,
+                        icon: Icons.add_circle_outline,
                         label: 'Create Event',
                         bgColor: const Color(0xFFE0F2FE),
                         iconColor: const Color(0xFF0284C7),
@@ -444,10 +615,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       _buildQuickActionItem(
-                        icon: Icons.directions_car,
-                        label: 'Book Ride',
+                        icon: Icons.restaurant_outlined,
+                        label: 'Book Service',
                         bgColor: const Color(0xFFFEF3C7),
                         iconColor: const Color(0xFFD97706),
+                        onTap: () {
+                          setState(() => _currentNavIndex = 3);
+                        },
+                      ),
+                      _buildQuickActionItem(
+                        icon: Icons.directions_car,
+                        label: 'Book Ride',
+                        bgColor: const Color(0xFFDCFCE7),
+                        iconColor: const Color(0xFF16A34A),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -460,16 +640,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                       _buildQuickActionItem(
-                        icon: Icons.add_business,
-                        label: 'Add Vendor',
-                        bgColor: const Color(0xFFDCFCE7),
-                        iconColor: const Color(0xFF16A34A),
-                        onTap: () async {
-                          final created = await Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const VendorAddScreen()),
-                          );
-                          if (created != null) _loadDashboardData();
+                        icon: Icons.camera_alt_outlined,
+                        label: 'Moments',
+                        bgColor: const Color(0xFFFCE7F3),
+                        iconColor: const Color(0xFFDB2777),
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const SocialFeedScreen()));
                         },
                       ),
                     ],
@@ -478,9 +654,202 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── Event Occasions (PhonePe & OLX Categories Style) ──
+            // ── Active Booking / Reservation Alert (If Any) ──
+            if (_userBookings.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF064E3B), Color(0xFF047857)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.bookmark_added, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Upcoming: ${_userBookings.first.businessName}',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            Text(
+                              '${_userBookings.first.serviceName} • ${_userBookings.first.bookingDate} at ${_userBookings.first.bookingTime}',
+                              style: const TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF047857),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        onPressed: () => setState(() => _currentNavIndex = 3),
+                        child: const Text('Manage', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+
+            // ── Featured Events Carousel / Hero ──
+            if (_recentEvents.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Featured Celebrations',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: AppConstants.textDark),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => _currentNavIndex = 1),
+                      child: const Text('View All', style: TextStyle(color: AppConstants.primaryColor, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 190,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  itemCount: _recentEvents.take(5).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, idx) {
+                    final event = _recentEvents[idx];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => EventDetailScreen(event: event)),
+                        );
+                      },
+                      child: Container(
+                        width: 260,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: AppConstants.accentColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '${event.eventTypeIcon} ${event.eventType.toUpperCase()}',
+                                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 10),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white24,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '${event.capacity} Slots',
+                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  event.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '📍 ${event.venueName}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  event.eventDate,
+                                  style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                ),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: AppConstants.primaryDark,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => InvitationCardViewScreen(event: event)),
+                                    );
+                                  },
+                                  child: const Text('Digital Pass', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+
+            // ── Event Occasions (Quick Creator) ──
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -502,7 +871,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Container(
@@ -533,14 +901,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // ── Recent Celebrations (OLX Marketplace Cards) ──
+            // ── Recent Celebrations (Option Details OLX Cards) ──
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Recent Celebrations',
+                    'Upcoming Celebrations',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: AppConstants.textDark),
                   ),
                   TextButton(
@@ -551,7 +919,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            if (_isLoadingEvents)
+            if (_isLoadingDashboard)
               const Center(child: Padding(padding: EdgeInsets.all(24.0), child: CircularProgressIndicator()))
             else if (_recentEvents.isEmpty)
               Padding(
@@ -598,7 +966,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Row(
                             children: [
-                              // Occasion Avatar
                               Container(
                                 width: 44,
                                 height: 44,
@@ -668,7 +1035,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               Row(
                                 children: [
-                                  // Option Details Button (OLX style)
                                   OutlinedButton(
                                     style: OutlinedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -684,7 +1050,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: const Text('Option Details', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppConstants.primaryColor)),
                                   ),
                                   const SizedBox(width: 6),
-                                  // Ride Booking
                                   ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF15803D),
@@ -712,7 +1077,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-            // ── Verified Event Vendors (OLX Spotlight) ──
+            // ── Verified Event Vendors & Local Services ──
             if (_featuredVendors.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -720,11 +1085,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Verified Event Vendors',
+                      'Verified Event Vendors & Services',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: AppConstants.textDark),
                     ),
                     TextButton(
-                      onPressed: () => setState(() => _currentNavIndex = 2),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const BusinessListScreen()),
+                        );
+                      },
                       child: const Text('View All', style: TextStyle(color: AppConstants.primaryColor, fontWeight: FontWeight.bold)),
                     ),
                   ],
@@ -732,7 +1102,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               SizedBox(
-                height: 180,
+                height: 190,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -741,7 +1111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context, idx) {
                     final b = _featuredVendors[idx];
                     return Container(
-                      width: 160,
+                      width: 170,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
@@ -761,14 +1131,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             Container(
-                              height: 70,
+                              height: 65,
                               decoration: const BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [Color(0xFF2E1065), Color(0xFF5F259F)],
+                                  colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
                                 ),
                               ),
                               alignment: Alignment.center,
-                              child: Text(b.categoryEmoji, style: const TextStyle(fontSize: 30)),
+                              child: Text(b.categoryEmoji, style: const TextStyle(fontSize: 28)),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8),
@@ -795,12 +1165,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(fontSize: 10, color: AppConstants.primaryColor, fontWeight: FontWeight.bold),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '📍 ${b.city.isNotEmpty ? b.city : "Bengaluru"}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 9, color: AppConstants.textMuted),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '⭐ ${b.rating.toStringAsFixed(1)}',
+                                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFD97706)),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFEDE9FE),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text('Book', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppConstants.primaryColor)),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -813,6 +1194,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ],
+
+            // ── GPS Turn-by-Turn Navigation Promo Card ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 16, 14, 20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppConstants.accentColor.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.navigation, color: AppConstants.accentColor, size: 26),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'Turn-by-Turn GPS Navigation',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'All QRouteX passes include live route directions & Uber / Ola / Rapido comparison.',
+                            style: TextStyle(color: Colors.white70, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
             const SizedBox(height: 80),
           ],
@@ -834,15 +1261,15 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         children: [
           Container(
-            width: 48,
-            height: 48,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-            child: Icon(icon, color: iconColor, size: 24),
+            child: Icon(icon, color: iconColor, size: 22),
           ),
           const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppConstants.textDark),
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppConstants.textDark),
           ),
         ],
       ),
@@ -867,11 +1294,11 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 52,
-            height: 52,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
             alignment: Alignment.center,
-            child: Text(emoji, style: const TextStyle(fontSize: 26)),
+            child: Text(emoji, style: const TextStyle(fontSize: 24)),
           ),
           const SizedBox(height: 4),
           Text(
@@ -885,107 +1312,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ══ Profile / Account Tab ════════════════════════════════════════════════
-  Widget _buildAccountTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: const BoxDecoration(
-                    color: AppConstants.primaryColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white, size: 32),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text('QRouteX User', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                      SizedBox(height: 2),
-                      Text('Smart Event QR & Marketplace Hub', style: TextStyle(color: AppConstants.textMuted, fontSize: 13)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Settings list
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.dns, color: AppConstants.primaryColor),
-                  title: const Text('Backend Server Settings'),
-                  subtitle: Text(AppConstants.baseUrl, style: const TextStyle(fontSize: 11)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: _showServerSettings,
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.login, color: AppConstants.primaryColor),
-                  title: const Text('Sign In or Register Account'),
-                  subtitle: const Text('Sync your celebrations across devices', style: TextStyle(fontSize: 11)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.add_business, color: Color(0xFF10B981)),
-                  title: const Text('Add Event Vendor Profile'),
-                  subtitle: const Text('List your catering, photography, decor, or venue services', style: TextStyle(fontSize: 11)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const VendorAddScreen()));
-                  },
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.public, color: AppConstants.primaryColor),
-                  title: const Text('Official Website'),
-                  subtitle: const Text('https://qroutex.com', style: TextStyle(fontSize: 11)),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _openUrl('https://qroutex.com'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  // ══ MAIN SCAFFOLD WITH 5-TAB NOTCHED NAVIGATION ══════════════════════════
   @override
   Widget build(BuildContext context) {
+    // 5 Primary Navigation Screens:
+    // Tab 0: Home Dashboard
+    // Tab 1: Explore (All Events & Vendors)
+    // Tab 2: Create Action Modal (FAB center)
+    // Tab 3: Bookings (My Bookings)
+    // Tab 4: Profile (User Profile & Settings)
     final List<Widget> pages = [
-      _buildDashboard(),
+      _buildHomeDashboard(),
       const EventListScreen(),
-      const BusinessListScreen(),
-      _buildAccountTab(),
+      const SizedBox.shrink(), // Center placeholder triggered via FAB
+      const MyBookingsScreen(),
+      const UserProfileScreen(),
     ];
 
     return Scaffold(
@@ -993,30 +1334,28 @@ class _HomeScreenState extends State<HomeScreen> {
         top: false,
         child: pages[_currentNavIndex],
       ),
-      // Centered QR Scanner Button
+      // Centered Floating Create (+) Button
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppConstants.primaryColor,
         elevation: 6,
-        tooltip: 'Scan Any QR Code',
+        tooltip: 'Create or Scan',
+        onPressed: _showCreateActionsModal,
         child: Container(
           width: 56,
           height: 56,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [Color(0xFF7C4DFF), Color(0xFF5F259F)],
+              colors: [AppConstants.primaryColor, AppConstants.secondaryColor],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
-          child: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 28),
+          child: const Icon(Icons.add, color: Colors.white, size: 30),
         ),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const QrScannerScreen()));
-        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      // Bottom Navigation Bar
+      // 5-Tab Bottom App Bar
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
@@ -1025,21 +1364,28 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildNavItem(index: 0, icon: Icons.home, label: 'Home'),
-            _buildNavItem(index: 1, icon: Icons.celebration, label: 'Events'),
-            const SizedBox(width: 48), // Space for centered FAB
-            _buildNavItem(index: 2, icon: Icons.storefront, label: 'Vendors'),
-            _buildNavItem(index: 3, icon: Icons.person, label: 'Account'),
+            _buildNavItem(index: 0, icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home'),
+            _buildNavItem(index: 1, icon: Icons.explore_outlined, activeIcon: Icons.explore, label: 'Explore'),
+            const SizedBox(width: 48), // Center spacing for FloatingActionButton
+            _buildNavItem(index: 3, icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month, label: 'Bookings'),
+            _buildNavItem(index: 4, icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNavItem({required int index, required IconData icon, required String label}) {
+  Widget _buildNavItem({
+    required int index,
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+  }) {
     final isSelected = _currentNavIndex == index;
     return InkWell(
-      onTap: () => setState(() => _currentNavIndex = index),
+      onTap: () {
+        setState(() => _currentNavIndex = index);
+      },
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -1047,7 +1393,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              icon,
+              isSelected ? activeIcon : icon,
               color: isSelected ? AppConstants.primaryColor : AppConstants.textMuted,
               size: 22,
             ),

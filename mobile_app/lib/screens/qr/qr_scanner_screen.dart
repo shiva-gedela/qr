@@ -8,6 +8,7 @@ import '../../constants.dart';
 import '../../models/event_model.dart';
 import '../../services/api_service.dart';
 import '../events/event_ride_booking_screen.dart';
+import 'qr_history_screen.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({Key? key}) : super(key: key);
@@ -169,6 +170,15 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
       if (!mounted) return;
       final status = result['result'] as String? ?? 'error';
+      final guest = result['guest'] as Map<String, dynamic>?;
+
+      // Persist in scan history
+      ApiService.saveScanRecord(
+        code: code,
+        type: 'event_checkin',
+        title: '${_selectedEvent?.title ?? "Event Entry"} - ${guest?["name"] ?? "Guest"}',
+        status: status,
+      );
       final Color color = status == 'approved'
           ? AppConstants.successColor
           : (status == 'already_checked_in' || status == 'pending')
@@ -234,6 +244,14 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     if (!mounted) return;
     final isUrl = code.startsWith('http://') || code.startsWith('https://');
     final isGps = code.contains('maps.google.com') || code.contains('goo.gl/maps') || code.startsWith('geo:');
+
+    // Persist in scan history
+    ApiService.saveScanRecord(
+      code: code,
+      type: isGps ? 'gps_route' : (isUrl ? 'web_link' : 'raw_code'),
+      title: isGps ? 'Event GPS Location' : (isUrl ? 'Website Link' : 'Scanned Code'),
+      status: 'approved',
+    );
 
     await showModalBottomSheet<void>(
       context: context,
@@ -384,6 +402,13 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
         backgroundColor: AppConstants.primaryDark,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'Scan History',
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const QrHistoryScreen()));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.photo_library),
             tooltip: 'Scan QR from Gallery',

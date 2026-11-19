@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../constants.dart';
 import '../../models/business_model.dart';
 import '../qr/qr_display_screen.dart';
+import '../booking/business_booking_screen.dart';
 
 class BusinessDetailScreen extends StatefulWidget {
   final BusinessModel business;
@@ -613,6 +614,29 @@ class _BusinessDetailScreenState extends State<BusinessDetailScreen> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Book Service / Table Banner
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppConstants.primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 2,
+                ),
+                icon: const Icon(Icons.calendar_today, size: 18),
+                label: const Text('Book Table or Reserve Service', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => BusinessBookingScreen(business: b)),
+                  );
+                },
               ),
             ),
 

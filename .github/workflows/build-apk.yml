@@ -40,48 +40,48 @@ jobs:
 
       - name: Rename APK for release
         run: |
-          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.8.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.9.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QRouteX-v1.0.8-apk
+          name: QRouteX-v1.0.9-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.8
+      - name: Publish GitHub Release v1.0.9
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.8
-          name: "QRouteX v1.0.8 - OLX Option Details UI/UX Architecture & Universal Mobile Fit"
+          tag_name: v1.0.9
+          name: "QRouteX v1.0.9 - Complete UI/UX Redesign, Official Brand Logo, 5-Tab Navigation, & Moments Feed"
           body: |
-            ## QRouteX Mobile App (v1.0.8) • OLX Option Details Edition • qroutex.com
+            ## QRouteX Mobile App (v1.0.9) • Complete Redesign Edition • qroutex.com
             
-            ### ✨ What's New in v1.0.8:
-            - **OLX-Style Option Details & Specifications Grid**:
-              - Completely redesigned **Event Details** and **Vendor Details** (`EventDetailScreen` & `BusinessDetailScreen`) matching OLX's iconic structured attribute grid.
-              - Parameter chips with custom colored icons, uppercase attribute labels, and bold values (Occasion, Date, Time, Guest Limit, Confirmed Guests, Dress Code, Distance, Cab Booking, Entry Gate, Security, Category, Response Time, etc.).
-              - Expandable description with "Read More / Read Less" toggle.
-              - Prominent pricing & status highlight (`₹ Free Guest Pass • Slots` / `Starting from ₹... / plate`).
-            - **OLX Signature Fixed Bottom Sticky Action Bar**:
-              - Pinned at the bottom with SafeArea padding.
-              - Instant **WhatsApp Chat**, direct **Call / Cab Ride Booking**, and primary **View QR Card / Business Card** buttons.
-            - **OLX 2-Column Responsive Marketplace Feeds**:
-              - Added OLX Grid / List view toggle in both **Events** (`EventListScreen`) and **Vendors** (`BusinessListScreen`).
-              - 2-Column Marketplace Cards displaying cover thumbnails, verified badges, bold price/slots tag, 2-line title, and location footer.
-            - **OLX Top Location Selector & Global Search**:
-              - Location picker in Home header (`📍 Bengaluru, KA ▼`) with instant city switcher modal.
-              - Clean search bar with QR scanning integration.
-            - **Universal Mobile Device Fit (Any Mobile Screen)**:
-              - Dynamically adapts to any Android or iOS screen width (from compact 320px devices up to large 480px+ phablets and foldables).
-              - Zero text truncation or yellow-black `RenderFlex overflow` bars.
+            ### ✨ What's New in v1.0.9:
+            - **Official QRouteX High-Resolution Logo**:
+              - Integrated official high-res QRouteX logo across Android launcher mipmaps, app header, and digital invitations.
+            - **5-Tab Navigation Architecture**:
+              - **Home | Explore | Create (+) | Bookings | Profile**
+              - Docked center Floating Action Button with interactive quick actions modal (Create Event, Scan QR, Book Service, Share Moment, Add Vendor).
+            - **8-Step Multi-Step Event Creation Wizard**:
+              - 1. Event Information, 2. Date, Time & Venue, 3. Cover Image, 4. Story & Description, 5. Guest Capacity, 6. Entry & QR Settings, 7. Event Portfolio, 8. Interactive Live Preview & Publish.
+            - **Restaurant & Local Business Direct Booking**:
+              - Full booking module with date picker, time slot chips, guest count slider, and status tracking in My Bookings.
+            - **Vendor Partner Portal & Dashboard**:
+              - Dedicated dashboard with key performance indicators (views, bookings, revenue) and client inquiry management.
+            - **Social Moments Feed**:
+              - Celebration feed with story highlights, double-tap like animations, comments, and WhatsApp sharing.
+            - **Advanced QR Code Scanner with Scan History**:
+              - Full-screen scanner, gallery screenshot scanning, camera torch toggle, attendance scan history, and Google / Apple wallet passes.
+            - **Ride & GPS Turn-by-Turn Navigation**:
+              - Live route directions and instant deep-linking for Uber, Rapido, and Ola.
             
             ### 📱 Android Installation Instructions:
-            1. Download `QRouteX-v1.0.8.apk` directly to your Android device.
+            1. Download `QRouteX-v1.0.9.apk` directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
-            3. Open the app to experience the brand-new OLX Option Details UI/UX!
+            3. Open the app to experience the brand-new QRouteX platform!
           files: |
-            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.8.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.9.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk
