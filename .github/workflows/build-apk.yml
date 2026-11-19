@@ -49,14 +49,15 @@ jobs:
       - name: Build Android APK
         working-directory: mobile_app
         run: |
-          flutter build apk --release --no-tree-shake-icons --verbose > build_log.txt 2>&1 || (
-            echo "### Gradle Build Failure Details" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            tail -n 80 build_log.txt >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            cat build_log.txt
-            exit 1
-          )
+          set -o pipefail
+          flutter build apk --release --no-tree-shake-icons 2>&1 | tee build_output.log
+
+      - name: Upload Build Output Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output-log
+          path: mobile_app/build_output.log
 
       - name: Rename APK for release
         run: |
