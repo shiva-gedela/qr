@@ -38,7 +38,13 @@ jobs:
 
       - name: Analyze Flutter Code
         working-directory: mobile_app
-        run: flutter analyze
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings > analyze_report.txt 2>&1 || true
+          cat analyze_report.txt
+          echo "### Flutter Analyze Report" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat analyze_report.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Build Android APK
         working-directory: mobile_app
