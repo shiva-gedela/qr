@@ -50,6 +50,9 @@ class BookingModel {
     );
   }
 
+  String get bookingDate => date;
+  String get bookingTime => timeSlot;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

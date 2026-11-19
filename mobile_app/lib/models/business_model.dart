@@ -142,6 +142,8 @@ class BusinessModel {
     };
   }
 
+  double get rating => 4.9;
+
   String get categoryEmoji {
     switch (category.toLowerCase()) {
       case 'catering':
