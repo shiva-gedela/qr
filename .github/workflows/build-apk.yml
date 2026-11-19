@@ -48,7 +48,15 @@ jobs:
 
       - name: Build Android APK
         working-directory: mobile_app
-        run: flutter build apk --release --no-tree-shake-icons
+        run: |
+          flutter build apk --release --no-tree-shake-icons --verbose > build_log.txt 2>&1 || (
+            echo "### Gradle Build Failure Details" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            tail -n 80 build_log.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat build_log.txt
+            exit 1
+          )
 
       - name: Rename APK for release
         run: |
