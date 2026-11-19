@@ -1,28 +1,31 @@
 {% extends 'base.html' %}
-{% block title %}Private Event - {{ SITE_NAME }}{% endblock %}
+{% block title %}Private Event Access - {{ event.title }} | {{ SITE_NAME }}{% endblock %}
+
 {% block content %}
-<div class="min-vh-100 d-flex align-items-center py-5" style="background: linear-gradient(135deg, #6c3483 0%, #a569bd 100%);">
-    <div class="container">
+<div class="min-vh-100 d-flex align-items-center py-5 position-relative overflow-hidden" style="background: radial-gradient(circle at 20% 20%, #1E1B4B 0%, #0F172A 70%, #090D16 100%); color: white;">
+    <div class="container position-relative" style="z-index: 2;">
         <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card border-0 shadow-lg rounded-4">
-                    <div class="card-header bg-primary text-white text-center py-4 border-0">
-                        <i class="bi bi-lock-fill display-4 text-warning mb-2 d-block"></i>
-                        <h3 class="fw-bold mb-1">{{ event.title }}</h3>
-                        <p class="text-white-75 mb-0">This is a private event. Enter the password to continue.</p>
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white text-dark">
+                    <div class="text-white text-center py-4 px-4 border-0" style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #4338CA 100%);">
+                        <div class="rounded-circle bg-warning text-dark d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 58px; height: 58px;">
+                            <i class="bi bi-lock-fill fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1 text-white">{{ event.title }}</h4>
+                        <p class="text-white-75 small mb-0">Private Celebration &bull; Host passcode required</p>
                     </div>
-                    <div class="card-body p-4">
+                    <div class="card-body p-4 p-md-5">
                         {% if messages %}{% for msg in messages %}
-                        <div class="alert alert-danger">{{ msg }}</div>
+                        <div class="alert alert-danger rounded-3 py-2 small">{{ msg }}</div>
                         {% endfor %}{% endif %}
                         <form method="post">
                             {% csrf_token %}
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Event Password</label>
-                                <input type="password" name="password" class="form-control form-control-lg" required autofocus>
+                            <div class="mb-4">
+                                <label class="form-label small fw-bold text-dark">Passcode</label>
+                                <input type="password" name="password" class="form-control form-control-lg text-center font-monospace" placeholder="••••••••" required autofocus>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="bi bi-unlock me-2"></i>Access Event
+                            <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-3 shadow-sm">
+                                <i class="bi bi-unlock-fill me-2"></i>Access Event Pass
                             </button>
                         </form>
                     </div>

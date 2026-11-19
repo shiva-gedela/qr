@@ -1,31 +1,114 @@
 {% extends 'base.html' %}
-{% block title %}Invitation - {{ event.title }}{% endblock %}
+{% block title %}VIP Invitation Pass - {{ event.title }} | {{ SITE_NAME }}{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="card border-0 shadow mx-auto text-center" style="max-width: 640px">
-        {% if event.cover_image %}<img src="{{ event.cover_image.url }}" class="card-img-top" alt="{{ event.title }}">{% endif %}
-        <div class="card-body p-4 p-md-5">
-            <p class="text-uppercase text-primary fw-bold">{{ event.get_event_type_display }} invitation</p>
-            <h1 class="h2">{{ event.title }}</h1>
-            <p class="lead">Dear {{ guest.name }}, you are invited.</p>
-            <p>{{ event.event_date|date:"l, d F Y" }}{% if event.event_time %} at {{ event.event_time|time:"g:i A" }}{% endif %}</p>
-            {% if event.venue_name %}<p class="mb-1">{{ event.venue_name }}</p>{% endif %}
-            {% if event.venue_address %}<p class="text-muted">{{ event.venue_address }}</p>{% endif %}
-            <p>Admission for {{ guest.guest_count }} guest{{ guest.guest_count|pluralize }}</p>
-            {% if guest.status == 'registered' %}
-            <p class="text-success fw-semibold">Attendance confirmed</p>
-            {% elif guest.status == 'invited' %}
-            <form method="post" class="my-3">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="confirm">
-                <button type="submit" class="btn btn-success">Confirm attendance</button>
-            </form>
-            {% endif %}
-            {% if qr.qr_image %}<img src="{{ qr.qr_image.url }}" alt="Invitation QR code" width="240" height="240" class="img-fluid my-3">{% endif %}
-            {% if event.google_maps_directions_url %}<p><a href="{{ event.google_maps_directions_url }}" rel="noopener">Get directions</a></p>{% endif %}
-            <button type="button" class="btn btn-primary" onclick="window.print()">Print invitation</button>
+<div class="py-5" style="background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%); min-height: 85vh;">
+    <div class="container">
+        <div class="card border-0 shadow-lg mx-auto rounded-4 overflow-hidden bg-white text-center" style="max-width: 620px;">
+            <!-- Cover Header -->
+            <div class="position-relative text-white p-4" style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #4338CA 100%);">
+                {% if event.cover_image %}
+                <img src="{{ event.cover_image.url }}" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover; opacity: 0.3;" alt="{{ event.title }}">
+                {% endif %}
+                <div class="position-relative z-1 py-3">
+                    <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold mb-2">
+                        {{ event.event_type_icon }} {{ event.get_event_type_display }} PASS
+                    </span>
+                    <h2 class="display-6 fw-bold mb-1 text-white">{{ event.title }}</h2>
+                    {% if event.host_names %}
+                    <p class="text-white-75 mb-0 small">Hosted with love by {{ event.host_names }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body p-4 p-md-5">
+                <!-- Personal Guest Name -->
+                <div class="p-3 bg-light rounded-4 mb-4 border">
+                    <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">Digital Admission Pass</small>
+                    <h3 class="fw-bold text-dark mb-1">Dear {{ guest.name }}</h3>
+                    <p class="text-muted small mb-0">You are cordially invited to celebrate this special occasion with us.</p>
+                    <div class="mt-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-bold">
+                            <i class="bi bi-people-fill me-1"></i>Admission: {{ guest.guest_count }} Guest{{ guest.guest_count|pluralize }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Date & Venue Details -->
+                <div class="row g-3 mb-4 text-start">
+                    <div class="col-6">
+                        <div class="p-3 border rounded-3 bg-white h-100">
+                            <i class="bi bi-calendar-event text-primary fs-4 d-block mb-1"></i>
+                            <strong class="d-block small text-dark">{{ event.event_date|date:"l, d M Y" }}</strong>
+                            {% if event.event_time %}<small class="text-muted">{{ event.event_time|time:"g:i A" }}</small>{% endif %}
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 border rounded-3 bg-white h-100">
+                            <i class="bi bi-geo-alt-fill text-danger fs-4 d-block mb-1"></i>
+                            <strong class="d-block small text-dark text-truncate">{{ event.venue_name|default:"Venue Details" }}</strong>
+                            {% if event.venue_address %}<small class="text-muted text-truncate d-block">{{ event.venue_address }}</small>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RSVP Status / Action -->
+                {% if guest.status == 'registered' %}
+                <div class="alert alert-success rounded-pill py-2 small mb-4 fw-bold">
+                    <i class="bi bi-check-circle-fill me-1"></i>RSVP Confirmed &bull; See you at the celebration!
+                </div>
+                {% elif guest.status == 'invited' %}
+                <form method="post" class="mb-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="confirm">
+                    <button type="submit" class="btn btn-success btn-lg rounded-pill px-4 fw-bold shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i>Confirm My RSVP Attendance
+                    </button>
+                </form>
+                {% endif %}
+
+                <!-- Unique Scannable Verification QR -->
+                <div class="p-4 bg-light rounded-4 d-inline-block shadow-sm mb-4 border">
+                    {% if qr and qr.qr_image %}
+                    <img src="{{ qr.qr_image.url }}" alt="Invitation QR code" width="220" height="220" class="img-fluid rounded-2">
+                    {% elif guest.invitation and guest.invitation.qr_code %}
+                    <img src="{% url 'qr_download_png' guest.invitation.qr_code.uuid %}" alt="Invitation QR code" width="220" height="220" class="img-fluid rounded-2">
+                    {% endif %}
+                    <small class="text-muted d-block mt-2" style="font-size:0.75rem;"><i class="bi bi-shield-lock text-success me-1"></i>Show this QR at entrance gate for instant check-in</small>
+                </div>
+
+                <!-- Action Buttons: GPS Route, Download & Print -->
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    {% if event.google_maps_directions_url %}
+                    <a href="{{ event.google_maps_directions_url }}" target="_blank" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                        <i class="bi bi-cursor-fill me-1 text-warning"></i>Get GPS Directions
+                    </a>
+                    {% endif %}
+                    {% if guest.invitation and guest.invitation.qr_code %}
+                    <a href="{% url 'qr_download_pdf' guest.invitation.qr_code.uuid %}" class="btn btn-outline-danger rounded-pill px-3 fw-bold">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>PDF Pass
+                    </a>
+                    {% endif %}
+                    <button type="button" class="btn btn-outline-dark rounded-pill px-3" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i>Print Pass
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer Badge -->
+            <div class="card-footer bg-light py-3 border-top small text-muted">
+                Powered by <strong>QRouteX</strong> &bull; <a href="https://qroutex.com" class="text-decoration-none text-primary">qroutex.com</a>
+            </div>
         </div>
     </div>
 </div>
-<style>@media print { nav, footer, button { display: none !important; } .card { box-shadow: none !important; } }</style>
+
+<style>
+@media print {
+    nav, footer, .btn, .city-selector-chip, .mobile-bottom-nav { display: none !important; }
+    body { background: #ffffff !important; }
+    .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+}
+</style>
 {% endblock %}

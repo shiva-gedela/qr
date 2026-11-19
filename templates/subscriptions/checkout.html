@@ -2,15 +2,17 @@
 {% block title %}Checkout - {{ plan.name }} - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="bg-light py-4 border-bottom">
-    <div class="container">
+<!-- ══ Checkout Header Banner ═══════════════════════════════════════════════ -->
+<div class="py-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #4338CA 100%);">
+    <div class="container position-relative" style="z-index: 2;">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="{% url 'pricing' %}">Pricing</a></li>
-                <li class="breadcrumb-item active">Checkout</li>
+                <li class="breadcrumb-item"><a href="{% url 'pricing' %}" class="text-white-50 text-decoration-none">Pricing</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Checkout</li>
             </ol>
         </nav>
-        <h2 class="fw-bold mb-0"><i class="bi bi-shield-check text-success me-2"></i>Secure Checkout</h2>
+        <h1 class="display-6 fw-bold mb-0 text-white"><i class="bi bi-shield-check text-success me-2"></i>Secure Razorpay Checkout</h1>
+        <p class="text-white-75 mb-0 small">256-bit encrypted checkout with instant activation of custom QR passes &amp; standees.</p>
     </div>
 </div>
 

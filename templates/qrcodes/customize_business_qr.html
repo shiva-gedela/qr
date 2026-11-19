@@ -1,30 +1,31 @@
 {% extends 'base.html' %}
-{% block title %}Customize Business QR Code - {{ business.name }} - {{ SITE_NAME }}{% endblock %}
+{% block title %}Customize Business QR - {{ business.name }} | {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="bg-light py-4 border-bottom">
-    <div class="container">
+<div class="py-4 text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #4338CA 100%);">
+    <div class="container position-relative" style="z-index: 2;">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a href="/business/">Businesses</a></li>
-                <li class="breadcrumb-item"><a href="/business/{{ business.pk }}/">{{ business.name }}</a></li>
-                <li class="breadcrumb-item active">Customize QR Code</li>
+                <li class="breadcrumb-item"><a href="/business/" class="text-white-50 text-decoration-none">Businesses</a></li>
+                <li class="breadcrumb-item"><a href="/business/{{ business.pk }}/" class="text-white-50 text-decoration-none">{{ business.name }}</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Customize QR</li>
             </ol>
         </nav>
-        <h2 class="fw-bold mb-0">
-            <i class="bi bi-palette text-primary me-2"></i>Customize Business QR Code
-        </h2>
+        <h1 class="display-6 fw-bold mb-0 text-white">
+            <i class="bi bi-palette text-warning me-2"></i>Business QR Designer Studio
+        </h1>
+        <p class="text-white-75 mb-0 small">Personalize your brand colors, upload business logo, and download high-resolution tabletop standees.</p>
     </div>
 </div>
 
-<div class="container py-4">
+<div class="container py-4 py-lg-5">
     <div class="row g-4">
 
         <!-- Form Column -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-sliders me-2 text-primary"></i>Branding &amp; Colors</h5>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="card-header bg-white py-3 px-4 border-bottom">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-sliders me-2 text-primary"></i>Branding &amp; Color Scheme</h5>
                 </div>
                 <div class="card-body p-4">
                     <form method="post" enctype="multipart/form-data" id="qrCustomizeForm">
@@ -34,23 +35,23 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold small text-uppercase text-muted">Brand Color Presets</label>
                             <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#1a365d', '#ffffff')">
+                                <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="applyPreset('#1a365d', '#ffffff')">
                                     <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#1a365d;"></span>Corporate Navy
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#d4ac0d', '#1a1a1a')">
+                                <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="applyPreset('#4F46E5', '#EEF2FF')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#4F46E5;"></span>Indigo SaaS
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="applyPreset('#d4ac0d', '#1a1a1a')">
                                     <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#d4ac0d;"></span>Luxury Gold
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#0d9488', '#f0fdfa')">
+                                <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="applyPreset('#0d9488', '#f0fdfa')">
                                     <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#0d9488;"></span>Tech Teal
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#d97706', '#fffbeb')">
-                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#d97706;"></span>Warm Amber
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#059669', '#f0fdf4')">
+                                <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="applyPreset('#059669', '#f0fdf4')">
                                     <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#059669;"></span>Eco Emerald
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyPreset('#000000', '#ffffff')">
-                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#000000;"></span>Minimal Black
+                                <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3" onclick="applyPreset('#000000', '#ffffff')">
+                                    <span class="d-inline-block rounded-circle me-1" style="width:12px; height:12px; background:#000000;"></span>Minimal Dark
                                 </button>
                             </div>
                         </div>
@@ -58,53 +59,56 @@
                         <!-- Foreground & Background Colors -->
                         <div class="row g-3 mb-4">
                             <div class="col-6">
-                                <label class="form-label fw-bold">Foreground Color</label>
+                                <label class="form-label fw-bold small text-dark">Foreground Color</label>
                                 <div class="input-group">
-                                    <input type="color" name="fill_color" id="id_fill_color" value="{{ qr.fill_color }}" class="form-control form-control-color" style="height:48px;" onchange="updatePreview()">
-                                    <input type="text" id="fill_hex" class="form-control" value="{{ qr.fill_color }}" oninput="syncColorInput('fill_hex', 'id_fill_color')">
+                                    <input type="color" name="fill_color" id="id_fill_color" value="{{ qr.fill_color }}" class="form-control form-control-color border-0 rounded-start" style="height:46px; width:46px;" onchange="updatePreview()">
+                                    <input type="text" id="fill_hex" class="form-control font-monospace text-uppercase" value="{{ qr.fill_color }}" oninput="syncColorInput('fill_hex', 'id_fill_color')">
                                 </div>
-                                <small class="text-muted">QR code pattern color</small>
+                                <small class="text-muted d-block mt-1" style="font-size:0.75rem;">Color of QR dots &amp; markers</small>
                             </div>
                             <div class="col-6">
-                                <label class="form-label fw-bold">Background Color</label>
+                                <label class="form-label fw-bold small text-dark">Background Color</label>
                                 <div class="input-group">
-                                    <input type="color" name="back_color" id="id_back_color" value="{{ qr.back_color }}" class="form-control form-control-color" style="height:48px;" onchange="updatePreview()">
-                                    <input type="text" id="back_hex" class="form-control" value="{{ qr.back_color }}" oninput="syncColorInput('back_hex', 'id_back_color')">
+                                    <input type="color" name="back_color" id="id_back_color" value="{{ qr.back_color }}" class="form-control form-control-color border-0 rounded-start" style="height:46px; width:46px;" onchange="updatePreview()">
+                                    <input type="text" id="back_hex" class="form-control font-monospace text-uppercase" value="{{ qr.back_color }}" oninput="syncColorInput('back_hex', 'id_back_color')">
                                 </div>
-                                <small class="text-muted">Background fill color</small>
+                                <small class="text-muted d-block mt-1" style="font-size:0.75rem;">Background card color</small>
                             </div>
                         </div>
 
                         <!-- Center Logo -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Center Logo / Brand Icon (Optional)</label>
+                            <label class="form-label fw-bold small text-dark">Center Brand Logo / Store Monogram</label>
                             {% if qr.logo %}
-                            <div class="d-flex align-items-center gap-3 mb-2 p-2 bg-light rounded">
+                            <div class="d-flex align-items-center gap-3 mb-2 p-2 bg-light rounded-3">
                                 <img src="{{ qr.logo.url }}" width="45" height="45" class="rounded border" style="object-fit:cover;">
                                 <small class="text-muted">Current Logo: <strong>{{ qr.logo.name }}</strong></small>
                             </div>
                             {% elif business.logo %}
-                            <div class="d-flex align-items-center gap-3 mb-2 p-2 bg-light rounded">
+                            <div class="d-flex align-items-center gap-3 mb-2 p-2 bg-light rounded-3">
                                 <img src="{{ business.logo.url }}" width="45" height="45" class="rounded border" style="object-fit:cover;">
-                                <small class="text-muted">Using default Business Logo</small>
+                                <small class="text-muted">Using default business logo</small>
                             </div>
                             {% endif %}
                             <input type="file" name="logo" id="id_logo" class="form-control" accept="image/png,image/jpeg,image/webp">
-                            <small class="text-muted">PNG with transparent background looks best in the center plate.</small>
+                            <small class="text-muted d-block mt-1" style="font-size:0.75rem;">PNG with transparent background looks sharpest in center plate.</small>
                         </div>
 
                         <!-- Destination URL Notice -->
-                        <div class="alert alert-info py-2 small mb-4">
-                            <i class="bi bi-link-45deg me-1"></i>Destination Profile URL: 
-                            <strong class="text-break">{{ qr.target_url }}</strong>
+                        <div class="alert alert-info py-2 small mb-4 rounded-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-link-45deg fs-5 text-primary"></i>
+                            <div>
+                                <span class="text-muted">Digital Profile Link:</span>
+                                <strong class="text-break d-block">{{ qr.target_url }}</strong>
+                            </div>
                         </div>
 
                         <!-- Action Buttons -->
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary px-4">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
                                 <i class="bi bi-check-lg me-1"></i>Save &amp; Generate QR
                             </button>
-                            <a href="/business/{{ business.pk }}/" class="btn btn-outline-secondary">Cancel</a>
+                            <a href="/business/{{ business.pk }}/" class="btn btn-outline-secondary rounded-pill px-3">Cancel</a>
                         </div>
                     </form>
                 </div>
@@ -113,30 +117,30 @@
 
         <!-- Live Preview Column -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm text-center">
-                <div class="card-header bg-white py-3">
+            <div class="card border-0 shadow-lg rounded-4 text-center bg-white p-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-eye me-2 text-primary"></i>Live QR Preview</h5>
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">Instant Scan</span>
                 </div>
-                <div class="card-body p-4">
-                    <div class="p-4 rounded-4 shadow-sm d-inline-block mb-3" id="previewContainer" style="background: {{ qr.back_color }};">
-                        {% if qr.qr_image %}
-                        <img id="qrPreviewImg" src="{{ qr.qr_image.url }}" width="240" height="240" class="img-fluid" alt="QR Preview">
-                        {% else %}
-                        <img id="qrPreviewImg" src="/qr/preview/?target_url={{ qr.target_url|urlencode }}&fill_color={{ qr.fill_color|urlencode }}&back_color={{ qr.back_color|urlencode }}" width="240" height="240" class="img-fluid" alt="QR Preview">
-                        {% endif %}
-                    </div>
 
-                    <h5 class="fw-bold mb-1">{{ business.name }}</h5>
-                    <p class="text-muted small mb-3">Scan to open digital profile &amp; quick actions</p>
+                <div class="p-4 rounded-4 shadow-sm d-inline-block mx-auto mb-3" id="previewContainer" style="background: {{ qr.back_color }}; border: 1px solid #E2E8F0;">
+                    {% if qr.qr_image %}
+                    <img id="qrPreviewImg" src="{{ qr.qr_image.url }}" width="240" height="240" class="img-fluid rounded-2" alt="QR Preview">
+                    {% else %}
+                    <img id="qrPreviewImg" src="/qr/preview/?target_url={{ qr.target_url|urlencode }}&fill_color={{ qr.fill_color|urlencode }}&back_color={{ qr.back_color|urlencode }}" width="240" height="240" class="img-fluid rounded-2" alt="QR Preview">
+                    {% endif %}
+                </div>
 
-                    <div class="d-flex justify-content-center gap-2 flex-wrap">
-                        <a href="/qr/download/png/{{ qr.uuid }}/" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-file-earmark-image me-1"></i>Download PNG
-                        </a>
-                        <a href="/qr/download/pdf/{{ qr.uuid }}/" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-file-earmark-pdf me-1"></i>Download Standee Card (PDF)
-                        </a>
-                    </div>
+                <h5 class="fw-bold mb-1 text-dark">{{ business.name }}</h5>
+                <p class="text-muted small mb-4">Scan to open digital store card &amp; WhatsApp inquiries</p>
+
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    <a href="/qr/download/png/{{ qr.uuid }}/" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                        <i class="bi bi-file-earmark-image me-1"></i>Download PNG
+                    </a>
+                    <a href="/qr/download/pdf/{{ qr.uuid }}/" class="btn btn-outline-danger rounded-pill px-4 fw-bold">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Download Tabletop Standee (PDF)
+                    </a>
                 </div>
             </div>
         </div>
@@ -170,11 +174,12 @@ function updatePreview() {
     document.getElementById('back_hex').value = back;
 
     const container = document.getElementById('previewContainer');
-    container.style.background = back;
+    if (container) container.style.background = back;
 
     const targetUrl = encodeURIComponent("{{ qr.target_url }}");
     const previewUrl = `/qr/preview/?target_url=${targetUrl}&fill_color=${encodeURIComponent(fill)}&back_color=${encodeURIComponent(back)}`;
-    document.getElementById('qrPreviewImg').src = previewUrl;
+    const img = document.getElementById('qrPreviewImg');
+    if (img) img.src = previewUrl;
 }
 </script>
 {% endblock %}

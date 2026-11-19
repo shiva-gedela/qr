@@ -1,8 +1,21 @@
 {% extends 'base.html' %}
-{% block title %}Invitation unavailable{% endblock %}
+{% block title %}Invitation Pass Unavailable | {{ SITE_NAME }}{% endblock %}
+
 {% block content %}
-<div class="container py-5 text-center">
-    <h1 class="h3">This invitation is no longer valid</h1>
-    <p class="text-muted">Please contact the event organizer for assistance.</p>
+<div class="min-vh-100 d-flex align-items-center text-center py-5" style="background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%);">
+    <div class="container">
+        <div class="card border-0 shadow-lg rounded-4 p-5 mx-auto bg-white" style="max-width: 520px;">
+            <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-inline-flex align-items-center justify-content-center mb-3 mx-auto" style="width: 72px; height: 72px;">
+                <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-2">Invitation Pass Unavailable</h3>
+            <p class="text-muted small mb-4">
+                This digital invitation pass is either expired, cancelled, or no longer active. Please contact the event organizer for assistance or an updated link.
+            </p>
+            <a href="/" class="btn btn-primary rounded-pill px-4 fw-bold">
+                <i class="bi bi-house me-1"></i>Back to Home
+            </a>
+        </div>
+    </div>
 </div>
 {% endblock %}
