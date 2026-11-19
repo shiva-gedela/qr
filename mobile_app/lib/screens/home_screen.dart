@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../models/event_model.dart';
@@ -40,24 +43,111 @@ class _HomeScreenState extends State<HomeScreen> {
   List<BookingModel> _userBookings = [];
   bool _isLoadingDashboard = true;
   String _selectedCity = 'Bengaluru, KA';
+  bool _isDetectingLocation = false;
+  String _citySearchQuery = '';
+
+  final Map<String, String> _stateCodes = {
+    'karnataka': 'KA',
+    'telangana': 'TS',
+    'maharashtra': 'MH',
+    'tamil nadu': 'TN',
+    'delhi': 'DL',
+    'andhra pradesh': 'AP',
+    'west bengal': 'WB',
+    'gujarat': 'GJ',
+    'rajasthan': 'RJ',
+    'punjab': 'PB',
+    'kerala': 'KL',
+    'uttar pradesh': 'UP',
+    'goa': 'GA',
+    'haryana': 'HR',
+    'madhya pradesh': 'MP',
+    'odisha': 'OD',
+  };
 
   final List<String> _popularCities = [
     'Bengaluru, KA',
+    'Hyderabad, TS',
     'Mumbai, MH',
     'Delhi NCR',
-    'Hyderabad, TS',
     'Chennai, TN',
     'Pune, MH',
+    'Visakhapatnam, AP',
     'Kolkata, WB',
     'Ahmedabad, GJ',
     'Jaipur, RJ',
     'Chandigarh, PB',
+    'Kochi, KL',
+    'Goa, GA',
+    'Lucknow, UP',
   ];
 
   @override
   void initState() {
     super.initState();
+    _loadSavedCity();
     _loadDashboardData();
+  }
+
+  Future<void> _loadSavedCity() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('qroutex_selected_city');
+      if (saved != null && saved.isNotEmpty && mounted) {
+        setState(() => _selectedCity = saved);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _detectLiveLocation(StateSetter setModalState) async {
+    setModalState(() => _isDetectingLocation = true);
+    try {
+      final res = await http.get(Uri.parse('https://get.geojs.io/v1/ip/geo.json')).timeout(const Duration(seconds: 6));
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        final city = data['city'] ?? 'Bengaluru';
+        final region = (data['region'] ?? '').toString().toLowerCase();
+        final stateCode = _stateCodes[region] ?? (region.isNotEmpty ? region.substring(0, 2).toUpperCase() : 'IN');
+        final formatted = '$city, $stateCode';
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('qroutex_selected_city', formatted);
+
+        if (mounted) {
+          setState(() {
+            _selectedCity = formatted;
+            _isDetectingLocation = false;
+          });
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text('📍 Live Location: $formatted', style: const TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              backgroundColor: const Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
+        return;
+      }
+    } catch (_) {}
+
+    if (mounted) {
+      setModalState(() => _isDetectingLocation = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Could not detect live location. Please select your city from the list.'),
+          backgroundColor: Colors.orange.shade800,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _loadDashboardData() async {
@@ -89,70 +179,160 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showCityPicker() {
+    _citySearchQuery = '';
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filteredCities = _popularCities.where((c) {
+              if (_citySearchQuery.isEmpty) return true;
+              return c.toLowerCase().contains(_citySearchQuery.toLowerCase());
+            }).toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.75,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Select Your City',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.location_on, color: AppConstants.secondaryColor),
+                          SizedBox(width: 8),
+                          Text(
+                            'Select Your City',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(context),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Personalize events, restaurants & verified vendors:',
+                    style: TextStyle(color: AppConstants.textMuted, fontSize: 12),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 1. Use My Current Live Location (GPS) Action
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4F46E5).withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      ),
+                      onPressed: _isDetectingLocation ? null : () => _detectLiveLocation(setModalState),
+                      icon: _isDetectingLocation
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Icon(Icons.my_location, color: Colors.white),
+                      label: Text(
+                        _isDetectingLocation ? 'Detecting Live Location...' : 'Use My Current Live Location (GPS)',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Search Bar
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search city or state...',
+                      hintStyle: const TextStyle(fontSize: 13, color: AppConstants.textMuted),
+                      prefixIcon: const Icon(Icons.search, size: 20, color: AppConstants.textMuted),
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setModalState(() => _citySearchQuery = val);
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    'POPULAR CITIES',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppConstants.textMuted, letterSpacing: 0.5),
+                  ),
+                  const SizedBox(height: 6),
+
+                  Expanded(
+                    child: filteredCities.isEmpty
+                        ? const Center(
+                            child: Text('No cities match your search', style: TextStyle(color: AppConstants.textMuted)),
+                          )
+                        : ListView.separated(
+                            itemCount: filteredCities.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, idx) {
+                              final city = filteredCities[idx];
+                              final isSelected = city == _selectedCity;
+                              return ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Icon(
+                                  Icons.pin_drop,
+                                  color: isSelected ? AppConstants.primaryColor : Colors.grey.shade400,
+                                ),
+                                title: Text(
+                                  city,
+                                  style: TextStyle(
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                    color: isSelected ? AppConstants.primaryColor : AppConstants.textDark,
+                                  ),
+                                ),
+                                trailing: isSelected
+                                    ? const Icon(Icons.check_circle, color: AppConstants.primaryColor)
+                                    : null,
+                                onTap: () async {
+                                  final prefs = await SharedPreferences.getInstance();
+                                  await prefs.setString('qroutex_selected_city', city);
+                                  setState(() => _selectedCity = city);
+                                  if (context.mounted) Navigator.pop(context);
+                                },
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Personalize events, restaurants & verified vendors:',
-                style: TextStyle(color: AppConstants.textMuted, fontSize: 13),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: ListView.separated(
-                  itemCount: _popularCities.length,
-                  separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (context, idx) {
-                    final city = _popularCities[idx];
-                    final isSelected = city == _selectedCity;
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.location_on,
-                        color: isSelected ? AppConstants.primaryColor : Colors.grey,
-                      ),
-                      title: Text(
-                        city,
-                        style: TextStyle(
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected ? AppConstants.primaryColor : AppConstants.textDark,
-                        ),
-                      ),
-                      trailing: isSelected
-                          ? const Icon(Icons.check_circle, color: AppConstants.primaryColor)
-                          : null,
-                      onTap: () {
-                        setState(() => _selectedCity = city);
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );

@@ -27,56 +27,54 @@
 <!-- ═══ NAVBAR ═══════════════════════════════════════════════════════════════ -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-modern-glass sticky-top py-2">
     <div class="container">
-        <!-- QRouteX Brand Logo -->
-        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="/">
-            <img src="/static/images/app_logo.png" alt="QRouteX" class="rounded-circle shadow-sm" style="width: 36px; height: 36px; object-fit: contain; background: #ffffff; padding: 1.5px;">
-            <span class="brand-text">QRoute<span style="background: linear-gradient(135deg, #6366F1, #06B6D4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">X</span></span>
-        </a>
+        <!-- Brand & Location Group -->
+        <div class="d-flex align-items-center gap-2 gap-sm-3">
+            <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none m-0" href="/">
+                <img src="/static/images/app_logo.png" alt="QRouteX" class="rounded-3 shadow-sm" style="width: 34px; height: 34px; object-fit: contain; background: #ffffff; padding: 1.5px; border: 1px solid rgba(255, 255, 255, 0.2);">
+                <span class="brand-title">QRoute<span class="brand-x-gradient">X</span></span>
+            </a>
 
-        <!-- City Selector Pill (Subtle & Clean) -->
-        <button type="button" class="city-pill-subtle ms-2 ms-lg-3 me-auto me-lg-0" data-bs-toggle="modal" data-bs-target="#citySelectorModal" title="Change Location">
-            <i class="bi bi-geo-alt-fill text-danger" style="font-size: 0.8rem;"></i>
-            <span id="navActiveCityLabel" class="d-none d-sm-inline">Bengaluru</span>
-            <i class="bi bi-chevron-down text-white-50 ms-1" style="font-size: 0.65rem;"></i>
-        </button>
+            <!-- City Selector Pill (Subtle Glass) -->
+            <button type="button" class="city-pill-glass" data-bs-toggle="modal" data-bs-target="#citySelectorModal" title="Change Location">
+                <i class="bi bi-geo-alt-fill text-danger" style="font-size: 0.78rem;"></i>
+                <span id="navActiveCityLabel" class="d-none d-sm-inline">Bengaluru, KA</span>
+                <i class="bi bi-chevron-down text-white-50" style="font-size: 0.65rem;"></i>
+            </button>
+        </div>
 
         <!-- Navbar Toggler for Mobile Menu -->
-        <button class="navbar-toggler border-0 shadow-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler border-0 shadow-none ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="mainNav">
-            <!-- Centered Navigation Links -->
-            <ul class="navbar-nav mx-auto align-items-lg-center gap-lg-1 my-3 my-lg-0">
-                <li class="nav-item">
-                    <a class="nav-modern-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-modern-link {% if '/events/' in request.path %}active{% endif %}" href="/events/">Events</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-modern-link {% if '/business/' in request.path %}active{% endif %}" href="/business/">Vendors &amp; Places</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-modern-link {% if '/pricing/' in request.path %}active{% endif %}" href="/pricing/">Pricing</a>
-                </li>
-            </ul>
+            <!-- Centered Floating Capsule Links -->
+            <div class="mx-auto my-3 my-lg-0">
+                <div class="nav-center-capsule">
+                    <a class="nav-capsule-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+                    <a class="nav-capsule-link {% if '/events/' in request.path %}active{% endif %}" href="/events/">Events</a>
+                    <a class="nav-capsule-link {% if '/business/' in request.path %}active{% endif %}" href="/business/">Vendors &amp; Places</a>
+                    <a class="nav-capsule-link {% if '/pricing/' in request.path %}active{% endif %}" href="/pricing/">Pricing</a>
+                </div>
+            </div>
 
-            <!-- Right Utilities & Primary Action -->
-            <div class="d-flex align-items-center gap-2 gap-lg-3 flex-wrap">
+            <!-- Right Utilities & Primary CTA -->
+            <div class="d-flex align-items-center gap-2 gap-lg-2 ms-lg-auto flex-wrap">
                 <!-- Scan QR Web Utility -->
-                <button type="button" class="nav-icon-btn" onclick="openWebQrScanner()" title="Scan Any QR Pass">
-                    <i class="bi bi-qr-code-scan"></i>
+                <button type="button" class="nav-frosted-pill" onclick="openWebQrScanner()" title="Scan Any QR Pass">
+                    <i class="bi bi-qr-code-scan text-info"></i>
+                    <span class="d-none d-xl-inline">Scan Pass</span>
                 </button>
 
                 <!-- Android App APK Download -->
-                <a href="https://github.com/shiva-gedela/qr/releases/download/v1.0.9/QRouteX-v1.0.9.apk" class="nav-icon-btn" title="Download Android App v1.0.9">
-                    <i class="bi bi-android2 text-warning"></i>
+                <a href="https://github.com/shiva-gedela/qr/releases/download/v1.0.9/QRouteX-v1.0.9.apk" class="nav-frosted-pill" title="Download Android App v1.0.9">
+                    <i class="bi bi-android2 text-success"></i>
+                    <span class="d-none d-xl-inline">App</span>
                 </a>
 
                 {% if user.is_authenticated %}
-                    <li class="nav-item dropdown list-unstyled">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-1" href="#" data-bs-toggle="dropdown">
+                    <div class="dropdown list-unstyled ms-1">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-1 text-white text-decoration-none" href="#" data-bs-toggle="dropdown">
                             {% if user.avatar %}
                                 <img src="{{ user.avatar.url }}" class="rounded-circle border border-secondary" width="34" height="34" style="object-fit:cover;">
                             {% else %}
@@ -113,11 +111,12 @@
                                 </form>
                             </li>
                         </ul>
-                    </li>
+                    </div>
                 {% else %}
-                    <a class="nav-modern-link px-2" href="/accounts/login/" style="font-weight: 600;">Sign In</a>
-                    <a class="btn btn-primary btn-sm fw-bold px-3 py-2 rounded-pill shadow-sm" href="/accounts/register/" style="background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; font-size: 0.88rem;">
-                        Get Started Free
+                    <a class="nav-link-subtle ms-1" href="/accounts/login/">Sign In</a>
+                    <a class="nav-btn-glow" href="/accounts/register/">
+                        <span>Get Started Free</span>
+                        <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 {% endif %}
             </div>
@@ -239,7 +238,7 @@
     </div>
 </div>
 
-<!-- ═══ MODAL: CITY SELECTOR ═════════════════════════════════════════════════ -->
+<!-- ═══ MODAL: CITY SELECTOR (LIVE LOCATION & METRO SEARCH) ═══════════════════ -->
 <div class="modal fade" id="citySelectorModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -253,51 +252,88 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-3">
-                <div class="list-group list-group-flush rounded-3" id="cityOptionsList">
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Bengaluru, KA')">
+            <div class="modal-body p-4">
+                <!-- 1. Use My Current Live Location (GPS) Button -->
+                <button type="button" class="btn btn-outline-primary w-100 rounded-pill py-2 px-3 mb-3 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm" id="btnDetectLiveCity" onclick="detectLiveUserCity()">
+                    <i class="bi bi-crosshair fs-5 text-danger" id="detectGpsIcon"></i>
+                    <span id="detectGpsText">Use My Current Live Location (GPS)</span>
+                </button>
+
+                <!-- Live Detection Feedback Alert -->
+                <div id="liveCityDetectStatus" class="alert alert-info py-2 px-3 small d-none mb-3 align-items-center gap-2 rounded-3">
+                    <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+                    <span id="liveCityDetectMsg">Detecting your live location...</span>
+                </div>
+
+                <!-- Instant City Search Input -->
+                <div class="input-group mb-3">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="citySearchInput" class="form-control bg-light border-start-0 shadow-none small" placeholder="Search city or state (e.g. Hyderabad, Mumbai, Delhi)..." oninput="filterCityList(this.value)">
+                </div>
+
+                <div class="text-uppercase fw-bold text-muted small mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                    Popular Cities &amp; Metros
+                </div>
+
+                <!-- Scrollable City List -->
+                <div class="list-group list-group-flush rounded-3 overflow-y-auto" id="cityOptionsList" style="max-height: 280px;">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Bengaluru, KA" onclick="selectCity('Bengaluru, KA')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Bengaluru, KA</span>
                         <span class="badge bg-primary bg-opacity-10 text-primary">Popular</span>
                     </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Mumbai, MH')">
-                        <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Mumbai, MH</span>
-                        <span class="badge bg-light text-muted">Active</span>
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Delhi NCR')">
-                        <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Delhi NCR</span>
-                        <span class="badge bg-light text-muted">Active</span>
-                    </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Hyderabad, TS')">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Hyderabad, TS" onclick="selectCity('Hyderabad, TS')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Hyderabad, TS</span>
                         <span class="badge bg-primary bg-opacity-10 text-primary">Popular</span>
                     </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Chennai, TN')">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Mumbai, MH" onclick="selectCity('Mumbai, MH')">
+                        <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Mumbai, MH</span>
+                        <span class="badge bg-light text-muted">Active</span>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Delhi NCR" onclick="selectCity('Delhi NCR')">
+                        <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Delhi NCR</span>
+                        <span class="badge bg-light text-muted">Active</span>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Chennai, TN" onclick="selectCity('Chennai, TN')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Chennai, TN</span>
                         <span class="badge bg-light text-muted">Active</span>
                     </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Pune, MH')">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Pune, MH" onclick="selectCity('Pune, MH')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Pune, MH</span>
                         <span class="badge bg-light text-muted">Active</span>
                     </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Kolkata, WB')">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Visakhapatnam, AP" onclick="selectCity('Visakhapatnam, AP')">
+                        <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Visakhapatnam, AP</span>
+                        <span class="badge bg-light text-muted">Active</span>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Kolkata, WB" onclick="selectCity('Kolkata, WB')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Kolkata, WB</span>
                         <span class="badge bg-light text-muted">Active</span>
                     </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Ahmedabad, GJ')">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Ahmedabad, GJ" onclick="selectCity('Ahmedabad, GJ')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Ahmedabad, GJ</span>
                         <span class="badge bg-light text-muted">Active</span>
                     </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Jaipur, RJ')">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Jaipur, RJ" onclick="selectCity('Jaipur, RJ')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Jaipur, RJ</span>
                         <span class="badge bg-light text-muted">Active</span>
                     </button>
-                    <button type="button" class="list-group-item list-group-item-action py-3 d-flex justify-content-between align-items-center" onclick="selectCity('Chandigarh, PB')">
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Chandigarh, PB" onclick="selectCity('Chandigarh, PB')">
                         <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Chandigarh, PB</span>
+                        <span class="badge bg-light text-muted">Active</span>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Kochi, KL" onclick="selectCity('Kochi, KL')">
+                        <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Kochi, KL</span>
+                        <span class="badge bg-light text-muted">Active</span>
+                    </button>
+                    <button type="button" class="list-group-item list-group-item-action py-2 px-3 d-flex justify-content-between align-items-center city-option-item" data-city="Goa, GA" onclick="selectCity('Goa, GA')">
+                        <span><i class="bi bi-pin-map-fill text-primary me-2"></i>Goa, GA</span>
                         <span class="badge bg-light text-muted">Active</span>
                     </button>
                 </div>
             </div>
         </div>
+    </div>
+</div>
     </div>
 </div>
 
@@ -442,6 +478,13 @@
 
 <!-- Inline Global App Feature Controllers: City Selection & Web QR Scanner -->
 <script>
+    const INDIAN_STATE_CODES = {
+        'karnataka': 'KA', 'telangana': 'TS', 'maharashtra': 'MH', 'tamil nadu': 'TN',
+        'delhi': 'DL', 'andhra pradesh': 'AP', 'west bengal': 'WB', 'gujarat': 'GJ',
+        'rajasthan': 'RJ', 'punjab': 'PB', 'kerala': 'KL', 'uttar pradesh': 'UP',
+        'goa': 'GA', 'haryana': 'HR', 'madhya pradesh': 'MP', 'odisha': 'OD'
+    };
+
     // City Selector Controller
     function selectCity(cityName) {
         localStorage.setItem('qrx_selected_city', cityName);
@@ -456,6 +499,99 @@
         if (navEl) navEl.textContent = cityName;
         const pageHeroEl = document.getElementById('pageHeroCityLabel');
         if (pageHeroEl) pageHeroEl.textContent = cityName;
+    }
+
+    // Live Location Auto-Detection via GPS / Reverse Geocoding / IP fallback
+    function detectLiveUserCity() {
+        const btn = document.getElementById('btnDetectLiveCity');
+        const statusBox = document.getElementById('liveCityDetectStatus');
+        const statusMsg = document.getElementById('liveCityDetectMsg');
+
+        if (statusBox) statusBox.classList.remove('d-none');
+        if (btn) btn.disabled = true;
+
+        if (navigator.geolocation) {
+            if (statusMsg) statusMsg.textContent = 'Requesting GPS satellite fix...';
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    if (statusMsg) statusMsg.textContent = 'Reverse geocoding live coordinates...';
+
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+                            headers: { 'Accept-Language': 'en' }
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            const addr = data.address || {};
+                            const cityName = addr.city || addr.town || addr.municipality || addr.county || addr.state_district || 'Bengaluru';
+                            const stateName = (addr.state || '').toLowerCase();
+                            const stateCode = INDIAN_STATE_CODES[stateName] || (stateName ? stateName.slice(0, 2).toUpperCase() : '');
+                            const formattedCity = stateCode ? `${cityName}, ${stateCode}` : cityName;
+
+                            if (statusMsg) statusMsg.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> Live Location Found: <strong>${formattedCity}</strong>`;
+                            setTimeout(() => {
+                                selectCity(formattedCity);
+                                if (btn) btn.disabled = false;
+                                if (statusBox) statusBox.classList.add('d-none');
+                            }, 800);
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn('OSM reverse geocode failed, attempting IP fallback', e);
+                    }
+                    fallbackToIpLocation();
+                },
+                (err) => {
+                    console.warn('GPS permission denied or timeout, falling back to IP geo', err);
+                    fallbackToIpLocation();
+                },
+                { timeout: 7000, enableHighAccuracy: true }
+            );
+        } else {
+            fallbackToIpLocation();
+        }
+
+        async function fallbackToIpLocation() {
+            if (statusMsg) statusMsg.textContent = 'Detecting city via network location...';
+            try {
+                const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                if (res.ok) {
+                    const data = await res.json();
+                    const cityName = data.city || 'Bengaluru';
+                    const regionName = (data.region || '').toLowerCase();
+                    const stateCode = INDIAN_STATE_CODES[regionName] || (regionName ? regionName.slice(0, 2).toUpperCase() : '');
+                    const formattedCity = stateCode ? `${cityName}, ${stateCode}` : cityName;
+
+                    if (statusMsg) statusMsg.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> Location Detected: <strong>${formattedCity}</strong>`;
+                    setTimeout(() => {
+                        selectCity(formattedCity);
+                        if (btn) btn.disabled = false;
+                        if (statusBox) statusBox.classList.add('d-none');
+                    }, 800);
+                    return;
+                }
+            } catch (e) {
+                console.error('IP geo fallback failed', e);
+            }
+            if (statusMsg) statusMsg.innerHTML = `<i class="bi bi-exclamation-circle text-danger me-1"></i> Could not detect location. Please select your city below.`;
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    // Instant filter for city list
+    function filterCityList(query) {
+        const q = (query || '').toLowerCase().trim();
+        const items = document.querySelectorAll('.city-option-item');
+        items.forEach(item => {
+            const cityName = (item.getAttribute('data-city') || '').toLowerCase();
+            if (!q || cityName.includes(q)) {
+                item.style.setProperty('display', 'flex', 'important');
+            } else {
+                item.style.setProperty('display', 'none', 'important');
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
