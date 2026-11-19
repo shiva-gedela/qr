@@ -4,31 +4,33 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap');
 
-/* ══ Brand Tokens & Variables ══════════════════════════════════════════════ */
+/* ══ Brand Tokens & Variables (QRouteX Premium Mobile & Web System) ══════ */
 :root {
-    --qrx-primary: #5f259f; /* PhonePe Royal Purple */
-    --qrx-primary-glow: #7c4dff;
-    --qrx-primary-deep: #4a148c; /* PhonePe Deep Violet */
-    --qrx-route-cyan: #00bfa5;   /* PhonePe Teal / UPI Green */
-    --qrx-route-blue: #673ab7;
-    --qrx-gps-red: #e53935;
-    --qrx-amber-gold: #ffb703;  /* PhonePe Reward Gold */
-    --qrx-rose: #f43f5e;
-    --qrx-emerald: #00bfa5;
-    --qrx-obsidian: #120326;
-    --qrx-dark-slate: #1f0b38;
-    --qrx-surface: #ffffff;
-    --qrx-bg-light: #f4f4f8;   /* PhonePe Clean Light Gray */
-    --qrx-text-main: #1f1f24;
-    --qrx-text-muted: #6b7280;
-    --qrx-purple-surface: #f3e8ff;
+    --qrx-primary: #4F46E5;       /* Deep Indigo */
+    --qrx-primary-glow: #6366F1;
+    --qrx-secondary: #7C3AED;     /* Electric Violet */
+    --qrx-cyan: #06B6D4;          /* Cyber Cyan */
+    --qrx-route-cyan: #06B6D4;
+    --qrx-route-blue: #4F46E5;
+    --qrx-gps-red: #EF4444;
+    --qrx-amber-gold: #F59E0B;
+    --qrx-rose: #F43F5E;
+    --qrx-emerald: #10B981;
+    --qrx-obsidian: #090D16;
+    --qrx-dark-slate: #0F172A;
+    --qrx-surface: #FFFFFF;
+    --qrx-bg-light: #F8FAFC;      /* Crisp Modern Light Slate */
+    --qrx-text-main: #111827;     /* Deep Neutral Charcoal */
+    --qrx-text-muted: #64748B;
+    --qrx-purple-surface: #EEF2FF;
     
-    /* PhonePe Luxury Gradients */
-    --qrx-gradient-hero: radial-gradient(circle at 15% 20%, #5f259f 0%, #3b0764 55%, #15002b 100%);
-    --qrx-gradient-accent: linear-gradient(135deg, #ffb703 0%, #f43f5e 50%, #7c4dff 100%);
-    --qrx-gradient-route: linear-gradient(135deg, #5f259f 0%, #00bfa5 100%);
-    --qrx-gradient-card: linear-gradient(180deg, #ffffff 0%, #faf5ff 100%);
+    /* Modern Gradients */
+    --qrx-gradient-hero: radial-gradient(circle at 20% 25%, #4F46E5 0%, #312E81 50%, #0F172A 100%);
+    --qrx-gradient-accent: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #06B6D4 100%);
+    --qrx-gradient-route: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%);
+    --qrx-gradient-card: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
     --qrx-gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 100%);
+    --qrx-gradient-button: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
     
     /* Shadows & Glows */
     --qrx-shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
@@ -346,10 +348,263 @@ h1, h2, h3, h4, .brand-font, .display-1, .display-2, .display-3, .display-4, .di
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
 }
 
-/* ══ Responsive Utilities ══════════════════════════════════════════════════ */
+/* ══ Responsive Utilities & Mobile App Adaptation ═════════════════════════ */
 @media (max-width: 768px) {
     .display-3 { font-size: 2.2rem !important; }
     .display-4 { font-size: 1.85rem !important; }
     .display-5 { font-size: 1.55rem !important; }
     .hero-banner { min-height: 45vh !important; }
+    body { padding-bottom: 74px !important; } /* Clearance for fixed mobile bottom nav */
 }
+
+/* ══ Mobile Fixed Bottom Navigation Bar (App Experience) ═════════════════ */
+.mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1040;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+    }
+}
+
+.mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    flex: 1;
+    height: 100%;
+    transition: var(--qrx-transition);
+}
+
+.mobile-nav-item i {
+    font-size: 1.35rem;
+    margin-bottom: 2px;
+}
+
+.mobile-nav-item.active,
+.mobile-nav-item:hover {
+    color: #06B6D4;
+}
+
+.mobile-nav-item.active i {
+    transform: translateY(-2px);
+    color: #06B6D4;
+}
+
+/* Center Floating Create (+) FAB */
+.mobile-create-fab {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #06B6D4 100%);
+    color: #ffffff !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(79, 70, 229, 0.6);
+    border: 3px solid #0F172A;
+    transform: translateY(-16px);
+    cursor: pointer;
+    transition: var(--qrx-transition);
+}
+
+.mobile-create-fab:active {
+    transform: translateY(-12px) scale(0.95);
+}
+
+.mobile-create-fab i {
+    font-size: 1.7rem;
+    margin: 0;
+}
+
+/* ══ City Selector Chip ══════════════════════════════════════════════════ */
+.city-selector-chip {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: var(--qrx-radius-pill);
+    padding: 0.35rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: var(--qrx-transition);
+}
+
+.city-selector-chip:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ══ Ride Comparison Badges & Cards ══════════════════════════════════════ */
+.ride-provider-card {
+    background: #ffffff;
+    border-radius: var(--qrx-radius-md);
+    border: 1.5px solid #E2E8F0;
+    padding: 1rem 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: var(--qrx-transition);
+}
+
+.ride-provider-card:hover {
+    border-color: #4F46E5;
+    transform: translateY(-2px);
+    box-shadow: var(--qrx-shadow-md);
+}
+
+.badge-uber {
+    background: #000000;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.badge-rapido {
+    background: #FACC15;
+    color: #0F172A;
+    font-weight: 700;
+}
+
+.badge-ola {
+    background: #10B981;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* ══ Celebration Moments Story Bar ═══════════════════════════════════════ */
+.stories-scroll-container {
+    display: flex;
+    gap: 1.1rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    scrollbar-width: thin;
+}
+
+.story-avatar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none !important;
+    min-width: 72px;
+}
+
+.story-ring {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    padding: 2.5px;
+    background: linear-gradient(135deg, #F59E0B, #EC4899, #7C3AED, #4F46E5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease;
+}
+
+.story-ring:hover {
+    transform: scale(1.08);
+}
+
+.story-avatar-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    object-fit: cover;
+    background: #F1F5F9;
+}
+
+.story-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--qrx-text-main);
+    margin-top: 0.4rem;
+    max-width: 74px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ══ 8-Step Event Wizard Navigation ══════════════════════════════════════ */
+.wizard-steps-nav {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    border-radius: 14px 14px 0 0;
+}
+
+.wizard-step-tab {
+    padding: 0.9rem 1.1rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #64748B;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    transition: var(--qrx-transition);
+}
+
+.wizard-step-tab.active {
+    color: #4F46E5;
+    border-bottom-color: #4F46E5;
+    background: #ffffff;
+}
+
+.wizard-step-tab .step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #E2E8F0;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+}
+
+.wizard-step-tab.active .step-num {
+    background: #4F46E5;
+    color: #ffffff;
+}
+
+/* ══ Web QR Scanner Container ════════════════════════════════════════════ */
+#qrReaderView {
+    width: 100% !important;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0F172A;
+}
+
+#qrReaderView video {
+    width: 100% !important;
+    object-fit: cover !important;
+    border-radius: 16px;
+}
+

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}{{ title }} - {{ SITE_NAME }}{% endblock %}
+{% block title %}{{ title }} - 8-Step Event Wizard | {{ SITE_NAME }}{% endblock %}
 
 {% block extra_css %}
 <style>
 .form-fieldset-legend {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    color: #1e1b4b;
-    border-bottom: 2px solid #e2e8f0;
+    color: #1E1B4B;
+    border-bottom: 2px solid #E2E8F0;
     padding-bottom: 0.5rem;
     margin-bottom: 1.25rem;
     display: flex;
@@ -17,8 +17,8 @@
 fieldset legend {
     font-size: 1.15rem !important;
     font-weight: 700 !important;
-    color: #312e81 !important;
-    border-bottom: 2px solid #e0e7ff !important;
+    color: #312E81 !important;
+    border-bottom: 2px solid #E0E7FF !important;
     padding-bottom: 0.5rem !important;
     margin-bottom: 1.25rem !important;
 }
@@ -27,7 +27,7 @@ fieldset legend {
 
 {% block content %}
 <!-- ══ Header Banner ═════════════════════════════════════════════════════════ -->
-<div class="py-4 text-white" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);">
+<div class="py-4 text-white" style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #4338CA 100%);">
     <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
             <nav aria-label="breadcrumb">
@@ -46,20 +46,40 @@ fieldset legend {
     </div>
 </div>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10 col-xl-9">
-            <!-- Occasion Quick Reminder Banner -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-light">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="fs-4">🎉</span>
-                        <div>
-                            <strong class="d-block text-dark">6 Supported Occasions with Smart QR &amp; GPS</strong>
-                            <small class="text-muted">Wedding, Birthday, Engagement, Anniversary, Housewarming, Graduation</small>
-                        </div>
+<div class="container py-4 py-lg-5">
+    <div class="row g-4">
+        <!-- ══ Form Column ═══════════════════════════════════════════════════ -->
+        <div class="col-lg-8">
+            <!-- 8-Step Wizard Progress Bar -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+                <div class="wizard-steps-nav">
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">1</span> Info
                     </div>
-                    <span class="badge bg-primary rounded-pill px-3 py-2"><i class="bi bi-compass me-1"></i>Google Maps Directions Auto-Linked</span>
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">2</span> Date &amp; Time
+                    </div>
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">3</span> Venue &amp; GPS
+                    </div>
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">4</span> Hosts &amp; Capacity
+                    </div>
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">5</span> Social &amp; Stream
+                    </div>
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">6</span> Cover Image
+                    </div>
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">7</span> RSVP Settings
+                    </div>
+                    <div class="wizard-step-tab active">
+                        <span class="step-num">8</span> Pass Preview
+                    </div>
+                </div>
+                <div class="p-3 bg-light border-top">
+                    <small class="text-muted"><i class="bi bi-lightning-charge text-warning me-1"></i>Fill in details below — your live digital pass preview updates automatically on the right!</small>
                 </div>
             </div>
 
@@ -67,13 +87,105 @@ fieldset legend {
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <div class="card-body p-4 p-md-5">
                     {% load crispy_forms_tags %}
-                    <form method="post" enctype="multipart/form-data" novalidate>
+                    <form method="post" enctype="multipart/form-data" novalidate id="eventWizardForm">
                         {% csrf_token %}
                         {% crispy form %}
                     </form>
                 </div>
             </div>
         </div>
+
+        <!-- ══ Live Digital Pass Preview Column ══════════════════════════════ -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 90px; z-index: 5;">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden text-center bg-white p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <span class="badge bg-danger rounded-pill px-2 py-1"><i class="bi bi-broadcast me-1"></i>LIVE PASS PREVIEW</span>
+                        <span class="text-muted small fw-bold"><i class="bi bi-qr-code text-primary me-1"></i>QRouteX</span>
+                    </div>
+
+                    <!-- Pass Card Header -->
+                    <div class="rounded-3 p-3 text-white text-center mb-3" style="background: linear-gradient(135deg, #1E1B4B 0%, #4338CA 100%);">
+                        <div class="fs-4 mb-1" id="previewTypeIcon">🎉</div>
+                        <h5 class="fw-bold mb-1 text-truncate" id="previewTitle">Your Event Title</h5>
+                        <small class="text-white-75 d-block text-truncate" id="previewHosts">Hosted by You</small>
+                    </div>
+
+                    <!-- Simulated QR Code -->
+                    <div class="p-2 mb-3 bg-light rounded-3 text-center">
+                        <img src="/qr/live-preview/?target_url=https://qroutex.com&fill_color=%231E1B4B&back_color=%23ffffff" alt="Sample QR" class="img-fluid rounded-2" style="max-height: 140px;">
+                        <small class="text-muted d-block mt-1" style="font-size: 0.72rem;"><i class="bi bi-camera me-1"></i>Scan to Navigate &amp; Check In</small>
+                    </div>
+
+                    <!-- Details preview -->
+                    <div class="text-start bg-light p-3 rounded-3 mb-3 small">
+                        <div class="mb-1 text-truncate">
+                            <i class="bi bi-calendar-event text-primary me-1"></i>
+                            <span id="previewDate" class="fw-semibold">Date to be chosen</span>
+                        </div>
+                        <div class="text-truncate">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                            <span id="previewVenue" class="fw-semibold">Venue to be entered</span>
+                        </div>
+                    </div>
+
+                    <!-- GPS Action Simulated -->
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary btn-sm fw-bold py-2 rounded-pill" disabled>
+                            <i class="bi bi-cursor-fill me-1 text-warning"></i>Turn-by-Turn GPS Active
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- ══ SCRIPT: LIVE PASS PREVIEW BINDINGS ═══════════════════════════════════ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const titleInput = document.getElementById('id_title');
+    const hostsInput = document.getElementById('id_host_names');
+    const dateInput = document.getElementById('id_event_date');
+    const venueInput = document.getElementById('id_venue_name');
+    const typeSelect = document.getElementById('id_event_type');
+
+    function updatePreview() {
+        if (titleInput && titleInput.value.trim()) {
+            document.getElementById('previewTitle').textContent = titleInput.value.trim();
+        }
+        if (hostsInput && hostsInput.value.trim()) {
+            document.getElementById('previewHosts').textContent = 'Hosted by ' + hostsInput.value.trim();
+        }
+        if (dateInput && dateInput.value) {
+            document.getElementById('previewDate').textContent = dateInput.value;
+        }
+        if (venueInput && venueInput.value.trim()) {
+            document.getElementById('previewVenue').textContent = venueInput.value.trim();
+        }
+        if (typeSelect) {
+            const val = typeSelect.value;
+            const emojiMap = {
+                'wedding': '💍',
+                'birthday': '🎂',
+                'engagement': '💑',
+                'anniversary': '❤️',
+                'housewarming': '🏠',
+                'graduation': '🎓',
+                'babyshower': '👶',
+                'corporate': '💼',
+                'other': '🎉'
+            };
+            document.getElementById('previewTypeIcon').textContent = emojiMap[val] || '🎉';
+        }
+    }
+
+    [titleInput, hostsInput, dateInput, venueInput].forEach(inp => {
+        if (inp) inp.addEventListener('input', updatePreview);
+    });
+    if (typeSelect) typeSelect.addEventListener('change', updatePreview);
+
+    updatePreview();
+});
+</script>
 {% endblock %}

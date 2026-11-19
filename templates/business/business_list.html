@@ -1,110 +1,161 @@
 {% extends 'base.html' %}
-{% block title %}My Business Profiles - {{ SITE_NAME }}{% endblock %}
+{% block title %}Vendor Marketplace &amp; Local Businesses - {{ SITE_NAME }}{% endblock %}
 
 {% block content %}
-<div class="bg-light py-4 border-bottom">
-    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div>
-            <h2 class="fw-bold mb-1"><i class="bi bi-briefcase text-primary me-2"></i>My Business Profiles</h2>
-            <p class="text-muted mb-0">{{ businesses|length }} profile{{ businesses|length|pluralize }} created</p>
+<!-- ══ Marketplace Header Banner ═══════════════════════════════════════════ -->
+<div class="py-4 text-white" style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%);">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+            <div>
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2 fw-bold">🛍️ MARKETPLACE &amp; DIRECTORY</span>
+                <h1 class="display-6 fw-bold mb-1 text-white">Verified Vendors &amp; Businesses</h1>
+                <p class="text-white-75 mb-0 small">Find top caterers, wedding photographers, decor specialists &amp; restaurants</p>
+            </div>
+            <a href="{% url 'business_create' %}" class="btn btn-warning rounded-pill px-4 fw-bold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i>Add Your Business
+            </a>
         </div>
-        <a href="{% url 'business_create' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle me-2"></i>Create Business Profile
-        </a>
+
+        <!-- Search Bar -->
+        <form method="get" action="/business/" class="row g-2 mt-2">
+            <div class="col-12 col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ search_q }}" class="form-control border-0 py-2" placeholder="Search by name, service, cuisine, or specialty...">
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <button type="submit" class="btn btn-info w-100 fw-bold py-2 rounded-3 text-dark">
+                    <i class="bi bi-filter me-1"></i>Search Directory
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <div class="container py-4">
-    {% if businesses %}
-    <div class="row g-4">
+
+    <!-- Category Filter Chips (OLX / PhonePe Style) -->
+    <div class="d-flex gap-2 overflow-auto pb-3 mb-4" style="white-space: nowrap;">
+        <a href="/business/?category=all" class="btn btn-sm {% if selected_category == 'all' or not selected_category %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %} rounded-pill px-3 fw-bold">
+            All Vendors
+        </a>
+        <a href="/business/?category=food" class="btn btn-sm {% if selected_category == 'food' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %} rounded-pill px-3">
+            🍽️ Restaurant &amp; Food
+        </a>
+        <a href="/business/?category=photography" class="btn btn-sm {% if selected_category == 'photography' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %} rounded-pill px-3">
+            📸 Photography
+        </a>
+        <a href="/business/?category=event_services" class="btn btn-sm {% if selected_category == 'event_services' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %} rounded-pill px-3">
+            🎪 Decor &amp; Mandap
+        </a>
+        <a href="/business/?category=beauty" class="btn btn-sm {% if selected_category == 'beauty' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %} rounded-pill px-3">
+            💇 Salon &amp; Spa
+        </a>
+        <a href="/business/?category=tech" class="btn btn-sm {% if selected_category == 'tech' %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %} rounded-pill px-3">
+            💻 IT &amp; Tech
+        </a>
+    </div>
+
+    <!-- ══ My Owned Business Profiles (If Authenticated & Has Profiles) ═══ -->
+    {% if my_businesses %}
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-light">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-person-badge text-primary me-2"></i>My Listed Profiles ({{ my_businesses|length }})</h6>
+            <a href="{% url 'business_create' %}" class="small text-primary fw-bold text-decoration-none">+ Add Another</a>
+        </div>
+        <div class="row g-2">
+            {% for mb in my_businesses %}
+            <div class="col-12 col-md-6">
+                <div class="p-2 border rounded-3 bg-white d-flex align-items-center justify-content-between gap-2">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                        <div class="rounded-circle bg-light border p-1 d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                            <i class="bi bi-shop text-primary"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <strong class="d-block text-truncate small text-dark">{{ mb.name }}</strong>
+                            <small class="text-muted d-block" style="font-size: 0.72rem;">{{ mb.get_category_display }}</small>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-1 flex-shrink-0">
+                        <a href="{% url 'business_detail' pk=mb.pk %}" class="btn btn-outline-primary btn-sm py-1 px-2" title="Manage">
+                            <i class="bi bi-gear"></i>
+                        </a>
+                        <a href="{{ mb.get_absolute_url }}" target="_blank" class="btn btn-outline-dark btn-sm py-1 px-2" title="View Public Card">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ══ 2-Column Responsive OLX-Style Marketplace Grid ═══════════════ -->
+    <div class="row g-2 g-md-4">
         {% for business in businesses %}
-        <div class="col-md-6 col-lg-4">
-            <div class="card border-0 shadow-sm h-100 hover-lift">
-                <!-- Cover Image & Logo -->
-                <div class="position-relative" style="height: 160px; overflow: hidden; background: linear-gradient(135deg, #1e293b, #334155);">
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden hover-lift bg-white">
+                <!-- Cover Image & Badge -->
+                <div class="position-relative" style="height: 130px; background: linear-gradient(135deg, #1E293B, #334155);">
                     {% if business.cover_image %}
-                    <img src="{{ business.cover_image.url }}"
-                         class="w-100 h-100"
-                         style="object-fit: cover;"
-                         alt="{{ business.name }}">
+                    <img src="{{ business.cover_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ business.name }}">
+                    {% else %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white-50">
+                        <i class="bi bi-building fs-2"></i>
+                    </div>
                     {% endif %}
                     
-                    <div class="position-absolute top-0 start-0 m-2">
-                        <span class="badge bg-dark bg-opacity-75">
-                            {{ business.get_category_display }}
+                    <div class="position-absolute top-0 start-0 m-1 m-md-2">
+                        <span class="badge bg-dark bg-opacity-75 rounded-pill px-2 py-1" style="font-size: 0.65rem;">
+                            {{ business.get_category_display|truncatechars:14 }}
                         </span>
                     </div>
-                    <div class="position-absolute top-0 end-0 m-2">
-                        {% if business.is_active %}
-                            <span class="badge bg-success">Active</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Inactive</span>
-                        {% endif %}
+
+                    <div class="position-absolute top-0 end-0 m-1 m-md-2">
+                        <span class="badge bg-warning text-dark rounded-pill px-1 px-md-2 py-0 py-md-1 fw-bold" style="font-size: 0.65rem;">
+                            ★ 4.9
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-2 p-md-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="fw-bold mb-1 text-truncate text-dark" style="font-size: 0.88rem;">{{ business.name }}</h6>
+                        <small class="text-muted d-block text-truncate mb-2" style="font-size: 0.72rem;">{{ business.tagline|default:business.description }}</small>
+                        <div class="small text-muted mb-2 text-truncate" style="font-size: 0.7rem;">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ business.city|default:"Bengaluru" }}
+                        </div>
                     </div>
 
-                    <!-- Logo avatar overlapping -->
-                    <div class="position-absolute bottom-0 start-0 ms-3 mb-2">
-                        <div class="rounded-circle border border-3 border-white shadow bg-white d-flex align-items-center justify-content-center overflow-hidden" style="width: 58px; height: 58px;">
-                            {% if business.logo %}
-                            <img src="{{ business.logo.url }}" alt="{{ business.name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            {% else %}
-                            <i class="bi bi-building fs-4 text-primary"></i>
+                    <div class="mt-2 pt-2 border-top">
+                        <div class="d-flex gap-1">
+                            <a href="{{ business.get_absolute_url }}" class="btn btn-outline-primary btn-sm w-100 py-1 rounded-pill fw-semibold" style="font-size: 0.75rem;">
+                                View Card
+                            </a>
+                            {% if business.whatsapp %}
+                            <a href="{{ business.whatsapp_url }}" target="_blank" class="btn btn-outline-success btn-sm py-1 px-2 rounded-pill" title="WhatsApp">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-
-                <div class="card-body pt-3">
-                    <h5 class="fw-bold mb-1 text-truncate">{{ business.name }}</h5>
-                    {% if business.tagline %}
-                    <p class="text-muted small mb-2 text-truncate">{{ business.tagline }}</p>
-                    {% endif %}
-
-                    <div class="d-flex flex-column gap-1 text-muted small mb-3">
-                        {% if business.phone %}
-                        <div><i class="bi bi-telephone me-2 text-primary"></i>{{ business.phone }}</div>
-                        {% endif %}
-                        {% if business.city %}
-                        <div><i class="bi bi-geo-alt me-2 text-danger"></i>{{ business.city }}{% if business.state %}, {{ business.state }}{% endif %}</div>
-                        {% endif %}
-                        <div><i class="bi bi-grid me-2 text-info"></i>{{ business.services.count }} Product/Service{{ business.services.count|pluralize }}</div>
-                        <div><i class="bi bi-qr-code-scan me-2 text-muted"></i>{{ business.qr_code.scan_count|default:0 }} Scan{{ business.qr_code.scan_count|default:0|pluralize }}</div>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'business_detail' pk=business.pk %}" class="btn btn-outline-primary btn-sm flex-grow-1">
-                            <i class="bi bi-gear me-1"></i>Manage
-                        </a>
-                        <a href="{% url 'business_public' slug=business.slug %}" target="_blank" class="btn btn-primary btn-sm">
-                            <i class="bi bi-box-arrow-up-right me-1"></i>Public Card
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Footer Quick QR link -->
-                <div class="card-footer bg-transparent border-top-0 pt-0 pb-3 d-flex justify-content-between align-items-center">
-                    {% if business.qr_code %}
-                    <a href="{% url 'qr_download_png' qr_uuid=business.qr_code.uuid %}" class="text-decoration-none small text-muted">
-                        <i class="bi bi-qr-code me-1"></i>Download QR
-                    </a>
-                    <a href="{% url 'business_qr_customize' business_pk=business.pk %}" class="text-decoration-none small text-primary">
-                        <i class="bi bi-palette me-1"></i>Customize QR
-                    </a>
-                    {% endif %}
-                </div>
             </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-shop fs-1 text-muted mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark">No vendors found in this category</h5>
+            <p class="text-muted small">Be the first to list your business in this city!</p>
+            <a href="{% url 'business_create' %}" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">
+                <i class="bi bi-plus-circle me-1"></i>Register Business Free
+            </a>
         </div>
         {% endfor %}
     </div>
-    {% else %}
-    <div class="text-center py-5">
-        <div class="display-1 text-muted mb-3"><i class="bi bi-briefcase"></i></div>
-        <h4 class="fw-bold">No Business Profiles Yet</h4>
-        <p class="text-muted mb-4">Create your first digital business profile and generate a smart branded QR code with call, WhatsApp, directions & service catalog.</p>
-        <a href="{% url 'business_create' %}" class="btn btn-primary btn-lg">
-            <i class="bi bi-plus-circle me-2"></i>Create Business Profile
-        </a>
-    </div>
-    {% endif %}
+
 </div>
 {% endblock %}

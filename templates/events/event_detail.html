@@ -143,6 +143,41 @@
                 </div>
             </div>
 
+            <!-- GPS Route & Ride Booking Preview Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-car-front-fill text-danger me-2"></i>Guest GPS Route &amp; Ride Booking Integration</h6>
+                            <small class="text-muted">Live Uber, Rapido, and Ola links automatically provided on guest invitation pass</small>
+                        </div>
+                        <a href="/events/e/{{ event.slug }}/gps/" target="_blank" class="btn btn-danger btn-sm rounded-pill fw-bold">
+                            <i class="bi bi-compass me-1"></i>Launch GPS
+                        </a>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <a href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]={{ event.venue_name|urlencode }}{% if event.venue_address %},+{{ event.venue_address|urlencode }}{% endif %}" target="_blank" class="btn btn-outline-dark btn-sm rounded-3 w-100 py-2 d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-car-front-fill me-1"></i>Uber Cab</span>
+                                <span class="badge bg-dark text-white">Direct Drop</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="https://rapido.bike/" target="_blank" class="btn btn-outline-warning text-dark btn-sm rounded-3 w-100 py-2 d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-bicycle me-1"></i>Rapido Bike/Auto</span>
+                                <span class="badge bg-warning text-dark">Fast Route</span>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="https://book.olacabs.com/" target="_blank" class="btn btn-outline-success btn-sm rounded-3 w-100 py-2 d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-taxi-front me-1"></i>Ola Prime</span>
+                                <span class="badge bg-success text-white">Family Cab</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Storage & Gallery Quota Bar -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-3">

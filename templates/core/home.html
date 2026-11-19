@@ -1,61 +1,56 @@
 {% extends 'base.html' %}
-{% block title %}{{ SITE_NAME }} - Create Beautiful Event Invitations with QR & GPS{% endblock %}
+{% block title %}QRouteX - Smart Event QR Invitations, GPS Navigation &amp; Local Bookings{% endblock %}
 
 {% block content %}
 
 <!-- ══ Hero Section ════════════════════════════════════════════════════════ -->
-<section class="hero-section py-5 text-white" style="background: var(--ecq-gradient-hero); min-height: 85vh; display:flex; align-items:center;">
-    <div class="container py-4">
+<section class="py-5 text-white position-relative overflow-hidden" style="background: var(--qrx-gradient-hero); min-height: 82vh; display: flex; align-items: center;">
+    <div class="container py-3 py-lg-4">
         <div class="row align-items-center g-5">
-            <!-- Left Headline & CTAs -->
+            <!-- Left Column: Branding, City Selector, Headline & CTAs -->
             <div class="col-lg-7 text-center text-lg-start">
-                <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-4" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(12px);">
-                    <span class="badge bg-warning text-dark fw-bold">✨ NEXT-GEN EVENT PLATFORM</span>
-                    <span class="small text-white-75">qroutex.com • Smart QR • Turn-by-Turn GPS</span>
+                <!-- Location & Platform Pill -->
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.22); backdrop-filter: blur(12px);">
+                    <span class="badge bg-warning text-dark fw-bold"><i class="bi bi-geo-alt-fill me-1"></i><span id="pageHeroCityLabel">Bengaluru, KA</span></span>
+                    <span class="small text-white-75">qroutex.com • Smart QR • GPS Navigation</span>
                 </div>
                 
-                <h1 class="display-3 fw-bold mb-4 text-white" style="line-height: 1.15;">
-                    Smart Event QR with <span class="text-warning">Turn-by-Turn GPS</span> &amp; Digital Invitations
+                <h1 class="display-3 fw-bold mb-3 text-white" style="line-height: 1.15;">
+                    Smart Event QR with <span class="text-warning">Turn-by-Turn GPS</span> &amp; Local Bookings
                 </h1>
                 
                 <p class="lead mb-4 text-white-75 fs-5 pe-lg-4" style="line-height: 1.6;">
-                    <strong>QRouteX</strong> generates branded smart QR invitations for weddings, birthdays, engagements, and special occasions.
-                    Guests scan to get instant Google Maps driving navigation, view full event details, and upload photos live to the shared wall!
+                    <strong>QRouteX</strong> transforms weddings, birthdays, and celebrations with branded digital invitation passes, instant Google Maps route navigation, Uber &amp; Rapido ride booking, and live guest moments!
                 </p>
 
-                <!-- Quick Occasions Pill Banner -->
-                <div class="d-flex flex-wrap gap-2 mb-4 justify-content-center justify-content-lg-start">
-                    <span class="badge rounded-pill bg-white text-dark shadow-sm py-2 px-3">💍 Wedding</span>
-                    <span class="badge rounded-pill bg-white text-dark shadow-sm py-2 px-3">🎂 Birthday</span>
-                    <span class="badge rounded-pill bg-white text-dark shadow-sm py-2 px-3">💑 Engagement</span>
-                    <span class="badge rounded-pill bg-white text-dark shadow-sm py-2 px-3">❤️ Anniversary</span>
-                    <span class="badge rounded-pill bg-white text-dark shadow-sm py-2 px-3">🏠 Housewarming</span>
-                    <span class="badge rounded-pill bg-white text-dark shadow-sm py-2 px-3">🎓 Graduation</span>
-                </div>
-
-                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
-                    <a href="/accounts/register/" class="btn btn-warning btn-lg px-4 py-3 fw-bold shadow-lg btn-pill">
-                        <i class="bi bi-qr-code-scan me-2"></i>Create Free Event QR
+                <!-- Quick Action Buttons Row -->
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start mb-4">
+                    <a href="/events/create/" class="btn btn-warning btn-lg px-4 py-3 fw-bold shadow-lg btn-pill">
+                        <i class="bi bi-calendar-plus-fill me-2"></i>Create Event Pass
                     </a>
-                    <a href="/events/e/test-wedding-event/" target="_blank" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold btn-pill">
-                        <i class="bi bi-eye me-2"></i>View Live Demo
+                    <button type="button" class="btn btn-outline-light btn-lg px-4 py-3 fw-semibold btn-pill" onclick="openWebQrScanner()">
+                        <i class="bi bi-qr-code-scan me-2 text-warning"></i>Scan Any QR
+                    </button>
+                    <a href="https://github.com/shiva-gedela/qr/releases/download/v1.0.9/QRouteX-v1.0.9.apk" class="btn btn-info btn-lg px-4 py-3 fw-bold text-dark btn-pill shadow-sm">
+                        <i class="bi bi-android2 me-1"></i>App v1.0.9 APK
                     </a>
                 </div>
 
-                <div class="d-flex justify-content-center justify-content-lg-start gap-4 mt-4 text-white-50 small">
-                    <span><i class="bi bi-check-circle-fill text-warning me-1"></i>Free Forever Tier</span>
-                    <span><i class="bi bi-check-circle-fill text-warning me-1"></i>Google Maps GPS Ready</span>
-                    <span><i class="bi bi-check-circle-fill text-warning me-1"></i>Printable A4 PDF</span>
+                <div class="d-flex justify-content-center justify-content-lg-start gap-4 text-white-50 small flex-wrap">
+                    <span><i class="bi bi-check-circle-fill text-warning me-1"></i>Free Digital Passes</span>
+                    <span><i class="bi bi-compass-fill text-info me-1"></i>Google Maps GPS Ready</span>
+                    <span><i class="bi bi-car-front-fill text-warning me-1"></i>Uber &amp; Rapido Linked</span>
+                    <span><i class="bi bi-shield-check text-success me-1"></i>Verified Local Vendors</span>
                 </div>
             </div>
 
-            <!-- Right Interactive Preview Mockup -->
+            <!-- Right Column: Interactive 3D Digital Invitation Pass Mockup -->
             <div class="col-lg-5 text-center">
                 <div class="float-slow d-inline-block position-relative">
                     <div class="qr-preview-frame text-dark text-start" style="max-width: 380px;">
                         <!-- Mockup Header -->
                         <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-                            <span class="badge bg-danger rounded-pill px-2 py-1"><i class="bi bi-circle-fill me-1" style="font-size:0.5rem;"></i>LIVE INVITATION</span>
+                            <span class="badge bg-danger rounded-pill px-2 py-1"><i class="bi bi-broadcast me-1" style="font-size:0.5rem;"></i>LIVE INVITATION</span>
                             <span class="text-muted small fw-bold"><i class="bi bi-geo-alt-fill text-warning me-1"></i>QRouteX</span>
                         </div>
 
@@ -64,22 +59,29 @@
                             <div class="fs-4 mb-1">💍</div>
                             <h5 class="fw-bold mb-0">Priya &amp; Rahul Wedding</h5>
                             <small class="text-white-75">Hosted by Sharma &amp; Gupta Families</small>
+                            <div class="mt-2">
+                                <span class="badge bg-warning text-dark px-2 py-1 small fw-bold">Royal Palace Banquet</span>
+                            </div>
                         </div>
 
                         <!-- Interactive QR in center -->
                         <div class="text-center p-2 mb-3 bg-light rounded-3">
-                            <img src="/qr/live-preview/?target_url=https://qroutex.com&fill_color=%231e1b4b&back_color=%23ffffff" alt="Sample QR" class="img-fluid rounded-2" style="max-height: 160px;">
+                            <img src="/qr/live-preview/?target_url=https://qroutex.com&fill_color=%231e1b4b&back_color=%23ffffff" alt="Sample QR" class="img-fluid rounded-2" style="max-height: 150px;">
                             <div class="mt-2 small text-muted"><i class="bi bi-camera me-1"></i>Scan with any Smartphone Camera</div>
                         </div>
 
-                        <!-- Features in Mockup -->
+                        <!-- Turn-by-Turn GPS & Ride Booking Buttons in Mockup -->
                         <div class="d-grid gap-2">
-                            <a href="/events/e/test-wedding-event/gps/" target="_blank" class="btn btn-gps btn-sm py-2">
-                                <i class="bi bi-geo-alt-fill me-2 text-warning"></i>Turn-by-Turn GPS Navigation
+                            <a href="/events/e/test-wedding-event/gps/" target="_blank" class="btn btn-primary btn-sm py-2 fw-bold">
+                                <i class="bi bi-cursor-fill me-2 text-warning"></i>Turn-by-Turn GPS Navigation
                             </a>
-                            <div class="d-flex justify-content-between align-items-center small text-muted px-1">
-                                <span><i class="bi bi-instagram text-danger me-1"></i>#PriyaWedsRahul</span>
-                                <span><i class="bi bi-images text-primary me-1"></i>Guest Photo Wall</span>
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <a href="https://m.uber.com/" target="_blank" class="btn btn-dark btn-sm flex-grow-1 py-1 text-white">
+                                    <i class="bi bi-car-front-fill me-1"></i>Uber
+                                </a>
+                                <a href="https://rapido.bike/" target="_blank" class="btn btn-warning btn-sm flex-grow-1 py-1 text-dark fw-bold">
+                                    <i class="bi bi-bicycle me-1"></i>Rapido
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -87,49 +89,73 @@
             </div>
         </div>
 
-        <!-- PhonePe Quick Action Floating Card -->
-        <div class="row justify-content-center mt-5">
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-lg rounded-4 p-3 p-md-4 text-dark" style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); transform: translateY(30px); z-index: 10;">
+        <!-- ══ PhonePe Quick Action Floating Bar ═══════════════════════════ -->
+        <div class="row justify-content-center mt-4 mt-lg-5">
+            <div class="col-lg-11">
+                <div class="card border-0 shadow-lg rounded-4 p-3 p-md-4 text-dark" style="background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(16px); transform: translateY(35px); z-index: 10;">
                     <div class="d-flex align-items-center justify-content-between mb-3 px-2 border-bottom pb-2">
                         <span class="fw-bold small text-muted text-uppercase tracking-wide"><i class="bi bi-lightning-charge-fill text-warning me-1"></i>Quick Actions</span>
-                        <span class="badge bg-purple text-white px-2 py-1 rounded-pill" style="background:#5f259f; font-size:0.75rem;">GPS Navigation Ready</span>
+                        <span class="badge bg-primary text-white px-3 py-1 rounded-pill" style="font-size:0.75rem;">All Features Active</span>
                     </div>
                     <div class="row g-2 g-md-3 text-center">
-                        <div class="col-3">
-                            <a href="/qr/live-preview/?target_url=https://qroutex.com" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
-                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#f3e8ff; color:#5f259f;">
+                        <!-- 1. Scan Any QR -->
+                        <div class="col-4 col-md-2">
+                            <div class="p-2 rounded-3 hover-lift" style="cursor: pointer;" onclick="openWebQrScanner()">
+                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#F3E8FF; color:#7C3AED;">
                                     <i class="bi bi-qr-code-scan fs-4"></i>
                                 </div>
-                                <div class="fw-bold small">Scan Any QR</div>
-                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Universal Scanner</small>
-                            </a>
+                                <div class="fw-bold small">Scan QR</div>
+                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Camera / File</small>
+                            </div>
                         </div>
-                        <div class="col-3">
+                        <!-- 2. Create Event -->
+                        <div class="col-4 col-md-2">
                             <a href="/events/create/" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
-                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#e0f2fe; color:#0284c7;">
-                                    <i class="bi bi-plus-circle-fill fs-4"></i>
+                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#E0F2FE; color:#0284C7;">
+                                    <i class="bi bi-calendar-plus-fill fs-4"></i>
                                 </div>
                                 <div class="fw-bold small">Create Event</div>
-                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Instant Invitation</small>
+                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Smart Digital Pass</small>
                             </a>
                         </div>
-                        <div class="col-3">
-                            <a href="/events/e/test-wedding-event/gps/" target="_blank" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
-                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#fef3c7; color:#d97706;">
-                                    <i class="bi bi-cursor-fill fs-4"></i>
+                        <!-- 3. Book Table / Service -->
+                        <div class="col-4 col-md-2">
+                            <a href="/business/" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
+                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#DCFCE7; color:#16A34A;">
+                                    <i class="bi bi-cup-hot-fill fs-4"></i>
                                 </div>
-                                <div class="fw-bold small">GPS Route</div>
-                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Google Maps Direct</small>
+                                <div class="fw-bold small">Book Table</div>
+                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Restaurants &amp; Spas</small>
                             </a>
                         </div>
-                        <div class="col-3">
-                            <a href="/events/" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
-                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#dcfce7; color:#16a34a;">
-                                    <i class="bi bi-envelope-open-heart-fill fs-4"></i>
+                        <!-- 4. Find Vendors -->
+                        <div class="col-4 col-md-2">
+                            <a href="/business/" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
+                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#FEF3C7; color:#D97706;">
+                                    <i class="bi bi-shop fs-4"></i>
                                 </div>
-                                <div class="fw-bold small">My Invites</div>
-                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Passes &amp; RSVPs</small>
+                                <div class="fw-bold small">Find Vendors</div>
+                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Decor &amp; Photos</small>
+                            </a>
+                        </div>
+                        <!-- 5. Ride to Venue -->
+                        <div class="col-4 col-md-2">
+                            <a href="#rideSection" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
+                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#FEE2E2; color:#DC2626;">
+                                    <i class="bi bi-car-front-fill fs-4"></i>
+                                </div>
+                                <div class="fw-bold small">Book Ride</div>
+                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Uber, Rapido, Ola</small>
+                            </a>
+                        </div>
+                        <!-- 6. Moments Feed -->
+                        <div class="col-4 col-md-2">
+                            <a href="#momentsSection" class="text-decoration-none text-dark d-block p-2 rounded-3 hover-lift">
+                                <div class="d-inline-flex p-3 rounded-circle shadow-sm mb-2" style="background:#E0E7FF; color:#4F46E5;">
+                                    <i class="bi bi-camera-reels-fill fs-4"></i>
+                                </div>
+                                <div class="fw-bold small">Moments</div>
+                                <small class="text-muted d-none d-md-block" style="font-size:0.7rem;">Stories &amp; Reels</small>
                             </a>
                         </div>
                     </div>
@@ -139,49 +165,305 @@
     </div>
 </section>
 
-<!-- ══ Stats Counter Bar ═══════════════════════════════════════════════════ -->
-<section class="py-4 bg-dark text-white border-bottom border-secondary border-opacity-25 pt-5">
-    <div class="container">
-        <div class="row text-center g-3">
-            <div class="col-6 col-md-3">
-                <div class="fs-2 fw-bold text-warning">100%</div>
-                <div class="text-white-75 small">Google Maps GPS Compatible</div>
+<!-- ══ Celebration Moments Story Bar (Instagram-Inspired) ═════════════════ -->
+<section id="momentsSection" class="pt-5 pb-4 bg-white border-bottom">
+    <div class="container pt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-camera-fill text-danger me-2"></i>Celebration Moments &amp; Stories</h5>
+                <small class="text-muted">Live event captures shared by hosts and verified guests</small>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="fs-2 fw-bold text-warning">6+</div>
-                <div class="text-white-75 small">Special Occasion Templates</div>
+            <a href="/events/" class="btn btn-outline-primary btn-sm rounded-pill px-3">View All &rarr;</a>
+        </div>
+
+        <!-- Story Circles Horizontal Scroll -->
+        <div class="stories-scroll-container mb-4">
+            <div class="story-avatar-wrap">
+                <div class="story-ring" style="background: linear-gradient(135deg, #4F46E5, #06B6D4);">
+                    <img src="/static/images/app_logo.png" class="story-avatar-inner" alt="QRouteX" style="background: white; padding: 2px;">
+                </div>
+                <span class="story-label fw-bold text-primary">QRouteX Live</span>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="fs-2 fw-bold text-warning">A4 &amp; PNG</div>
-                <div class="text-white-75 small">High-Res Vector Downloads</div>
+            {% for m in moments %}
+            <div class="story-avatar-wrap" onclick="viewMomentStory('{{ m.title|escapejs }}', '{{ m.image }}', '{{ m.host|escapejs }}', '{{ m.tag|escapejs }}')">
+                <div class="story-ring">
+                    <img src="{{ m.image }}" class="story-avatar-inner" alt="{{ m.title }}">
+                </div>
+                <span class="story-label">{{ m.title }}</span>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="fs-2 fw-bold text-warning">Instant</div>
-                <div class="text-white-75 small">Live Guest Media Moderation</div>
+            {% endfor %}
+            <div class="story-avatar-wrap" onclick="location.href='/events/create/'">
+                <div class="story-ring" style="background: #E2E8F0;">
+                    <div class="story-avatar-inner d-flex align-items-center justify-content-center bg-light text-primary">
+                        <i class="bi bi-plus-lg fs-4"></i>
+                    </div>
+                </div>
+                <span class="story-label">Add Story</span>
+            </div>
+        </div>
+
+        <!-- Moments Feed Highlights Cards -->
+        <div class="row g-3">
+            {% for m in moments %}
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-lift">
+                    <div class="position-relative" style="height: 190px;">
+                        <img src="{{ m.image }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ m.title }}">
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <span class="badge bg-dark bg-opacity-75 rounded-pill px-2 py-1 small">{{ m.badge }}</span>
+                        </div>
+                        <div class="position-absolute bottom-0 start-0 end-0 p-2 bg-gradient text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                            <small class="fw-bold d-block">{{ m.title }}</small>
+                            <span style="font-size: 0.72rem; opacity: 0.85;">{{ m.host }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-3 d-flex justify-content-between align-items-center bg-light">
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill small">{{ m.tag }}</span>
+                        <div class="d-flex align-items-center gap-3 text-muted small">
+                            <span class="text-danger fw-bold"><i class="bi bi-heart-fill me-1"></i>{{ m.likes }}</span>
+                            <a href="https://wa.me/?text=Check+out+this+moment+on+QRouteX:+{{ m.tag }}" target="_blank" class="text-success"><i class="bi bi-whatsapp"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ══ Popular Restaurants & Business Services Section ═════════════════════ -->
+<section class="py-5" style="background: #F8FAFC;">
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <span class="badge bg-success bg-opacity-10 text-success px-3 py-1 rounded-pill mb-1 fw-bold">🍽️ DINE &amp; SERVICES</span>
+                <h3 class="fw-bold mb-0 text-dark">Popular Restaurants &amp; Local Businesses</h3>
+                <p class="text-muted small mb-0">Direct online table reservations, verified vendors &amp; WhatsApp inquiries</p>
+            </div>
+            <a href="/business/" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold">Explore Marketplace &rarr;</a>
+        </div>
+
+        <div class="row g-4">
+            {% for biz in popular_businesses %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-lift bg-white">
+                    <!-- Business Header / Cover -->
+                    <div class="position-relative" style="height: 160px; background: linear-gradient(135deg, #1E1B4B, #4338CA);">
+                        {% if biz.cover_image %}
+                        <img src="{{ biz.cover_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ biz.name }}">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white-50">
+                            <i class="bi bi-shop fs-1"></i>
+                        </div>
+                        {% endif %}
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <span class="badge bg-dark bg-opacity-75 rounded-pill px-2 py-1 small">{{ biz.get_category_display }}</span>
+                        </div>
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge bg-warning text-dark rounded-pill px-2 py-1 small fw-bold">★ 4.9 Verified</span>
+                        </div>
+                    </div>
+
+                    <!-- Business Body -->
+                    <div class="card-body p-3 p-md-4">
+                        <h5 class="fw-bold mb-1 text-dark text-truncate">{{ biz.name }}</h5>
+                        <p class="text-muted small mb-2 text-truncate">{{ biz.tagline|default:biz.description }}</p>
+                        
+                        <div class="small text-muted mb-3">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ biz.city|default:"Bengaluru" }}, {{ biz.state|default:"KA" }}
+                        </div>
+
+                        <!-- Action Buttons: Direct Booking + WhatsApp -->
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm flex-grow-1 rounded-pill fw-bold" onclick="openTableBookingModal('{{ biz.name|escapejs }}', '{{ biz.category }}', '{{ biz.phone|default:'+919876543210' }}')">
+                                <i class="bi bi-calendar-check me-1"></i>Book Table
+                            </button>
+                            {% if biz.whatsapp %}
+                            <a href="{{ biz.whatsapp_url }}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-bold" title="WhatsApp Inquiry">
+                                <i class="bi bi-whatsapp"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{{ biz.get_absolute_url }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="View Profile">
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-4">
+                <p class="text-muted">No businesses listed yet. <a href="/business/create/">Register your business free &rarr;</a></p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ══ Featured Upcoming Celebrations Section ══════════════════════════════ -->
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill mb-1 fw-bold">✨ UPCOMING CELEBRATIONS</span>
+                <h3 class="fw-bold mb-0 text-dark">Featured Smart Event Invitations</h3>
+                <p class="text-muted small mb-0">Scan or tap to preview digital invitations, check-ins, and GPS driving directions</p>
+            </div>
+            <a href="/events/create/" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i>Create Event Pass
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for ev in featured_events %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-lift">
+                    <div class="position-relative" style="height: 170px; background: linear-gradient(135deg, #312E81, #4F46E5);">
+                        {% if ev.cover_image %}
+                        <img src="{{ ev.cover_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ ev.title }}">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white">
+                            <span class="fs-1">{{ ev.event_type_icon }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="position-absolute top-0 start-0 m-2">
+                            <span class="badge bg-dark bg-opacity-75 rounded-pill px-2 py-1 small">
+                                {{ ev.event_type_icon }} {{ ev.get_event_type_display }}
+                            </span>
+                        </div>
+                        <div class="position-absolute bottom-0 start-0 end-0 p-2 bg-gradient text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
+                            <small class="fw-bold d-block text-truncate">{{ ev.title }}</small>
+                            <span style="font-size: 0.72rem; opacity: 0.85;"><i class="bi bi-calendar3 me-1"></i>{{ ev.event_date|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="small text-muted text-truncate"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ ev.venue_name|default:"Venue Location" }}</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary small">RSVP Ready</span>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="/events/e/{{ ev.slug }}/" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill flex-grow-1 fw-bold">
+                                View Invitation
+                            </a>
+                            <a href="/events/e/{{ ev.slug }}/gps/" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3" title="GPS Route">
+                                <i class="bi bi-compass"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ══ Ride & Turn-by-Turn GPS Navigation Showcase ═════════════════════════ -->
+<section id="rideSection" class="py-5 text-white position-relative" style="background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%);">
+    <div class="container py-3">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2 fw-bold">🚗 RIDE TO VENUE</span>
+                <h2 class="display-6 fw-bold mb-3">Instant Ride Booking &amp; Live Route Comparison</h2>
+                <p class="lead text-white-75 fs-6 mb-4">
+                    Guests don't need to struggle with directions or finding taxis. Every QRouteX event automatically links to <strong>Uber</strong>, <strong>Rapido</strong>, and <strong>Ola</strong>, plus direct turn-by-turn Google Maps driving navigation!
+                </p>
+
+                <div class="d-flex flex-column gap-3 mb-4">
+                    <div class="ride-provider-card text-dark">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge badge-uber p-2 rounded-3 fs-6">Uber</span>
+                            <div>
+                                <strong class="d-block">Uber Go &amp; Premier</strong>
+                                <small class="text-muted">Direct dropoff at venue entrance</small>
+                            </div>
+                        </div>
+                        <a href="https://m.uber.com/" target="_blank" class="btn btn-dark btn-sm rounded-pill px-3 fw-bold text-white">Book Uber</a>
+                    </div>
+
+                    <div class="ride-provider-card text-dark">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge badge-rapido p-2 rounded-3 fs-6">Rapido</span>
+                            <div>
+                                <strong class="d-block">Rapido Bike &amp; Auto</strong>
+                                <small class="text-muted">Fast &amp; cost-effective city travel</small>
+                            </div>
+                        </div>
+                        <a href="https://rapido.bike/" target="_blank" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark">Book Rapido</a>
+                    </div>
+
+                    <div class="ride-provider-card text-dark">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="badge badge-ola p-2 rounded-3 fs-6">Ola</span>
+                            <div>
+                                <strong class="d-block">Ola Cab &amp; Prime</strong>
+                                <small class="text-muted">Comfortable group and family rides</small>
+                            </div>
+                        </div>
+                        <a href="https://book.olacabs.com/" target="_blank" class="btn btn-success btn-sm rounded-pill px-3 fw-bold text-white">Book Ola</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 text-center">
+                <div class="card border-0 rounded-4 p-4 text-dark shadow-lg" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(16px);">
+                    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                        <span class="fw-bold small text-muted"><i class="bi bi-compass-fill text-danger me-1"></i>Live Route Simulation</span>
+                        <span class="badge bg-success bg-opacity-10 text-success fw-bold">GPS Connected</span>
+                    </div>
+                    <div class="p-3 bg-light rounded-3 text-start mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="small text-muted"><i class="bi bi-circle-fill text-primary me-1" style="font-size:0.5rem;"></i>Your Location</span>
+                            <span class="badge bg-light text-dark border">Current GPS</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <span class="small text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Destination Venue</span>
+                            <strong class="small text-dark">Grand Celebration Hall</strong>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-around py-3 border rounded-3 bg-white mb-3">
+                        <div>
+                            <div class="fs-4 fw-bold text-primary">6.4 km</div>
+                            <small class="text-muted">Distance</small>
+                        </div>
+                        <div class="border-start"></div>
+                        <div>
+                            <div class="fs-4 fw-bold text-success">18 mins</div>
+                            <small class="text-muted">Travel Time</small>
+                        </div>
+                        <div class="border-start"></div>
+                        <div>
+                            <div class="fs-4 fw-bold text-warning">₹149 - ₹185</div>
+                            <small class="text-muted">Est. Fare</small>
+                        </div>
+                    </div>
+                    <a href="https://maps.google.com" target="_blank" class="btn btn-primary fw-bold py-2 rounded-pill shadow-sm">
+                        <i class="bi bi-cursor-fill me-2 text-warning"></i>Start Turn-by-Turn Navigation
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- ══ Event Types Showcase (For Every Occasion) ══════════════════════════ -->
+<!-- ══ 6 Core Occasion Quick Creator Grid ══════════════════════════════════ -->
 <section class="py-5 bg-white">
     <div class="container py-4">
         <div class="text-center mb-5">
-            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2">🎉 FOR EVERY OCCASION</span>
+            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill mb-2 fw-bold">🎉 FOR EVERY OCCASION</span>
             <h2 class="display-5 fw-bold brand-font">Tailored for Your Special Celebrations</h2>
             <p class="text-muted lead mx-auto" style="max-width: 650px;">
-                Choose your occasion to generate a personalized digital invitation, GPS navigation link, and interactive photo gallery.
+                Choose your celebration to generate a personalized digital invitation, GPS navigation link, and interactive photo gallery.
             </p>
         </div>
 
-        <div class="row g-4 justify-content-center">
+        <div class="row g-3 justify-content-center">
             {% for et in event_types %}
             <div class="col-6 col-md-4 col-lg-2">
                 <a href="/events/create/?type={{ et.code }}" class="text-decoration-none">
-                    <div class="occasion-card h-100">
+                    <div class="occasion-card h-100 p-3 shadow-sm">
                         <div class="occasion-emoji mb-2">{{ et.icon }}</div>
                         <h6 class="fw-bold text-dark mb-1">{{ et.name }}</h6>
-                        <span class="text-primary small fw-semibold">Create QR &rarr;</span>
+                        <small class="text-muted d-block mb-2" style="font-size:0.7rem;">{{ et.desc }}</small>
+                        <span class="text-primary small fw-bold">Create Pass &rarr;</span>
                     </div>
                 </a>
             </div>
@@ -190,115 +472,142 @@
     </div>
 </section>
 
-<!-- ══ Feature Grid Section ════════════════════════════════════════════════ -->
-<section id="features" class="py-5" style="background: #f8fafc;">
-    <div class="container py-4">
-        <div class="text-center mb-5">
-            <span class="badge bg-primary px-3 py-2 rounded-pill mb-2">✨ ALL-IN-ONE PLATFORM</span>
-            <h2 class="display-5 fw-bold brand-font">Everything You Need for Modern Events</h2>
-            <p class="text-muted lead mx-auto" style="max-width: 600px;">
-                From the moment your invitation is created until the last photo is shared.
-            </p>
-        </div>
-
-        <div class="row g-4">
-            <!-- Feature 1: GPS Navigation -->
-            <div class="col-md-4">
-                <div class="card h-100 p-4 border-0 shadow-sm hover-lift">
-                    <div class="feature-icon-box bg-primary bg-gradient text-white mb-3">
-                        <i class="bi bi-geo-alt-fill text-warning"></i>
+<!-- ══ MODAL: BOOK TABLE OR RESERVE SERVICE ═════════════════════════════════ -->
+<div class="modal fade" id="tableBookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-2">
+                        <i class="bi bi-calendar-check-fill fs-5"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">Turn-by-Turn GPS Navigation</h5>
-                    <p class="text-muted mb-0">
-                        Never have lost guests again. Embedded Google Maps links and direct GPS turn-by-turn navigation take guests straight to your venue entrance.
-                    </p>
+                    <div>
+                        <h6 class="modal-title fw-bold text-dark mb-0">Book Table / Reserve Service</h6>
+                        <small id="bookingBizTitle" class="text-muted">Business Name</small>
+                    </div>
                 </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
-            <!-- Feature 2: Event Mini-Website -->
-            <div class="col-md-4">
-                <div class="card h-100 p-4 border-0 shadow-sm hover-lift">
-                    <div class="feature-icon-box bg-success bg-gradient text-white mb-3">
-                        <i class="bi bi-phone"></i>
+            <div class="modal-body p-3 p-md-4">
+                <form id="instantBookingForm" onsubmit="handleTableBookingSubmit(event)">
+                    <!-- Date Picker -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Select Date</label>
+                        <input type="date" id="bookingDateInput" class="form-control" required>
                     </div>
-                    <h5 class="fw-bold mb-2">Digital Event Mini-Website</h5>
-                    <p class="text-muted mb-0">
-                        Every event gets a responsive public page featuring countdown timer, schedule, dress code, live stream links, and Google Calendar sync.
-                    </p>
-                </div>
-            </div>
 
-            <!-- Feature 3: Branded QR Studio -->
-            <div class="col-md-4">
-                <div class="card h-100 p-4 border-0 shadow-sm hover-lift">
-                    <div class="feature-icon-box bg-warning bg-gradient text-dark mb-3">
-                        <i class="bi bi-qr-code-scan"></i>
+                    <!-- Time Slot Chips -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Select Time Slot</label>
+                        <div class="d-flex flex-wrap gap-2" id="timeSlotPills">
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill time-slot-btn active" onclick="selectTimeSlot(this, '12:30 PM')">12:30 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill time-slot-btn" onclick="selectTimeSlot(this, '01:30 PM')">01:30 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill time-slot-btn" onclick="selectTimeSlot(this, '07:00 PM')">07:00 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill time-slot-btn" onclick="selectTimeSlot(this, '08:30 PM')">08:30 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill time-slot-btn" onclick="selectTimeSlot(this, '09:30 PM')">09:30 PM</button>
+                        </div>
                     </div>
-                    <h5 class="fw-bold mb-2">Custom Branded QR Codes</h5>
-                    <p class="text-muted mb-0">
-                        Personalize foreground and background colors, and insert your couple's logo or celebrant photo in the center without losing scanability.
-                    </p>
-                </div>
-            </div>
 
-            <!-- Feature 4: Guest Photo Wall -->
-            <div class="col-md-4">
-                <div class="card h-100 p-4 border-0 shadow-sm hover-lift">
-                    <div class="feature-icon-box bg-info bg-gradient text-white mb-3">
-                        <i class="bi bi-camera-fill"></i>
+                    <!-- Number of Guests -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Number of Guests / Party Size</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="stepGuestCount(-1)">-</button>
+                            <input type="number" id="guestCountInput" class="form-control text-center fw-bold" value="2" min="1" max="50">
+                            <button type="button" class="btn btn-outline-secondary" onclick="stepGuestCount(1)">+</button>
+                        </div>
                     </div>
-                    <h5 class="fw-bold mb-2">Live Guest Photo &amp; Video Wall</h5>
-                    <p class="text-muted mb-0">
-                        Guests can upload memories directly from their phones. Hosts approve photos in real time before they display in the shared gallery.
-                    </p>
-                </div>
-            </div>
 
-            <!-- Feature 5: Social Pages & Virtual Stream -->
-            <div class="col-md-4">
-                <div class="card h-100 p-4 border-0 shadow-sm hover-lift">
-                    <div class="feature-icon-box bg-danger bg-gradient text-white mb-3">
-                        <i class="bi bi-broadcast-pin"></i>
+                    <!-- Customer Name & Phone -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Your Name</label>
+                            <input type="text" id="bookingCustomerName" class="form-control" placeholder="John Doe" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Phone / WhatsApp</label>
+                            <input type="tel" id="bookingCustomerPhone" class="form-control" placeholder="+91..." required>
+                        </div>
                     </div>
-                    <h5 class="fw-bold mb-2">Social Pages &amp; Live Streams</h5>
-                    <p class="text-muted mb-0">
-                        Embed Instagram profiles, event hashtags (#PriyaWedsRahul), and YouTube live streams for relatives and friends joining remotely.
-                    </p>
-                </div>
-            </div>
 
-            <!-- Feature 6: Printable A4 PDF Standees -->
-            <div class="col-md-4">
-                <div class="card h-100 p-4 border-0 shadow-sm hover-lift">
-                    <div class="feature-icon-box text-white mb-3" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">
-                        <i class="bi bi-printer-fill"></i>
+                    <!-- Special Requests -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Special Requests / Seating Preference</label>
+                        <textarea id="bookingNotes" class="form-control" rows="2" placeholder="e.g. Window booth, birthday candle cake, vegetarian menu..."></textarea>
                     </div>
-                    <h5 class="fw-bold mb-2">Printable Vector PDF Cards</h5>
-                    <p class="text-muted mb-0">
-                        Download ready-to-print high-res A4 invitation cards and tabletop standees to place on welcome tables, cars, and entrance arches.
-                    </p>
-                </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold rounded-pill shadow-sm">
+                            <i class="bi bi-check-circle-fill me-2"></i>Confirm Instant Booking
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
-</section>
+</div>
 
-<!-- ══ Call to Action Section ══════════════════════════════════════════════ -->
-<section class="py-5 text-white text-center position-relative overflow-hidden" style="background: linear-gradient(135deg, #312e81 0%, #4f46e5 100%);">
-    <div class="container py-5">
-        <h2 class="display-4 fw-bold mb-3 brand-font">Make Your Next Occasion Unforgettable</h2>
-        <p class="lead mb-4 text-white-75 mx-auto" style="max-width: 600px;">
-            Join hosts and event organizers who use QRouteX (qroutex.com) to delight their guests with smart digital invitations and effortless GPS directions.
-        </p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="/accounts/register/" class="btn btn-warning btn-lg px-5 py-3 fw-bold shadow-lg btn-pill">
-                <i class="bi bi-rocket-takeoff me-2"></i>Start Free Now
-            </a>
-            <a href="/pricing/" class="btn btn-outline-light btn-lg px-5 py-3 fw-semibold btn-pill">
-                <i class="bi bi-tag me-2"></i>Explore Plans
-            </a>
-        </div>
-    </div>
-</section>
+<!-- ══ SCRIPT: TABLE BOOKING & MOMENT STORY VIEWER ═════════════════════════ -->
+<script>
+    let activeBookingBiz = '';
+    let activeBookingPhone = '';
+    let selectedSlot = '12:30 PM';
+
+    function openTableBookingModal(bizName, category, bizPhone) {
+        activeBookingBiz = bizName;
+        activeBookingPhone = bizPhone;
+        document.getElementById('bookingBizTitle').textContent = bizName;
+
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('bookingDateInput');
+        if (dateInput) {
+            dateInput.value = today;
+            dateInput.min = today;
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('tableBookingModal'));
+        modal.show();
+    }
+
+    function selectTimeSlot(btn, slot) {
+        document.querySelectorAll('.time-slot-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedSlot = slot;
+    }
+
+    function stepGuestCount(delta) {
+        const input = document.getElementById('guestCountInput');
+        let val = parseInt(input.value) || 2;
+        val = Math.max(1, Math.min(50, val + delta));
+        input.value = val;
+    }
+
+    function handleTableBookingSubmit(e) {
+        e.preventDefault();
+        const date = document.getElementById('bookingDateInput').value;
+        const guests = document.getElementById('guestCountInput').value;
+        const name = document.getElementById('bookingCustomerName').value;
+        const phone = document.getElementById('bookingCustomerPhone').value;
+        const notes = document.getElementById('bookingNotes').value;
+
+        const bookingText = `Hello ${activeBookingBiz}! I would like to book a table/service via QRouteX:%0A- Name: ${encodeURIComponent(name)}%0A- Phone: ${encodeURIComponent(phone)}%0A- Date: ${date}%0A- Time Slot: ${selectedSlot}%0A- Guests: ${guests}%0A- Notes: ${encodeURIComponent(notes || 'None')}`;
+
+        // Clean phone digits for wa.me
+        let cleanDigits = (activeBookingPhone || '919876543210').replace(/\D/g, '');
+        if (!cleanDigits.startsWith('91') && cleanDigits.length === 10) cleanDigits = '91' + cleanDigits;
+
+        const waUrl = `https://wa.me/${cleanDigits}?text=${bookingText}`;
+
+        // Hide modal and open WhatsApp
+        bootstrap.Modal.getInstance(document.getElementById('tableBookingModal')).hide();
+        alert(`Booking Request Created!\n\n${activeBookingBiz} has received your reservation for ${guests} guests on ${date} at ${selectedSlot}. Opening WhatsApp confirmation...`);
+        window.open(waUrl, '_blank');
+    }
+
+    function viewMomentStory(title, imgUrl, host, tag) {
+        alert(`🌟 Celebration Moment: ${title}\nHost: ${host}\nTag: ${tag}\n\nSwipe to explore more moments on QRouteX!`);
+    }
+</script>
 
 {% endblock %}

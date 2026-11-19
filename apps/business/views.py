@@ -15,13 +15,30 @@ from .models import Business, BusinessService
 from .forms import BusinessForm, BusinessServiceForm
 
 
-# ─── Owner Business CRUD ──────────────────────────────────────────────────────
+# ─── Business Marketplace & Management ────────────────────────────────────────
 
-@login_required
 def business_list(request):
-    """List all business profiles owned by the current user."""
-    businesses = Business.objects.filter(owner=request.user).order_by('-created_at')
-    return render(request, 'business/business_list.html', {'businesses': businesses})
+    """Browse marketplace of verified vendors, restaurants, and manage owned profiles."""
+    my_businesses = []
+    if request.user.is_authenticated:
+        my_businesses = Business.objects.filter(owner=request.user).order_by('-created_at')
+
+    category = request.GET.get('category', 'all')
+    search_q = request.GET.get('q', '').strip()
+
+    all_businesses = Business.objects.filter(is_active=True).order_by('-created_at')
+    if category != 'all' and category:
+        all_businesses = all_businesses.filter(category=category)
+    if search_q:
+        all_businesses = all_businesses.filter(name__icontains=search_q)
+
+    return render(request, 'business/business_list.html', {
+        'my_businesses': my_businesses,
+        'businesses': all_businesses,
+        'selected_category': category,
+        'search_q': search_q,
+    })
+
 
 
 @login_required

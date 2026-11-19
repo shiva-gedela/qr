@@ -254,6 +254,24 @@
     </div>
 
     <div class="px-4 pb-5">
+        <!-- Direct Book Table / Reserve Service CTA (Mobile App Model) -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); border-left: 4px solid #16A34A !important;">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-success text-white p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 44px; height: 44px;">
+                        <i class="bi bi-calendar-check-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <strong class="d-block text-dark">Online Booking &amp; Reservation</strong>
+                        <small class="text-muted">Book tables, photo sessions, or banquet dates</small>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#publicBookingModal">
+                    <i class="bi bi-calendar-check me-1"></i>Book Now
+                </button>
+            </div>
+        </div>
+
         <!-- About Us / Overview -->
         {% if business.description %}
         <div class="mb-4">
@@ -428,9 +446,126 @@
 </div>
 {% endif %}
 
+<!-- ══ MODAL: BOOK TABLE / SERVICE RESERVATION ═════════════════════════════ -->
+<div class="modal fade" id="publicBookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-bottom py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-2">
+                        <i class="bi bi-calendar-check-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="modal-title fw-bold text-dark mb-0">Book Reservation</h6>
+                        <small class="text-muted">{{ business.name }}</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3 p-md-4">
+                <form id="publicBookingForm" onsubmit="submitPublicBooking(event)">
+                    <!-- Date Picker -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Reservation Date</label>
+                        <input type="date" id="pbDateInput" class="form-control" required>
+                    </div>
+
+                    <!-- Time Slot Chips -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Preferred Time</label>
+                        <div class="d-flex flex-wrap gap-2" id="pbTimeSlotChips">
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill pb-slot active" onclick="setPbSlot(this, '12:30 PM')">12:30 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill pb-slot" onclick="setPbSlot(this, '02:00 PM')">02:00 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill pb-slot" onclick="setPbSlot(this, '07:00 PM')">07:00 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill pb-slot" onclick="setPbSlot(this, '08:30 PM')">08:30 PM</button>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill pb-slot" onclick="setPbSlot(this, '09:30 PM')">09:30 PM</button>
+                        </div>
+                    </div>
+
+                    <!-- Party Size -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Party Size / Guests</label>
+                        <div class="input-group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="stepPbGuests(-1)">-</button>
+                            <input type="number" id="pbGuestsInput" class="form-control text-center fw-bold" value="2" min="1" max="50">
+                            <button type="button" class="btn btn-outline-secondary" onclick="stepPbGuests(1)">+</button>
+                        </div>
+                    </div>
+
+                    <!-- Customer Contact -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Your Name</label>
+                            <input type="text" id="pbCustomerName" class="form-control" placeholder="John" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold text-dark">Mobile / WhatsApp</label>
+                            <input type="tel" id="pbCustomerPhone" class="form-control" placeholder="+91..." required>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Notes / Preferred Services</label>
+                        <textarea id="pbNotes" class="form-control" rows="2" placeholder="e.g. VIP table, anniversary celebration, catering menu..."></textarea>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold rounded-pill shadow-sm">
+                            <i class="bi bi-whatsapp me-2"></i>Confirm via WhatsApp
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- JavaScript & Share API -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+let currentPbSlot = '12:30 PM';
+
+function setPbSlot(btn, slot) {
+    document.querySelectorAll('.pb-slot').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPbSlot = slot;
+}
+
+function stepPbGuests(delta) {
+    const el = document.getElementById('pbGuestsInput');
+    let v = parseInt(el.value) || 2;
+    el.value = Math.max(1, Math.min(50, v + delta));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const dateEl = document.getElementById('pbDateInput');
+    if (dateEl) {
+        const today = new Date().toISOString().split('T')[0];
+        dateEl.value = today;
+        dateEl.min = today;
+    }
+});
+
+function submitPublicBooking(e) {
+    e.preventDefault();
+    const date = document.getElementById('pbDateInput').value;
+    const guests = document.getElementById('pbGuestsInput').value;
+    const name = document.getElementById('pbCustomerName').value;
+    const phone = document.getElementById('pbCustomerPhone').value;
+    const notes = document.getElementById('pbNotes').value;
+
+    const bizName = "{{ business.name|escapejs }}";
+    const bizPhone = "{{ business.clean_whatsapp_number|default:'919876543210' }}";
+
+    const msg = `Hello ${bizName}! I would like to book a table/service via QRouteX:%0A- Name: ${encodeURIComponent(name)}%0A- Phone: ${encodeURIComponent(phone)}%0A- Date: ${date}%0A- Time Slot: ${currentPbSlot}%0A- Guests: ${guests}%0A- Notes: ${encodeURIComponent(notes || 'None')}`;
+
+    const waUrl = `https://wa.me/${bizPhone}?text=${msg}`;
+    bootstrap.Modal.getInstance(document.getElementById('publicBookingModal')).hide();
+    alert(`Booking Request Created!\n\nOpening WhatsApp to confirm with ${bizName}...`);
+    window.open(waUrl, '_blank');
+}
+
 document.getElementById('shareBtn')?.addEventListener('click', async () => {
     const shareData = {
         title: '{{ business.name|escapejs }}',
