@@ -59,6 +59,15 @@ jobs:
           name: build-output-log
           path: mobile_app/build_output.log
 
+      - name: Publish Build Failure Release
+        if: failure()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.9-build-log
+          name: "Build Failure Log"
+          body_path: mobile_app/build_output.log
+          files: mobile_app/build_output.log
+
       - name: Rename APK for release
         run: |
           cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.9.apk
