@@ -494,13 +494,24 @@ h1, h2, h3, h4, .brand-font, .display-1, .display-2, .display-3, .display-4, .di
     font-weight: 700;
 }
 
-/* ══ Celebration Moments Story Bar ═══════════════════════════════════════ */
+/* ══ Celebration Moments & Stories Experience ═════════════════════════ */
+.stories-carousel-wrapper {
+    position: relative;
+    padding: 0.5rem 0;
+}
+
 .stories-scroll-container {
     display: flex;
-    gap: 1.1rem;
+    gap: 1.25rem;
     overflow-x: auto;
-    padding-bottom: 0.75rem;
-    scrollbar-width: thin;
+    padding: 0.5rem 0.25rem 1rem 0.25rem;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hide default scrollbar */
+}
+
+.stories-scroll-container::-webkit-scrollbar {
+    display: none;
 }
 
 .story-avatar-wrap {
@@ -508,45 +519,406 @@ h1, h2, h3, h4, .brand-font, .display-1, .display-2, .display-3, .display-4, .di
     flex-direction: column;
     align-items: center;
     text-decoration: none !important;
-    min-width: 72px;
+    min-width: 80px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.story-avatar-wrap:hover {
+    transform: translateY(-3px);
 }
 
 .story-ring {
-    width: 66px;
-    height: 66px;
+    position: relative;
+    width: 74px;
+    height: 74px;
     border-radius: 50%;
-    padding: 2.5px;
-    background: linear-gradient(135deg, #F59E0B, #EC4899, #7C3AED, #4F46E5);
+    padding: 3px;
+    background: linear-gradient(135deg, #F59E0B, #EC4899, #7C3AED, #4F46E5, #06B6D4);
+    background-size: 300% 300%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.25s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.22);
 }
 
-.story-ring:hover {
-    transform: scale(1.08);
+.story-ring.active-live {
+    animation: gradientFlow 4s ease infinite;
+}
+
+@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.story-avatar-wrap:hover .story-ring {
+    transform: scale(1.06);
+    box-shadow: 0 8px 22px rgba(124, 58, 237, 0.35);
 }
 
 .story-avatar-inner {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    border: 2px solid #ffffff;
+    border: 2.5px solid #ffffff;
     object-fit: cover;
     background: #F1F5F9;
 }
 
+.story-live-badge {
+    position: absolute;
+    bottom: -2px;
+    background: #EF4444;
+    color: #ffffff;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+    border: 2px solid #ffffff;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.story-add-ring {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    padding: 3px;
+    background: #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+}
+
+.story-add-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px dashed #94A3B8;
+    background: #F8FAFC;
+    color: var(--qrx-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.story-avatar-wrap:hover .story-add-inner {
+    border-color: var(--qrx-primary);
+    background: #EEF2FF;
+    color: var(--qrx-primary-dark);
+}
+
 .story-label {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--qrx-text-main);
-    margin-top: 0.4rem;
-    max-width: 74px;
+    margin-top: 0.45rem;
+    max-width: 80px;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
 }
+
+/* Stories scroll arrows for desktop */
+.story-scroll-btn {
+    position: absolute;
+    top: 36%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E293B;
+    z-index: 10;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.story-scroll-btn:hover {
+    background: var(--qrx-primary);
+    color: #ffffff;
+    border-color: var(--qrx-primary);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.story-scroll-btn.prev {
+    left: -12px;
+}
+
+.story-scroll-btn.next {
+    right: -12px;
+}
+
+/* Moment Filter Chips */
+.moment-filter-tab {
+    padding: 0.45rem 1rem;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #E2E8F0;
+    background: #ffffff;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.moment-filter-tab:hover {
+    background: #F1F5F9;
+    color: var(--qrx-text-main);
+}
+
+.moment-filter-tab.active {
+    background: var(--qrx-primary);
+    color: #ffffff;
+    border-color: var(--qrx-primary);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+/* Luxury Moments / Reels Cards (Pinterest & Instagram inspired) */
+.moment-reel-card {
+    position: relative;
+    height: 390px;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #0F172A;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.moment-reel-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(79, 70, 229, 0.22);
+}
+
+.moment-reel-card .card-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.moment-reel-card:hover .card-media {
+    transform: scale(1.06);
+}
+
+.moment-reel-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.05) 35%,
+        rgba(0, 0, 0, 0.4) 65%,
+        rgba(0, 0, 0, 0.92) 100%
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.1rem;
+    color: #ffffff;
+    z-index: 2;
+}
+
+.moment-tag-pill {
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+
+.moment-audio-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #F8FAFC;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.soundwave-bar {
+    width: 2.5px;
+    height: 10px;
+    background: #06B6D4;
+    border-radius: 2px;
+    animation: soundwave 1s ease-in-out infinite alternate;
+}
+
+.soundwave-bar:nth-child(2) { animation-delay: 0.2s; height: 14px; }
+.soundwave-bar:nth-child(3) { animation-delay: 0.4s; height: 8px; }
+
+@keyframes soundwave {
+    0% { height: 4px; }
+    100% { height: 14px; }
+}
+
+.moment-btn-action {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.moment-btn-action:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.12);
+    color: #ffffff;
+}
+
+.moment-btn-action.liked {
+    background: #EF4444;
+    border-color: #EF4444;
+    color: #ffffff;
+    animation: heartPulse 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes heartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+
+/* Instagram Story Fullscreen Viewer Modal */
+.story-modal-dialog {
+    max-width: 440px;
+    margin: 1.5rem auto;
+}
+
+.story-modal-content {
+    background: #0B0F19;
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+    height: 85vh;
+    max-height: 720px;
+    display: flex;
+    flex-direction: column;
+}
+
+.story-progress-container {
+    display: flex;
+    gap: 4px;
+    padding: 12px 14px 6px 14px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+}
+
+.story-progress-bar {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.story-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #ffffff;
+    border-radius: 4px;
+    transition: width 0.1s linear;
+}
+
+.story-viewer-header {
+    position: absolute;
+    top: 24px;
+    left: 14px;
+    right: 14px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #ffffff;
+}
+
+.story-viewer-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.story-viewer-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.6) 0%,
+        transparent 25%,
+        transparent 60%,
+        rgba(0,0,0,0.85) 100%
+    );
+    z-index: 10;
+}
+
+.story-viewer-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.25rem 1.1rem;
+    color: #ffffff;
+    z-index: 20;
+}
+
+.story-tap-zone-left,
+.story-tap-zone-right {
+    position: absolute;
+    top: 60px;
+    bottom: 90px;
+    width: 35%;
+    z-index: 15;
+    cursor: pointer;
+}
+
+.story-tap-zone-left { left: 0; }
+.story-tap-zone-right { right: 0; width: 65%; }
 
 /* ══ 8-Step Event Wizard Navigation ══════════════════════════════════════ */
 .wizard-steps-nav {

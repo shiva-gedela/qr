@@ -206,63 +206,161 @@
     </div>
 </section>
 
-<!-- ══ Celebration Moments Story Bar (Instagram-Inspired) ═════════════════ -->
-<section id="momentsSection" class="py-5 bg-white border-bottom">
+<!-- ══ Celebration Moments Story Bar & Live Reels (Modern Experience) ══════ -->
+<section id="momentsSection" class="py-5 bg-white border-bottom position-relative">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Section Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end gap-3 mb-4">
             <div>
-                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-camera-fill text-danger me-2"></i>Celebration Moments &amp; Stories</h5>
-                <small class="text-muted">Live event captures shared by hosts and verified guests</small>
+                <span class="badge px-3 py-2 rounded-pill mb-2" style="background: rgba(124, 58, 237, 0.08); color: #7C3AED; font-weight: 700; border: 1px solid rgba(124, 58, 237, 0.2);">
+                    <i class="bi bi-broadcast me-1 text-danger"></i> LIVE CELEBRATION FEED
+                </span>
+                <h2 class="fw-bold text-dark mb-1" style="font-size: clamp(1.5rem, 3vw, 2rem);">
+                    Celebration Moments &amp; Live Stories
+                </h2>
+                <p class="text-muted mb-0 small" style="max-width: 620px;">
+                    Real-time captures, wedding reels, and guest memories shared directly from active QRouteX celebrations across the country.
+                </p>
             </div>
-            <a href="/events/" class="btn btn-outline-primary btn-sm rounded-pill px-3">View All &rarr;</a>
-        </div>
-
-        <!-- Story Circles Horizontal Scroll -->
-        <div class="stories-scroll-container mb-4">
-            <div class="story-avatar-wrap">
-                <div class="story-ring" style="background: linear-gradient(135deg, #4F46E5, #06B6D4);">
-                    <img src="/static/images/app_logo.png" class="story-avatar-inner" alt="QRouteX" style="background: white; padding: 2px;">
-                </div>
-                <span class="story-label fw-bold text-primary">QRouteX Live</span>
-            </div>
-            {% for m in moments %}
-            <div class="story-avatar-wrap" onclick="viewMomentStory('{{ m.title|escapejs }}', '{{ m.image }}', '{{ m.host|escapejs }}', '{{ m.tag|escapejs }}')">
-                <div class="story-ring">
-                    <img src="{{ m.image }}" class="story-avatar-inner" alt="{{ m.title }}">
-                </div>
-                <span class="story-label">{{ m.title }}</span>
-            </div>
-            {% endfor %}
-            <div class="story-avatar-wrap" onclick="location.href='/events/create/'">
-                <div class="story-ring" style="background: #E2E8F0;">
-                    <div class="story-avatar-inner d-flex align-items-center justify-content-center bg-light text-primary">
-                        <i class="bi bi-plus-lg fs-4"></i>
-                    </div>
-                </div>
-                <span class="story-label">Add Story</span>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#uploadMomentModal">
+                    <i class="bi bi-camera-fill me-1"></i> Share Moment
+                </button>
+                <a href="/events/" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                    Explore Events &rarr;
+                </a>
             </div>
         </div>
 
-        <!-- Moments Feed Highlights Cards -->
-        <div class="row g-3">
-            {% for m in moments %}
-            <div class="col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-lift">
-                    <div class="position-relative" style="height: 190px;">
-                        <img src="{{ m.image }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ m.title }}">
-                        <div class="position-absolute top-0 start-0 m-2">
-                            <span class="badge bg-dark bg-opacity-75 rounded-pill px-2 py-1 small">{{ m.badge }}</span>
-                        </div>
-                        <div class="position-absolute bottom-0 start-0 end-0 p-2 bg-gradient text-white" style="background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);">
-                            <small class="fw-bold d-block">{{ m.title }}</small>
-                            <span style="font-size: 0.72rem; opacity: 0.85;">{{ m.host }}</span>
+        <!-- 1. Stories Horizontal Scroll Carousel with Navigation Arrows -->
+        <div class="stories-carousel-wrapper mb-4">
+            <button class="story-scroll-btn prev d-none d-md-flex" onclick="scrollStories(-280)" title="Scroll Left">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="stories-scroll-container" id="storiesScrollContainer">
+                <!-- Add Story Action -->
+                <div class="story-avatar-wrap" data-bs-toggle="modal" data-bs-target="#uploadMomentModal">
+                    <div class="story-add-ring">
+                        <div class="story-add-inner">
+                            <i class="bi bi-plus-lg fs-4"></i>
                         </div>
                     </div>
-                    <div class="card-body p-3 d-flex justify-content-between align-items-center bg-light">
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill small">{{ m.tag }}</span>
-                        <div class="d-flex align-items-center gap-3 text-muted small">
-                            <span class="text-danger fw-bold"><i class="bi bi-heart-fill me-1"></i>{{ m.likes }}</span>
-                            <a href="https://wa.me/?text=Check+out+this+moment+on+QRouteX:+{{ m.tag }}" target="_blank" class="text-success"><i class="bi bi-whatsapp"></i></a>
+                    <span class="story-label">Add Story</span>
+                </div>
+
+                <!-- QRouteX Official Story -->
+                <div class="story-avatar-wrap" onclick="openStoryViewer(0)">
+                    <div class="story-ring active-live" style="background: linear-gradient(135deg, #4F46E5, #7C3AED, #06B6D4);">
+                        <img src="/static/images/app_logo.png" class="story-avatar-inner" alt="QRouteX Live" style="background: white; padding: 2px;">
+                        <span class="story-live-badge">LIVE</span>
+                    </div>
+                    <span class="story-label fw-bold text-primary">QRouteX Live</span>
+                </div>
+
+                <!-- Host & Guest Stories -->
+                {% for m in moments %}
+                <div class="story-avatar-wrap" onclick="openStoryViewer({{ forloop.counter0 }})">
+                    <div class="story-ring active-live">
+                        <img src="{{ m.image }}" class="story-avatar-inner" alt="{{ m.title }}">
+                        {% if forloop.first %}
+                        <span class="story-live-badge">NEW</span>
+                        {% endif %}
+                    </div>
+                    <span class="story-label">{{ m.title }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="story-scroll-btn next d-none d-md-flex" onclick="scrollStories(280)" title="Scroll Right">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- 2. Moments Category Filter Chips -->
+        <div class="d-flex align-items-center gap-2 mb-4 overflow-x-auto pb-2" style="scrollbar-width: none;">
+            <button class="moment-filter-tab active" onclick="filterMoments('all', this)">
+                <i class="bi bi-grid-fill me-1"></i> All Moments
+            </button>
+            <button class="moment-filter-tab" onclick="filterMoments('wedding', this)">
+                💍 Weddings
+            </button>
+            <button class="moment-filter-tab" onclick="filterMoments('birthday', this)">
+                🎂 Birthdays
+            </button>
+            <button class="moment-filter-tab" onclick="filterMoments('engagement', this)">
+                💑 Engagements
+            </button>
+            <button class="moment-filter-tab" onclick="filterMoments('anniversary', this)">
+                ❤️ Anniversaries
+            </button>
+            <button class="moment-filter-tab" onclick="filterMoments('party', this)">
+                🍸 Cocktail &amp; Parties
+            </button>
+        </div>
+
+        <!-- 3. Moments Feed Highlights Cards (Pinterest / Reels Style) -->
+        <div class="row g-3 g-lg-4" id="momentsGrid">
+            {% for m in moments %}
+            <div class="col-6 col-md-4 col-lg-4 col-xl-4 moment-card-item" data-category="{{ m.category }}">
+                <div class="moment-reel-card" onclick="openStoryViewer({{ forloop.counter0 }})">
+                    <!-- Media Cover -->
+                    <img src="{{ m.image }}" class="card-media" alt="{{ m.title }}" loading="lazy">
+
+                    <!-- Overlay Gradient & Content -->
+                    <div class="moment-reel-overlay">
+                        <!-- Top Badges -->
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="moment-tag-pill">
+                                {{ m.badge }}
+                            </span>
+                            <span class="badge rounded-pill bg-dark bg-opacity-50 text-white border border-light border-opacity-25 small px-2 py-1">
+                                <i class="bi bi-clock me-1"></i>{{ m.time }}
+                            </span>
+                        </div>
+
+                        <!-- Bottom Information -->
+                        <div>
+                            <!-- Audio Soundwave Ticker -->
+                            {% if m.audio %}
+                            <div class="moment-audio-chip mb-2">
+                                <span class="d-inline-flex gap-1 align-items-center">
+                                    <span class="soundwave-bar"></span>
+                                    <span class="soundwave-bar"></span>
+                                    <span class="soundwave-bar"></span>
+                                </span>
+                                <span>{{ m.audio }}</span>
+                            </div>
+                            {% endif %}
+
+                            <!-- Title & Host -->
+                            <h6 class="fw-bold text-white mb-1" style="font-size: 0.95rem; line-height: 1.3;">
+                                {{ m.title }}
+                            </h6>
+                            <p class="text-white-75 mb-2 small" style="font-size: 0.78rem;">
+                                <i class="bi bi-patch-check-fill text-info me-1"></i>{{ m.host }}
+                                {% if m.location %}
+                                <span class="d-none d-sm-inline opacity-75 ms-1">&bull; <i class="bi bi-geo-alt"></i> {{ m.location }}</span>
+                                {% endif %}
+                            </p>
+
+                            <!-- Interactive Actions (Like, Share, View) -->
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light border-opacity-25" onclick="event.stopPropagation();">
+                                <button class="btn p-0 text-white-75 d-inline-flex align-items-center gap-1 small border-0 bg-transparent" onclick="toggleCardLike(this, {{ m.likes }})">
+                                    <i class="bi bi-heart fs-6 text-danger"></i>
+                                    <span class="fw-bold like-count">{{ m.likes }}</span>
+                                </button>
+                                
+                                <div class="d-flex align-items-center gap-2">
+                                    <a href="https://wa.me/?text=Check+out+this+celebration+moment+on+QRouteX:+{{ m.title|urlencode }}+{{ m.tag|urlencode }}" 
+                                       target="_blank" 
+                                       class="moment-btn-action" 
+                                       title="Share to WhatsApp">
+                                        <i class="bi bi-whatsapp"></i>
+                                    </a>
+                                    <button class="moment-btn-action" onclick="openStoryViewer({{ forloop.counter0 }})" title="View Full Reel">
+                                        <i class="bi bi-play-fill fs-5"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -271,6 +369,141 @@
         </div>
     </div>
 </section>
+
+<!-- ══ Luxury Instagram-Style Story Viewer Modal ════════════════════════════ -->
+<div class="modal fade" id="storyViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered story-modal-dialog">
+        <div class="modal-content story-modal-content" id="storyViewerContent">
+            <!-- Progress Bars Container -->
+            <div class="story-progress-container" id="storyProgressBars">
+                <!-- Injected via JavaScript -->
+            </div>
+
+            <!-- Story Header -->
+            <div class="story-viewer-header">
+                <div class="d-flex align-items-center gap-2">
+                    <img id="storyHeaderAvatar" src="/static/images/app_logo.png" class="rounded-circle border border-white" style="width: 38px; height: 38px; object-fit: cover;" alt="Host">
+                    <div>
+                        <div class="fw-bold text-white small" id="storyHeaderHost">Priya &amp; Rahul Wedding</div>
+                        <div class="text-white-75" style="font-size: 0.72rem;" id="storyHeaderTime">10 mins ago</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-dark bg-opacity-50 text-white rounded-circle p-1 border-0" id="storyPauseBtn" onclick="toggleStoryPause()" title="Pause/Resume">
+                        <i class="bi bi-pause-fill fs-5" id="storyPauseIcon"></i>
+                    </button>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <!-- Tap Navigation Zones -->
+            <div class="story-tap-zone-left" onclick="navigateStory(-1)"></div>
+            <div class="story-tap-zone-right" onclick="navigateStory(1)"></div>
+
+            <!-- Media Image Container -->
+            <img id="storyViewerMedia" src="" class="story-viewer-media" alt="Celebration Story">
+            <div class="story-viewer-gradient"></div>
+
+            <!-- Story Bottom Footer -->
+            <div class="story-viewer-footer">
+                <!-- Audio Chip -->
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2 bg-dark bg-opacity-50 text-white border border-light border-opacity-25 small" id="storyAudioChip">
+                    <i class="bi bi-music-note-beamed text-info"></i>
+                    <span id="storyAudioTitle" style="font-size: 0.78rem;">Live Celebration Music</span>
+                </div>
+
+                <!-- Story Caption -->
+                <h5 class="fw-bold text-white mb-1" id="storyCaptionTitle">Grand Sangeet &amp; Dhol Night</h5>
+                <p class="text-white-75 small mb-3" id="storyCaptionText">Electrifying sangeet performance! The squad brought the house down!</p>
+
+                <!-- Actions -->
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                    <button class="btn btn-light rounded-pill btn-sm fw-bold px-3 d-flex align-items-center gap-2" id="storyLikeBtn" onclick="likeActiveStory()">
+                        <i class="bi bi-heart-fill text-danger"></i>
+                        <span id="storyLikeCount">284</span>
+                    </button>
+
+                    <div class="d-flex gap-2">
+                        <a id="storyWhatsAppShare" href="#" target="_blank" class="btn btn-success rounded-pill btn-sm px-3 fw-bold">
+                            <i class="bi bi-whatsapp me-1"></i> Share
+                        </a>
+                        <a id="storyEventLink" href="/events/e/test-wedding-event/" class="btn btn-primary rounded-pill btn-sm px-3 fw-bold">
+                            <i class="bi bi-ticket-perforated me-1"></i> View Pass
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ "Share Your Moment" Modal ═══════════════════════════════════════════ -->
+<div class="modal fade" id="uploadMomentModal" tabindex="-1" aria-labelledby="uploadMomentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark" id="uploadMomentLabel">
+                        <i class="bi bi-camera-fill text-primary me-2"></i>Share Celebration Moment
+                    </h5>
+                    <small class="text-muted">Post a celebration snap or reel directly to the live event wall</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="shareMomentForm" onsubmit="submitGuestMoment(event)">
+                    <!-- Event Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">SELECT EVENT</label>
+                        <select class="form-select rounded-3 shadow-none" required>
+                            <option value="test-wedding-event" selected>Priya &amp; Rahul Wedding (#PriyaWedsRahul)</option>
+                            <option value="aarav-birthday">Aarav 5th Safari Birthday Blast</option>
+                            <option value="engagement-neha">Neha &amp; Vikram Sunset Engagement</option>
+                            <option value="silver-jubilee">Sunil &amp; Anita 25th Silver Jubilee</option>
+                        </select>
+                    </div>
+
+                    <!-- Photo Upload / Dropzone -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">PHOTO OR REEL</label>
+                        <div class="border border-2 border-dashed rounded-4 p-4 text-center" style="background: #F8FAFC; border-color: #CBD5E1; cursor: pointer;" onclick="document.getElementById('momentFileInput').click()">
+                            <input type="file" id="momentFileInput" accept="image/*,video/*" class="d-none" onchange="previewMomentUpload(event)">
+                            <div id="momentUploadPlaceholder">
+                                <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary mb-2 d-block"></i>
+                                <div class="fw-bold text-dark small">Tap to upload celebration photo</div>
+                                <small class="text-muted">PNG, JPG, or MP4 up to 25MB</small>
+                            </div>
+                            <img id="momentUploadPreview" src="" class="img-fluid rounded-3 d-none mt-2" style="max-height: 180px; object-fit: cover;" alt="Preview">
+                        </div>
+                    </div>
+
+                    <!-- Caption & Guest Name -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-muted">YOUR NAME</label>
+                            <input type="text" id="momentGuestName" class="form-control rounded-3" placeholder="e.g., Ananya Verma" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-muted">EVENT TAG</label>
+                            <input type="text" id="momentTagInput" class="form-control rounded-3" value="#PriyaWedsRahul">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">CAPTION / WISH</label>
+                        <textarea id="momentCaptionInput" class="form-control rounded-3" rows="2" placeholder="Dancing the night away! Best wedding ever..."></textarea>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold shadow-sm">
+                            <i class="bi bi-send-fill me-1"></i> Post to Live Wall
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- ══ Popular Restaurants & Business Services Section ═════════════════════ -->
 <section class="py-5" style="background: #F8FAFC;">
@@ -846,12 +1079,270 @@
 
         // Hide modal and open WhatsApp
         bootstrap.Modal.getInstance(document.getElementById('tableBookingModal')).hide();
-        alert(`Booking Request Created!\n\n${activeBookingBiz} has received your reservation for ${guests} guests on ${date} at ${selectedSlot}. Opening WhatsApp confirmation...`);
         window.open(waUrl, '_blank');
     }
 
-    function viewMomentStory(title, imgUrl, host, tag) {
-        alert(`🌟 Celebration Moment: ${title}\nHost: ${host}\nTag: ${tag}\n\nSwipe to explore more moments on QRouteX!`);
+    /* ══ STORIES & CELEBRATION MOMENTS ENGINE ═════════════════════════════════ */
+    // Moments dataset populated from Django
+    const storyMoments = [
+        {
+            title: "QRouteX Live Celebrations",
+            host: "QRouteX Official",
+            time: "Live Now",
+            image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80",
+            audio: "🎵 Official Celebration Anthem",
+            caption: "Welcome to India's smartest celebration passes & live guest event moments wall!",
+            likes: 1250,
+            eventUrl: "/events/",
+            tag: "#QRouteXLive"
+        },
+        {% for m in moments %}
+        {
+            title: "{{ m.title|escapejs }}",
+            host: "{{ m.host|escapejs }}",
+            time: "{{ m.time|escapejs }}",
+            image: "{{ m.image|escapejs }}",
+            audio: "{{ m.audio|default:'🎵 Live Celebration Beats'|escapejs }}",
+            caption: "{{ m.caption|default:'Celebrating together with loved ones!'|escapejs }}",
+            likes: {{ m.likes|default:100 }},
+            eventUrl: "/events/e/{{ m.event_slug|default:'test-wedding-event' }}/",
+            tag: "{{ m.tag|default:'#Celebration'|escapejs }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    let currentStoryIdx = 0;
+    let storyTimer = null;
+    let storyProgressInterval = null;
+    let storyProgress = 0;
+    let isStoryPaused = false;
+    const STORY_DURATION = 5000; // 5 seconds per story
+
+    // Smooth horizontal scroll for stories carousel
+    function scrollStories(offset) {
+        const container = document.getElementById('storiesScrollContainer');
+        if (container) {
+            container.scrollBy({ left: offset, behavior: 'smooth' });
+        }
+    }
+
+    // Filter moments by category
+    function filterMoments(category, btn) {
+        document.querySelectorAll('.moment-filter-tab').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const items = document.querySelectorAll('.moment-card-item');
+        items.forEach(item => {
+            const itemCat = item.getAttribute('data-category');
+            if (category === 'all' || itemCat === category) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Toggle card like
+    function toggleCardLike(btn, count) {
+        const icon = btn.querySelector('i');
+        const countSpan = btn.querySelector('.like-count');
+        const isLiked = icon.classList.contains('bi-heart-fill');
+
+        if (!isLiked) {
+            icon.classList.remove('bi-heart');
+            icon.classList.add('bi-heart-fill');
+            btn.classList.add('text-danger');
+            countSpan.textContent = count + 1;
+        } else {
+            icon.classList.remove('bi-heart-fill');
+            icon.classList.add('bi-heart');
+            countSpan.textContent = count;
+        }
+    }
+
+    // Open Story Viewer
+    function openStoryViewer(index) {
+        currentStoryIdx = Math.max(0, Math.min(index + 1, storyMoments.length - 1)); // offset by 1 for official story or 0
+        if (index === 0 && storyMoments.length > 0) currentStoryIdx = 0;
+        
+        renderStoryProgressBars();
+        loadStory(currentStoryIdx);
+
+        const modalEl = document.getElementById('storyViewerModal');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+
+        startStoryTimer();
+    }
+
+    function renderStoryProgressBars() {
+        const container = document.getElementById('storyProgressBars');
+        if (!container) return;
+        container.innerHTML = '';
+        storyMoments.forEach((_, idx) => {
+            const bar = document.createElement('div');
+            bar.className = 'story-progress-bar';
+            const fill = document.createElement('div');
+            fill.className = 'story-progress-fill';
+            fill.id = `storyProgressFill_${idx}`;
+            bar.appendChild(fill);
+            container.appendChild(bar);
+        });
+    }
+
+    function loadStory(idx) {
+        if (idx < 0 || idx >= storyMoments.length) return;
+        const story = storyMoments[idx];
+
+        document.getElementById('storyViewerMedia').src = story.image;
+        document.getElementById('storyHeaderHost').textContent = story.host;
+        document.getElementById('storyHeaderTime').textContent = story.time;
+        document.getElementById('storyCaptionTitle').textContent = story.title;
+        document.getElementById('storyCaptionText').textContent = story.caption;
+        document.getElementById('storyAudioTitle').textContent = story.audio;
+        document.getElementById('storyLikeCount').textContent = story.likes;
+        document.getElementById('storyEventLink').href = story.eventUrl;
+
+        const shareUrl = `https://wa.me/?text=Check+out+this+celebration+moment+on+QRouteX:+${encodeURIComponent(story.title)}+${encodeURIComponent(story.tag)}`;
+        document.getElementById('storyWhatsAppShare').href = shareUrl;
+
+        // Update progress bar states
+        storyMoments.forEach((_, i) => {
+            const fill = document.getElementById(`storyProgressFill_${i}`);
+            if (!fill) return;
+            if (i < idx) {
+                fill.style.width = '100%';
+            } else if (i > idx) {
+                fill.style.width = '0%';
+            } else {
+                fill.style.width = '0%';
+            }
+        });
+    }
+
+    function startStoryTimer() {
+        clearInterval(storyProgressInterval);
+        storyProgress = 0;
+        isStoryPaused = false;
+        updatePauseIcon();
+
+        const activeFill = document.getElementById(`storyProgressFill_${currentStoryIdx}`);
+        const intervalMs = 50;
+        const step = (intervalMs / STORY_DURATION) * 100;
+
+        storyProgressInterval = setInterval(() => {
+            if (!isStoryPaused) {
+                storyProgress += step;
+                if (activeFill) activeFill.style.width = `${Math.min(storyProgress, 100)}%`;
+
+                if (storyProgress >= 100) {
+                    navigateStory(1);
+                }
+            }
+        }, intervalMs);
+    }
+
+    function navigateStory(delta) {
+        clearInterval(storyProgressInterval);
+        const nextIdx = currentStoryIdx + delta;
+
+        if (nextIdx >= 0 && nextIdx < storyMoments.length) {
+            currentStoryIdx = nextIdx;
+            loadStory(currentStoryIdx);
+            startStoryTimer();
+        } else {
+            // Close modal when reaching the end
+            const modalEl = document.getElementById('storyViewerModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+    }
+
+    function toggleStoryPause() {
+        isStoryPaused = !isStoryPaused;
+        updatePauseIcon();
+    }
+
+    function updatePauseIcon() {
+        const icon = document.getElementById('storyPauseIcon');
+        if (icon) {
+            icon.className = isStoryPaused ? 'bi bi-play-fill fs-5' : 'bi bi-pause-fill fs-5';
+        }
+    }
+
+    function likeActiveStory() {
+        const likeCountEl = document.getElementById('storyLikeCount');
+        const cur = parseInt(likeCountEl.textContent) || 0;
+        likeCountEl.textContent = cur + 1;
+        document.getElementById('storyLikeBtn').classList.add('btn-danger');
+        document.getElementById('storyLikeBtn').classList.remove('btn-light');
+    }
+
+    // Clear timer when modal is closed
+    const storyModalEl = document.getElementById('storyViewerModal');
+    if (storyModalEl) {
+        storyModalEl.addEventListener('hidden.bs.modal', () => {
+            clearInterval(storyProgressInterval);
+        });
+    }
+
+    // Guest moment upload preview
+    function previewMomentUpload(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const preview = document.getElementById('momentUploadPreview');
+                const placeholder = document.getElementById('momentUploadPlaceholder');
+                preview.src = event.target.result;
+                preview.classList.remove('d-none');
+                placeholder.classList.add('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Submit guest moment to celebration wall
+    function submitGuestMoment(e) {
+        e.preventDefault();
+        const guestName = document.getElementById('momentGuestName').value;
+        const tag = document.getElementById('momentTagInput').value || '#Celebration';
+        const caption = document.getElementById('momentCaptionInput').value || 'Unforgettable celebration moments!';
+        const previewSrc = document.getElementById('momentUploadPreview').src || 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80';
+
+        // Add to story dataset
+        storyMoments.push({
+            title: `${guestName}'s Celebration Memory`,
+            host: guestName,
+            time: "Just now",
+            image: previewSrc,
+            audio: "🎵 Celebration Special",
+            caption: caption,
+            likes: 1,
+            eventUrl: "/events/",
+            tag: tag
+        });
+
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('uploadMomentModal')).hide();
+
+        // Show toast
+        const toastEl = document.createElement('div');
+        toastEl.className = 'toast align-items-center text-white bg-success border-0 position-fixed top-0 start-50 translate-middle-x mt-4 shadow-lg';
+        toastEl.style.zIndex = '9999';
+        toastEl.setAttribute('role', 'alert');
+        toastEl.innerHTML = `
+            <div class="d-flex p-2 align-items-center">
+                <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+                <div class="toast-body">
+                    <strong>Moment Published!</strong> Your photo is now live on the event wall.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        document.body.appendChild(toastEl);
+        const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+        toast.show();
     }
 </script>
 

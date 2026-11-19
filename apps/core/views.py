@@ -31,43 +31,97 @@ def home(request):
         Business.objects.filter(is_active=True).prefetch_related('services').order_by('-created_at')[:6]
     )
 
-    # Celebration Moments Feed (Sample & Real highlights)
+    # Celebration Moments Feed (Rich, curated live highlights)
     moments = [
         {
+            'id': 1,
             'title': 'Grand Sangeet & Dhol Night',
             'host': 'Priya & Rahul Wedding',
-            'time': '2 hours ago',
-            'likes': 142,
+            'category': 'wedding',
+            'location': 'Taj Palace, Bengaluru',
+            'time': '10 mins ago',
+            'likes': 284,
             'tag': '#PriyaWedsRahul',
-            'image': 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=600&q=80',
-            'badge': '💍 Wedding'
+            'image': 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80',
+            'badge': '💍 Royal Wedding',
+            'audio': '🎵 London Thumakda & Live Dhol',
+            'caption': 'Electrifying sangeet performance! The entire bride and groom squad brought the house down!',
+            'event_slug': 'test-wedding-event'
         },
         {
-            'title': 'Aarav 5th Birthday Blast',
+            'id': 2,
+            'title': 'Aarav 5th Safari Birthday Blast',
             'host': 'Sharma Family',
-            'time': '5 hours ago',
-            'likes': 98,
+            'category': 'birthday',
+            'location': 'Jungle Fiesta Club, Indiranagar',
+            'time': '1 hour ago',
+            'likes': 142,
             'tag': '#AaravTurns5',
-            'image': 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=600&q=80',
-            'badge': '🎂 Birthday'
+            'image': 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=800&q=80',
+            'badge': '🎂 Birthday Bash',
+            'audio': '🎵 Happy Birthday Jungle Beats',
+            'caption': 'Unwrapping the 3-tier jungle cake with all his preschool besties! Pure joy.',
+            'event_slug': 'test-wedding-event'
         },
         {
-            'title': 'Sunset Ring Exchange Ceremony',
+            'id': 3,
+            'title': 'Sunset Ring Exchange & Fireworks',
             'host': 'Neha & Vikram',
-            'time': 'Yesterday',
-            'likes': 210,
+            'category': 'engagement',
+            'location': 'Leela Raviz Lakeview, Whitefield',
+            'time': '3 hours ago',
+            'likes': 389,
             'tag': '#NehaVikramEngagement',
-            'image': 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&q=80',
-            'badge': '💑 Engagement'
+            'image': 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80',
+            'badge': '💑 Engagement',
+            'audio': '🎵 Kesariya - Acoustic Violin',
+            'caption': 'Under the golden sunset sky, they said forever with sparkling lakefront fireworks!',
+            'event_slug': 'test-wedding-event'
         },
         {
-            'title': 'Silver Jubilee Celebration',
+            'id': 4,
+            'title': 'Silver Jubilee 25th Gala Dinner',
             'host': 'Sunil & Anita 25th',
-            'time': '2 days ago',
-            'likes': 185,
+            'category': 'anniversary',
+            'location': 'ITC Gardenia Ballroom',
+            'time': '5 hours ago',
+            'likes': 225,
             'tag': '#SunilAnita25',
-            'image': 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=600&q=80',
-            'badge': '❤️ Anniversary'
+            'image': 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80',
+            'badge': '❤️ 25th Anniversary',
+            'audio': '🎵 Classic Retro Medley',
+            'caption': '25 years of love, laughter, and lifelong memories celebrated with 200 loved ones.',
+            'event_slug': 'test-wedding-event'
+        },
+        {
+            'id': 5,
+            'title': 'Sunset Cocktail & Neon DJ Night',
+            'host': 'Rohan & Ananya Pre-Wedding',
+            'category': 'party',
+            'location': 'High Ultra Rooftop Lounge',
+            'time': 'Yesterday',
+            'likes': 312,
+            'tag': '#RohanAnanyaCocktail',
+            'image': 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80',
+            'badge': '🍸 Cocktail Party',
+            'audio': '🎵 Deep House & Bollywood Remix',
+            'caption': 'Panoramic city skyline views, signature mocktails, and non-stop dancing under the stars!',
+            'event_slug': 'test-wedding-event'
+        },
+        {
+            'id': 6,
+            'title': 'Haldi Sunshine Carnival',
+            'host': 'Kavya & Siddharth',
+            'category': 'wedding',
+            'location': 'Windsor Manor Greens',
+            'time': '2 days ago',
+            'likes': 415,
+            'tag': '#KavyaSidHaldi',
+            'image': 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80',
+            'badge': '🌼 Haldi Carnival',
+            'audio': '🎵 Genda Phool - Carnival Mix',
+            'caption': 'Yellow marigold rain, dhol players, and endless laughter with family and friends.',
+            'event_slug': 'test-wedding-event'
         },
     ]
 
