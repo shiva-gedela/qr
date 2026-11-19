@@ -25,60 +25,66 @@
 <body class="d-flex flex-column min-vh-100">
 
 <!-- ═══ NAVBAR ═══════════════════════════════════════════════════════════════ -->
-<nav class="navbar navbar-expand-lg navbar-dark navbar-glass sticky-top py-2 py-lg-3">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-modern-glass sticky-top py-2">
     <div class="container">
         <!-- QRouteX Brand Logo -->
-        <a class="navbar-brand brand-logo d-flex align-items-center" href="/">
-            <img src="/static/images/app_logo.png" alt="QRouteX Logo" class="rounded-circle me-2 shadow-sm" style="width: 38px; height: 38px; object-fit: contain; background: #ffffff; padding: 2px; border: 1.5px solid #06B6D4;">
-            <span class="brand-text">QRoute<span class="text-warning">X</span></span>
-            <span class="badge bg-warning text-dark rounded-pill fs-xs px-2 py-0 ms-1 d-none d-sm-inline fw-bold">PRO</span>
+        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="/">
+            <img src="/static/images/app_logo.png" alt="QRouteX" class="rounded-circle shadow-sm" style="width: 36px; height: 36px; object-fit: contain; background: #ffffff; padding: 1.5px;">
+            <span class="brand-text">QRoute<span style="background: linear-gradient(135deg, #6366F1, #06B6D4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">X</span></span>
         </a>
 
-        <!-- City Selector Chip in Navbar -->
-        <button type="button" class="city-selector-chip ms-2 me-auto me-lg-0" data-bs-toggle="modal" data-bs-target="#citySelectorModal" title="Change Location">
-            <i class="bi bi-geo-alt-fill text-danger"></i>
-            <span id="navActiveCityLabel" class="d-none d-sm-inline">Bengaluru, KA</span>
-            <i class="bi bi-chevron-down text-white-50 ms-1" style="font-size: 0.7rem;"></i>
+        <!-- City Selector Pill (Subtle & Clean) -->
+        <button type="button" class="city-pill-subtle ms-2 ms-lg-3 me-auto me-lg-0" data-bs-toggle="modal" data-bs-target="#citySelectorModal" title="Change Location">
+            <i class="bi bi-geo-alt-fill text-danger" style="font-size: 0.8rem;"></i>
+            <span id="navActiveCityLabel" class="d-none d-sm-inline">Bengaluru</span>
+            <i class="bi bi-chevron-down text-white-50 ms-1" style="font-size: 0.65rem;"></i>
         </button>
 
-        <!-- Navbar Toggler for Desktop/Tablet Menu -->
-        <button class="navbar-toggler border-0 shadow-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <!-- Navbar Toggler for Mobile Menu -->
+        <button class="navbar-toggler border-0 shadow-none ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-                <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house me-1"></i>Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="/events/"><i class="bi bi-calendar-event me-1"></i>Events</a></li>
-                <li class="nav-item"><a class="nav-link" href="/business/"><i class="bi bi-shop me-1"></i>Vendors &amp; Places</a></li>
-                <li class="nav-item"><a class="nav-link" href="/pricing/"><i class="bi bi-tag me-1"></i>Pricing</a></li>
-
-                <!-- Scan QR Web Shortcut -->
+            <!-- Centered Navigation Links -->
+            <ul class="navbar-nav mx-auto align-items-lg-center gap-lg-1 my-3 my-lg-0">
                 <li class="nav-item">
-                    <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-3 py-1 fw-bold text-white" onclick="openWebQrScanner()">
-                        <i class="bi bi-qr-code-scan me-1 text-warning"></i>Scan QR
-                    </button>
+                    <a class="nav-modern-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
                 </li>
-
-                <!-- APK v1.0.9 Direct App Download Pill -->
                 <li class="nav-item">
-                    <a href="https://github.com/shiva-gedela/qr/releases/download/v1.0.9/QRouteX-v1.0.9.apk" class="btn btn-warning btn-sm rounded-pill px-3 py-1 fw-bold text-dark shadow-sm d-inline-flex align-items-center gap-1">
-                        <i class="bi bi-android2"></i>
-                        <span>App v1.0.9</span>
-                    </a>
+                    <a class="nav-modern-link {% if '/events/' in request.path %}active{% endif %}" href="/events/">Events</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-modern-link {% if '/business/' in request.path %}active{% endif %}" href="/business/">Vendors &amp; Places</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-modern-link {% if '/pricing/' in request.path %}active{% endif %}" href="/pricing/">Pricing</a>
+                </li>
+            </ul>
+
+            <!-- Right Utilities & Primary Action -->
+            <div class="d-flex align-items-center gap-2 gap-lg-3 flex-wrap">
+                <!-- Scan QR Web Utility -->
+                <button type="button" class="nav-icon-btn" onclick="openWebQrScanner()" title="Scan Any QR Pass">
+                    <i class="bi bi-qr-code-scan"></i>
+                </button>
+
+                <!-- Android App APK Download -->
+                <a href="https://github.com/shiva-gedela/qr/releases/download/v1.0.9/QRouteX-v1.0.9.apk" class="nav-icon-btn" title="Download Android App v1.0.9">
+                    <i class="bi bi-android2 text-warning"></i>
+                </a>
 
                 {% if user.is_authenticated %}
-                    <li class="nav-item dropdown ms-lg-1">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+                    <li class="nav-item dropdown list-unstyled">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 p-1" href="#" data-bs-toggle="dropdown">
                             {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" class="rounded-circle" width="28" height="28" style="object-fit:cover;">
+                                <img src="{{ user.avatar.url }}" class="rounded-circle border border-secondary" width="34" height="34" style="object-fit:cover;">
                             {% else %}
-                                <div class="rounded-circle bg-warning text-dark d-inline-flex align-items-center justify-content-center fw-bold" style="width:28px;height:28px;font-size:0.75rem;">
-                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:34px;height:34px;font-size:0.8rem;">
+                                    {{ user.first_name|first|upper|default:'U' }}
                                 </div>
                             {% endif %}
-                            <span class="d-none d-xl-inline">{{ user.first_name|default:user.email }}</span>
+                            <span class="d-none d-xl-inline text-white small fw-semibold">{{ user.first_name|default:user.email }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-2" style="min-width: 230px;">
                             <li>
@@ -109,14 +115,12 @@
                         </ul>
                     </li>
                 {% else %}
-                    <li class="nav-item"><a class="nav-link" href="/accounts/login/">Sign In</a></li>
-                    <li class="nav-item ms-lg-1">
-                        <a class="btn btn-primary btn-sm fw-bold px-3 btn-pill shadow-sm" href="/accounts/register/">
-                            <i class="bi bi-lightning-charge-fill me-1"></i>Get Started Free
-                        </a>
-                    </li>
+                    <a class="nav-modern-link px-2" href="/accounts/login/" style="font-weight: 600;">Sign In</a>
+                    <a class="btn btn-primary btn-sm fw-bold px-3 py-2 rounded-pill shadow-sm" href="/accounts/register/" style="background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none; font-size: 0.88rem;">
+                        Get Started Free
+                    </a>
                 {% endif %}
-            </ul>
+            </div>
         </div>
     </div>
 </nav>
