@@ -189,17 +189,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
 
     // Backend sync attempt
     try {
-      await ApiService.createEvent(
-        title: newEvent.title,
-        eventType: newEvent.eventType,
-        eventDate: newEvent.eventDate,
-        venueName: newEvent.venueName,
-        venueAddress: newEvent.venueAddress,
-        hostNames: newEvent.hostNames,
-        description: newEvent.description,
-        capacity: newEvent.capacity,
-        dressCode: newEvent.dressCode,
-      );
+      await ApiService.createEvent(newEvent.toJson());
     } catch (_) {}
 
     if (!mounted) return;

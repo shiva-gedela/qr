@@ -747,9 +747,23 @@ class ApiService {
     return raw.map((r) => Map<String, dynamic>.from(jsonDecode(r))).toList();
   }
 
-  static Future<void> saveScanRecord(Map<String, dynamic> record) async {
+  static Future<void> saveScanRecord({
+    required String code,
+    required String type,
+    required String title,
+    String status = 'verified',
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList('qr_scan_history') ?? [];
+    final record = {
+      'id': 'scan_${DateTime.now().millisecondsSinceEpoch}',
+      'data': code,
+      'code': code,
+      'type': type,
+      'title': title,
+      'status': status == 'approved' ? 'verified' : status,
+      'timestamp': DateTime.now().toIso8601String().substring(0, 19).replaceAll('T', ' '),
+    };
     raw.insert(0, jsonEncode(record));
     if (raw.length > 50) raw.removeLast();
     await prefs.setStringList('qr_scan_history', raw);
