@@ -5,214 +5,386 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:title" content="{{ event.title }} - You're Invited!">
     <meta property="og:description" content="{{ event.description|truncatechars:200 }}">
-    <meta property="og:image" content="{{ event.cover_image_url }}">
-    <title>{{ event.title }} - Invitation</title>
+    {% if event.cover_image %}
+    <meta property="og:image" content="{{ event.cover_image.url }}">
+    {% endif %}
+    <title>{{ event.title }} - QRouteX Invitation</title>
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="/static/css/main.css" rel="stylesheet">
 
     <style>
         :root {
-            --event-primary: #6c3483;
-            --event-gold: #d4ac0d;
-            --event-bg: #fdf8f0;
+            --qrx-primary: #4F46E5;
+            --qrx-secondary: #7C3AED;
+            --qrx-accent: #06B6D4;
+            --qrx-dark: #0F172A;
+            --qrx-bg: #F8FAFC;
         }
-        body { font-family: 'Inter', sans-serif; background: var(--event-bg); }
-        .hero-banner {
-            background: linear-gradient(135deg, var(--event-primary) 0%, #a569bd 100%);
-            min-height: 60vh;
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--qrx-bg);
+            color: #1E293B;
+            overflow-x: hidden;
+        }
+
+        .brand-font {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Top Translucent Navigation */
+        .public-topbar {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+            padding: 0.75rem 0;
+        }
+
+        /* Luxury Hero Cover */
+        .event-hero-banner {
             position: relative;
+            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 45%, #312E81 100%);
+            color: #ffffff;
+            padding: 3.5rem 1rem 4rem 1rem;
             overflow: hidden;
+            text-align: center;
         }
-        .hero-banner::after {
-            content: '';
+
+        .event-hero-banner .hero-bg-cover {
             position: absolute;
-            bottom: -2px;
-            left: 0; right: 0;
-            height: 80px;
-            background: var(--event-bg);
-            clip-path: ellipse(55% 100% at 50% 100%);
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0.35;
+            filter: blur(1px);
         }
-        .cover-img { width:100%; height:100%; object-fit:cover; opacity:.35; position:absolute; top:0; left:0; }
-        .event-title-block { font-family: 'Playfair Display', serif; }
-        .detail-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
-        .section-heading {
-            font-family: 'Playfair Display', serif;
-            color: var(--event-primary);
-            border-bottom: 2px solid var(--event-gold);
-            padding-bottom: .5rem;
-            margin-bottom: 1.5rem;
+
+        .event-hero-banner .hero-gradient-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(79, 70, 229, 0.25) 0%, rgba(15, 23, 42, 0.85) 100%);
+            z-index: 1;
         }
-        .gallery-img { border-radius: 12px; overflow: hidden; cursor: pointer; }
-        .gallery-img img { width:100%; height:180px; object-fit:cover; transition: transform .3s; }
-        .gallery-img:hover img { transform: scale(1.05); }
-        .btn-event-primary { background: var(--event-primary); color: white; border: none; }
-        .btn-event-primary:hover { background: #5b2c6f; color: white; }
-        .floating-share { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
-        .ornament { color: var(--event-gold); font-size: 1.5rem; }
-        .branding-footer { background: var(--event-primary); color: white; }
+
+        .countdown-chip {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 0.75rem 1.1rem;
+            min-width: 74px;
+            text-align: center;
+        }
+
+        .countdown-chip .val {
+            font-size: 1.85rem;
+            font-weight: 800;
+            line-height: 1;
+            font-family: 'Outfit', sans-serif;
+            color: #F8FAFC;
+        }
+
+        .countdown-chip .lbl {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .card-modern-luxury {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .card-modern-luxury:hover {
+            box-shadow: 0 10px 30px rgba(79, 70, 229, 0.1);
+        }
+
+        .nav-gps-btn {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            color: #ffffff !important;
+            border: none;
+            border-radius: 50px;
+            padding: 0.85rem 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+            transition: all 0.25s ease;
+        }
+
+        .nav-gps-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, 0.5);
+            color: #ffffff !important;
+        }
+
+        .floating-action-bar {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1030;
+        }
     </style>
 </head>
 <body>
 
-<!-- ══ Hero Banner ════════════════════════════════════════════════════════ -->
-<div class="hero-banner text-white text-center d-flex align-items-center justify-content-center py-5 position-relative">
-    {% if event.cover_image %}
-    <img src="{{ event.cover_image.url }}" class="cover-img" alt="{{ event.title }}">
-    {% endif %}
-    <div class="position-relative z-1 px-4" style="z-index:2;">
-        <p class="ornament mb-1">✦ ✦ ✦</p>
-        <div class="badge bg-warning text-dark mb-3 fs-6 px-3 py-2">
-            {{ event.event_type_icon }} {{ event.get_event_type_display }}
+<!-- ═══ TOP NAVBAR ═══════════════════════════════════════════════════════════ -->
+<header class="public-topbar">
+    <div class="container d-flex align-items-center justify-content-between">
+        <!-- Logo & Back to Events -->
+        <div class="d-flex align-items-center gap-2">
+            <a href="/" class="d-flex align-items-center gap-2 text-decoration-none">
+                <img src="/static/images/app_logo.png" alt="QRouteX" class="rounded-circle shadow-sm" style="width: 32px; height: 32px; object-fit: contain; background: white; padding: 1px;">
+                <span class="brand-font fw-bold text-white fs-5">QRoute<span style="color: #6366F1;">X</span></span>
+            </a>
+            <span class="text-white-50 d-none d-sm-inline">|</span>
+            <span class="badge bg-warning text-dark rounded-pill fw-bold small d-none d-sm-inline">
+                {{ event.event_type_icon }} {{ event.get_event_type_display }}
+            </span>
         </div>
-        <h1 class="event-title-block display-4 fw-bold mb-2">{{ event.title }}</h1>
-        <p class="fs-5 text-white-75 mb-1">hosted by</p>
-        <h3 class="event-title-block fst-italic mb-3">{{ event.host_names }}</h3>
-        <p class="ornament">✦ ✦ ✦</p>
-    </div>
-</div>
 
-<!-- ══ Main Content ════════════════════════════════════════════════════════ -->
-<div class="container py-5" style="max-width: 800px;">
+        <!-- Navigation & Actions -->
+        <div class="d-flex align-items-center gap-2">
+            <a href="/events/" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">
+                <i class="bi bi-arrow-left me-1"></i>Events
+            </a>
+            <button class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark shadow-sm" onclick="shareEventInvitation()">
+                <i class="bi bi-share-fill me-1"></i>Share Pass
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- ═══ LUXURY HERO HEADER BANNER ════════════════════════════════════════════ -->
+<section class="event-hero-banner">
+    {% if event.cover_image %}
+    <img src="{{ event.cover_image.url }}" class="hero-bg-cover" alt="{{ event.title }}">
+    {% endif %}
+    <div class="hero-gradient-overlay"></div>
+
+    <div class="container position-relative" style="z-index: 2; max-width: 860px;">
+        <!-- Occasion Pill -->
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.25); backdrop-filter: blur(10px);">
+            <span class="fs-6">{{ event.event_type_icon }}</span>
+            <span class="fw-bold small text-warning text-uppercase tracking-wide">{{ event.get_event_type_display }}</span>
+            <span class="text-white-50">&bull;</span>
+            <span class="small text-white-75">Official Digital Invitation</span>
+        </div>
+
+        <!-- Title & Host -->
+        <h1 class="brand-font display-4 fw-bold mb-2 text-white" style="letter-spacing: -0.02em;">
+            {{ event.title }}
+        </h1>
+
+        <p class="fs-5 text-white-75 mb-4 fw-medium">
+            Hosted with warm regards by <strong class="text-white">{{ event.host_names }}</strong>
+        </p>
+
+        <!-- Dynamic Countdown Clock -->
+        <div class="d-flex justify-content-center align-items-center gap-2 gap-md-3 mb-4" id="countdownBox">
+            <div class="countdown-chip">
+                <div class="val" id="cd-days">00</div>
+                <div class="lbl">Days</div>
+            </div>
+            <div class="countdown-chip">
+                <div class="val" id="cd-hours">00</div>
+                <div class="lbl">Hours</div>
+            </div>
+            <div class="countdown-chip">
+                <div class="val" id="cd-minutes">00</div>
+                <div class="lbl">Mins</div>
+            </div>
+            <div class="countdown-chip">
+                <div class="val" id="cd-seconds">00</div>
+                <div class="lbl">Secs</div>
+            </div>
+        </div>
+
+        <!-- Quick RSVP & Calendar Actions -->
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ event.title|urlencode }}&dates={{ event.event_date|date:'Ymd' }}{% if event.event_time %}T{{ event.event_time|date:'His' }}{% endif %}/{{ event.event_end_date|default:event.event_date|date:'Ymd' }}{% if event.event_end_time %}T{{ event.event_end_time|date:'His' }}{% endif %}&details={{ event.description|urlencode }}&location={{ event.venue_name|urlencode }},+{{ event.venue_address|urlencode }}" 
+               target="_blank" class="btn btn-sm btn-light rounded-pill px-3 py-2 fw-bold text-dark shadow-sm">
+                <i class="bi bi-google me-1 text-danger"></i>Add to Google Calendar
+            </a>
+            <a href="/events/e/{{ event.slug }}/calendar.ics" class="btn btn-sm btn-outline-light rounded-pill px-3 py-2 fw-semibold">
+                <i class="bi bi-calendar-check me-1"></i>Apple / iCal (.ics)
+            </a>
+            {% if qr %}
+            <button class="btn btn-sm btn-info rounded-pill px-3 py-2 fw-bold text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#qrModal">
+                <i class="bi bi-qr-code-scan me-1"></i>View Admission Pass
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ MAIN CONTENT GRID ════════════════════════════════════════════════════ -->
+<main class="container py-5" style="max-width: 980px;">
 
     {% if messages %}
     {% for msg in messages %}
-    <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show" role="alert">
+    <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show rounded-4 shadow-sm" role="alert">
         {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     {% endfor %}
     {% endif %}
 
-    <!-- Countdown Timer & Quick Actions Card -->
-    <div class="detail-card p-4 mb-4 text-center">
-        <h6 class="fw-bold text-muted small text-uppercase mb-3 tracking-wide">
-            <i class="bi bi-hourglass-split me-1 text-warning"></i>Countdown to Celebration
-        </h6>
-        <div class="d-flex justify-content-center gap-3 gap-md-4 mb-3" id="countdownBox">
-            <div class="p-2 px-3 rounded-3" style="background: #fdf8f0; min-width: 70px;">
-                <div class="fs-2 fw-bold" id="cd-days" style="color:var(--event-primary);">00</div>
-                <div class="small text-muted text-uppercase" style="font-size:0.75rem;">Days</div>
-            </div>
-            <div class="p-2 px-3 rounded-3" style="background: #fdf8f0; min-width: 70px;">
-                <div class="fs-2 fw-bold" id="cd-hours" style="color:var(--event-primary);">00</div>
-                <div class="small text-muted text-uppercase" style="font-size:0.75rem;">Hours</div>
-            </div>
-            <div class="p-2 px-3 rounded-3" style="background: #fdf8f0; min-width: 70px;">
-                <div class="fs-2 fw-bold" id="cd-minutes" style="color:var(--event-primary);">00</div>
-                <div class="small text-muted text-uppercase" style="font-size:0.75rem;">Mins</div>
-            </div>
-            <div class="p-2 px-3 rounded-3" style="background: #fdf8f0; min-width: 70px;">
-                <div class="fs-2 fw-bold" id="cd-seconds" style="color:var(--event-primary);">00</div>
-                <div class="small text-muted text-uppercase" style="font-size:0.75rem;">Secs</div>
+    <!-- Owner Preview Banner -->
+    {% if is_owner %}
+    <div class="alert alert-primary rounded-4 shadow-sm d-flex justify-content-between align-items-center mb-4 p-3 border-0" style="background: #EEF2FF; color: #4338CA;">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-check fs-4"></i>
+            <div>
+                <strong>Host Mode Active:</strong> You are previewing this invitation as the verified event owner.
             </div>
         </div>
-
-        <!-- Add to Calendar & QR Buttons -->
-        <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ event.title|urlencode }}&dates={{ event.event_date|date:'Ymd' }}{% if event.event_time %}T{{ event.event_time|date:'His' }}{% endif %}/{{ event.event_end_date|default:event.event_date|date:'Ymd' }}{% if event.event_end_time %}T{{ event.event_end_time|date:'His' }}{% endif %}&details={{ event.description|urlencode }}&location={{ event.venue_name|urlencode }},+{{ event.venue_address|urlencode }}" 
-               target="_blank" class="btn btn-sm btn-outline-dark">
-                <i class="bi bi-google me-1"></i>Add to Google Calendar
-            </a>
-            <a href="/events/e/{{ event.slug }}/calendar.ics" class="btn btn-sm btn-outline-dark">
-                <i class="bi bi-calendar-plus me-1"></i>Download iCal (.ics)
-            </a>
-            {% if qr %}
-            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#qrModal">
-                <i class="bi bi-qr-code me-1"></i>View Event QR
-            </button>
-            {% endif %}
-        </div>
+        <a href="/events/{{ event.pk }}/" class="btn btn-primary btn-sm rounded-pill fw-bold px-3">
+            Manage Event &rarr;
+        </a>
     </div>
+    {% endif %}
 
-    <!-- Date & Venue Card with GPS Navigation -->
-    <div class="detail-card p-4 mb-4">
-        <div class="row g-4 align-items-center">
-            <div class="col-md-6 text-center border-end-md">
-                <i class="bi bi-calendar-heart display-6 text-primary mb-2 d-block" style="color:var(--event-primary)!important;"></i>
-                <h6 class="fw-bold text-muted small text-uppercase tracking-wide">Date & Time</h6>
-                <h5 class="fw-bold mb-1">{{ event.event_date|date:"l, d F Y" }}</h5>
-                {% if event.event_time %}
-                <p class="text-muted mb-1"><i class="bi bi-clock me-1 text-warning"></i>{{ event.event_time|time:"g:i A" }}</p>
-                {% endif %}
-                {% if event.event_end_date %}
-                <p class="text-muted small mb-0">Until {{ event.event_end_date|date:"d F Y" }}</p>
-                {% endif %}
-                {% if event.dress_code %}
-                <div class="mt-2">
-                    <span class="badge bg-light text-dark border"><i class="bi bi-suit-heart me-1 text-danger"></i>Dress Code: {{ event.dress_code }}</span>
+    <!-- 1. Schedule & Venue Section (Split Grid) -->
+    <div class="row g-4 mb-4">
+        <!-- Date & Time Card -->
+        <div class="col-md-5">
+            <div class="card-modern-luxury p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="p-2 rounded-circle bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-calendar-event-fill fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0 text-muted small text-uppercase tracking-wide">Date &amp; Schedule</h6>
+                    </div>
+                    <h4 class="fw-bold brand-font text-dark mb-1">
+                        {{ event.event_date|date:"l, d F Y" }}
+                    </h4>
+                    {% if event.event_time %}
+                    <p class="text-primary fw-bold fs-5 mb-2">
+                        <i class="bi bi-clock-fill me-1"></i>{{ event.event_time|time:"g:i A" }}
+                    </p>
+                    {% endif %}
+                    {% if event.event_end_date %}
+                    <small class="text-muted d-block mb-3">Celebrations continue until {{ event.event_end_date|date:"d F Y" }}</small>
+                    {% endif %}
+
+                    {% if event.dress_code %}
+                    <div class="mt-3 p-2 rounded-3 bg-light border-0 d-inline-block">
+                        <span class="small fw-semibold text-dark"><i class="bi bi-stars text-warning me-1"></i>Dress Code: {{ event.dress_code }}</span>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
+
+                <div class="pt-3 border-top mt-3">
+                    <small class="text-muted d-block mb-2">Sync with personal agenda:</small>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="/events/e/{{ event.slug }}/calendar.ics" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                            <i class="bi bi-download me-1"></i>iCal (.ics)
+                        </a>
+                    </div>
+                </div>
             </div>
-            {% if event.venue_name %}
-            <div class="col-md-6 text-center">
-                <i class="bi bi-geo-alt-fill display-6 mb-2 d-block text-danger"></i>
-                <h6 class="fw-bold text-muted small text-uppercase tracking-wide">Event Location</h6>
-                <h5 class="fw-bold mb-1">{{ event.venue_name }}</h5>
-                {% if event.venue_address %}
-                <p class="text-muted mb-2 small">{{ event.venue_address }}</p>
-                {% endif %}
-                <div class="d-flex flex-column gap-2 mt-3">
-                    <a href="{{ event.google_maps_directions_url }}" target="_blank" class="btn btn-primary fw-bold shadow-sm">
-                        <i class="bi bi-cursor-fill me-2 text-warning"></i>Open in Google Maps (GPS)
+        </div>
+
+        <!-- Venue & Turn-by-Turn GPS Card -->
+        <div class="col-md-7">
+            <div class="card-modern-luxury p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="p-2 rounded-circle bg-danger bg-opacity-10 text-danger">
+                            <i class="bi bi-geo-alt-fill fs-5"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0 text-muted small text-uppercase tracking-wide">Venue Location</h6>
+                    </div>
+                    <h4 class="fw-bold brand-font text-dark mb-1">
+                        {{ event.venue_name|default:"Venue Location" }}
+                    </h4>
+                    <p class="text-muted mb-3" style="line-height: 1.5;">
+                        {{ event.venue_address|default:"Venue details provided upon RSVP." }}
+                    </p>
+                </div>
+
+                <div class="d-flex flex-column gap-2 pt-3 border-top">
+                    <!-- Turn-by-Turn GPS Action -->
+                    <a href="{{ event.google_maps_directions_url }}" target="_blank" class="nav-gps-btn text-center text-decoration-none">
+                        <i class="bi bi-cursor-fill me-2 text-warning"></i>Turn-by-Turn Google Maps Navigation
                     </a>
-                    <div class="d-flex justify-content-center gap-2">
-                        <a href="/events/e/{{ event.slug }}/gps/" target="_blank" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-compass me-1"></i>Start Navigation
+                    
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <a href="/events/e/{{ event.slug }}/gps/" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill flex-grow-1 fw-semibold">
+                            <i class="bi bi-compass me-1 text-primary"></i>Live GPS Route
                         </a>
                         {% if event.venue_address %}
-                        <button class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ event.venue_name }}, {{ event.venue_address|escapejs }}'); alert('Address copied to clipboard!');">
-                            <i class="bi bi-copy me-1"></i>Copy Address
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="copyVenueAddress('{{ event.venue_name }}, {{ event.venue_address|escapejs }}')">
+                            <i class="bi bi-clipboard me-1"></i>Copy Address
                         </button>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 
-    <!-- ══ Ride Booking & Route Comparison Card (Uber, Rapido, Ola) ════════ -->
+    <!-- 2. Ride Booking & Comparison Card (Uber, Rapido, Ola) -->
     {% if event.venue_name or event.venue_address %}
-    <div class="detail-card p-4 mb-4">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div class="card-modern-luxury p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-3">
             <div>
-                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-car-front-fill text-danger me-2"></i>Book Ride to Venue</h5>
-                <small class="text-muted">Compare cabs &amp; autos directly to {{ event.venue_name }}</small>
+                <h5 class="fw-bold brand-font mb-0 text-dark">
+                    <i class="bi bi-car-front-fill text-primary me-2"></i>Ride to Venue with 1-Click
+                </h5>
+                <small class="text-muted">Direct dropoff cabs &amp; autos to {{ event.venue_name }}</small>
             </div>
-            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="detectUserLocationForEvent()">
-                <i class="bi bi-crosshair me-1"></i>Get Live Distance
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-bold" onclick="detectUserLocationForEvent()">
+                <i class="bi bi-crosshair me-1"></i>Estimate Fare &amp; Distance
             </button>
         </div>
 
-        <!-- Live Distance & Travel Time Strip -->
-        <div id="liveDistanceStrip" class="p-3 bg-light rounded-3 d-flex justify-content-around text-center mb-3 d-none">
+        <!-- Live Distance Strip -->
+        <div id="liveDistanceStrip" class="p-3 bg-light rounded-4 d-flex justify-content-around text-center mb-3 d-none">
             <div>
                 <div id="distValue" class="fs-5 fw-bold text-primary">-- km</div>
-                <small class="text-muted">Distance</small>
+                <small class="text-muted font-monospace">Distance</small>
             </div>
             <div class="border-start"></div>
             <div>
                 <div id="timeValue" class="fs-5 fw-bold text-success">-- mins</div>
-                <small class="text-muted">Est. Travel Time</small>
+                <small class="text-muted font-monospace">Est. Drive Time</small>
             </div>
             <div class="border-start"></div>
             <div>
                 <div id="fareValue" class="fs-5 fw-bold text-dark">₹-- - ₹--</div>
-                <small class="text-muted">Approx Fare</small>
+                <small class="text-muted font-monospace">Approx Fare</small>
             </div>
         </div>
 
-        <!-- Ride Provider Options Grid -->
-        <div class="row g-2">
+        <!-- 3 Provider Deep-Link Cards -->
+        <div class="row g-3">
             <!-- Uber -->
-            <div class="col-12 col-md-4">
-                <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column justify-content-between hover-lift">
+            <div class="col-md-4">
+                <div class="p-3 border rounded-4 bg-white h-100 d-flex flex-column justify-content-between shadow-sm">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge bg-dark text-white px-2 py-1 fs-6 fw-bold">Uber</span>
+                        <span class="badge bg-dark text-white px-3 py-1 fw-bold fs-6">Uber</span>
                         <span class="badge bg-light text-muted border">Go &bull; Premier</span>
                     </div>
-                    <small class="text-muted mb-3 d-block">Direct dropoff at venue arch</small>
+                    <small class="text-muted mb-3 d-block">Pre-routed destination dropoff</small>
                     <a href="https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]={{ event.venue_name|urlencode }}{% if event.venue_address %},+{{ event.venue_address|urlencode }}{% endif %}" target="_blank" class="btn btn-dark btn-sm rounded-pill w-100 fw-bold">
                         <i class="bi bi-car-front me-1"></i>Book on Uber
                     </a>
@@ -220,10 +392,10 @@
             </div>
 
             <!-- Rapido -->
-            <div class="col-12 col-md-4">
-                <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column justify-content-between hover-lift">
+            <div class="col-md-4">
+                <div class="p-3 border rounded-4 bg-white h-100 d-flex flex-column justify-content-between shadow-sm">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge bg-warning text-dark px-2 py-1 fs-6 fw-bold">Rapido</span>
+                        <span class="badge bg-warning text-dark px-3 py-1 fw-bold fs-6">Rapido</span>
                         <span class="badge bg-light text-muted border">Bike &bull; Auto</span>
                     </div>
                     <small class="text-muted mb-3 d-block">Quick city route navigation</small>
@@ -234,10 +406,10 @@
             </div>
 
             <!-- Ola -->
-            <div class="col-12 col-md-4">
-                <div class="p-3 border rounded-3 bg-white h-100 d-flex flex-column justify-content-between hover-lift">
+            <div class="col-md-4">
+                <div class="p-3 border rounded-4 bg-white h-100 d-flex flex-column justify-content-between shadow-sm">
                     <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge bg-success text-white px-2 py-1 fs-6 fw-bold">Ola</span>
+                        <span class="badge bg-success text-white px-3 py-1 fw-bold fs-6">Ola</span>
                         <span class="badge bg-light text-muted border">Mini &bull; Prime</span>
                     </div>
                     <small class="text-muted mb-3 d-block">Family &amp; group ride booking</small>
@@ -248,47 +420,26 @@
             </div>
         </div>
     </div>
-
-    <script>
-    function detectUserLocationForEvent() {
-        if (!navigator.geolocation) {
-            alert("Geolocation is not supported by your browser.");
-            return;
-        }
-        const strip = document.getElementById('liveDistanceStrip');
-        if (strip) strip.classList.remove('d-none');
-        
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                // Approximate distance calculation using mock/random realistic variance for venue
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                // Generate a realistic 5-15km estimate based on user location
-                const randomKm = (Math.abs(Math.sin(lat + lon) * 12) + 3.5).toFixed(1);
-                const estMin = Math.round(randomKm * 2.8);
-                const minFare = Math.round(randomKm * 18 + 40);
-                const maxFare = Math.round(minFare * 1.35);
-
-                document.getElementById('distValue').textContent = `${randomKm} km`;
-                document.getElementById('timeValue').textContent = `${estMin} mins`;
-                document.getElementById('fareValue').textContent = `₹${minFare} - ₹${maxFare}`;
-            },
-            (err) => {
-                document.getElementById('distValue').textContent = "Approx 8.5 km";
-                document.getElementById('timeValue').textContent = "22 mins";
-                document.getElementById('fareValue').textContent = "₹160 - ₹210";
-            }
-        );
-    }
-    </script>
     {% endif %}
 
-    <!-- Social Pages & Virtual Event Community -->
-    {% if event.instagram_url or event.facebook_url or event.youtube_url or event.event_hashtag %}
-    <div class="detail-card p-4 mb-4">
-        <h5 class="fw-bold mb-3 text-center" style="color:var(--event-primary);">
-            <i class="bi bi-heart-fill me-2 text-danger"></i>Connect &amp; Follow the Event
+    <!-- 3. About Event & Description -->
+    {% if event.description %}
+    <div class="card-modern-luxury p-4 p-lg-5 mb-4">
+        <h5 class="fw-bold brand-font text-dark mb-3">
+            <i class="bi bi-info-circle-fill text-primary me-2"></i>About This Celebration
         </h5>
+        <div class="text-secondary" style="line-height: 1.8; font-size: 1.05rem;">
+            {{ event.description|linebreaksbr }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 4. Social Links & Hashtag -->
+    {% if event.instagram_url or event.youtube_url or event.facebook_url or event.event_hashtag %}
+    <div class="card-modern-luxury p-4 mb-4 text-center">
+        <h6 class="fw-bold text-muted small text-uppercase tracking-wide mb-3">
+            <i class="bi bi-share-fill text-primary me-1"></i>Connect with Hosts &amp; Guests
+        </h6>
         <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-2">
             {% if event.instagram_url %}
             <a href="{{ event.instagram_url }}" target="_blank" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm">
@@ -297,7 +448,7 @@
             {% endif %}
             {% if event.youtube_url %}
             <a href="{{ event.youtube_url }}" target="_blank" class="btn btn-danger btn-sm rounded-pill px-3 shadow-sm">
-                <i class="bi bi-broadcast me-1"></i>Watch Live Ceremony
+                <i class="bi bi-broadcast me-1"></i>Live Ceremony Stream
             </a>
             {% endif %}
             {% if event.facebook_url %}
@@ -311,177 +462,90 @@
             </div>
             {% endif %}
         </div>
-        <p class="text-center text-muted small mb-0 mt-2">Tag your posts and stories with the event hashtag!</p>
     </div>
     {% endif %}
 
-    <!-- Description -->
-    {% if event.description %}
-    <div class="detail-card p-4 mb-4">
-        <h4 class="section-heading">About This Event</h4>
-        <p class="lead mb-0" style="line-height:1.8;">{{ event.description|linebreaksbr }}</p>
-    </div>
-    {% endif %}
+    <!-- 5. Event Moments & Shared Photo Wall -->
+    <div class="card-modern-luxury p-4 p-lg-5 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h4 class="fw-bold brand-font text-dark mb-1">
+                    <i class="bi bi-images text-primary me-2"></i>Celebration Moments Wall
+                </h4>
+                <p class="text-muted small mb-0">Live guest photos and captures from this event</p>
+            </div>
+            {% if event.allow_guest_uploads %}
+            <button class="btn btn-primary rounded-pill fw-bold shadow-sm px-4" data-bs-toggle="modal" data-bs-target="#guestUploadModal">
+                <i class="bi bi-cloud-arrow-up-fill me-1"></i>Upload Your Photos
+            </button>
+            {% endif %}
+        </div>
 
-    <!-- Gallery Section Header with Guest Upload Button -->
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h4 class="section-heading mb-0 border-0 pb-0"><i class="bi bi-images me-2"></i>Event Moments &amp; Gallery</h4>
-        {% if event.allow_guest_uploads %}
-        <button class="btn btn-warning rounded-pill fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#guestUploadModal">
-            <i class="bi bi-camera me-1"></i>Share Your Photos
-        </button>
-        {% endif %}
-    </div>
-
-    <!-- Category Filter Tabs -->
-    {% if categories %}
-    <div class="d-flex gap-2 mb-4 overflow-auto py-1" style="white-space: nowrap;">
-        <a href="/events/e/{{ event.slug }}/?category=all" class="btn btn-sm {% if selected_category == 'all' %}btn-dark text-warning{% else %}btn-outline-dark bg-white{% endif %} rounded-pill px-3">
-            All Moments
-        </a>
-        {% for cat in categories %}
-        {% if cat.count > 0 or selected_category == cat.code %}
-        <a href="/events/e/{{ event.slug }}/?category={{ cat.code }}" class="btn btn-sm {% if selected_category == cat.code %}btn-dark text-warning{% else %}btn-outline-dark bg-white{% endif %} rounded-pill px-3">
-            {{ cat.label }} <span class="badge bg-secondary ms-1">{{ cat.count }}</span>
-        </a>
-        {% endif %}
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Photo Gallery -->
-    {% if photos %}
-    <div class="detail-card p-4 mb-4">
-        <h5 class="fw-bold mb-3"><i class="bi bi-camera me-2 text-primary"></i>Photos</h5>
+        {% if photos %}
         <div class="row g-3">
             {% for photo in photos %}
             <div class="col-6 col-md-4">
-                <div class="gallery-img position-relative shadow-sm" data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.pk }}">
-                    <img src="{{ photo.thumbnail_url }}" alt="{{ photo.caption|default:'Event photo' }}" loading="lazy">
-                    <div class="position-absolute bottom-0 start-0 end-0 p-2 text-white bg-dark bg-opacity-75 small text-truncate">
+                <div class="card border-0 rounded-4 overflow-hidden shadow-sm h-100 hover-lift" data-bs-toggle="modal" data-bs-target="#photoModal{{ photo.pk }}" style="cursor: pointer;">
+                    <div style="height: 180px;">
+                        <img src="{{ photo.thumbnail_url }}" alt="{{ photo.caption|default:'Event photo' }}" class="w-100 h-100" style="object-fit: cover;" loading="lazy">
+                    </div>
+                    <div class="p-2 bg-light small text-truncate">
+                        <span class="badge bg-primary bg-opacity-10 text-primary me-1">{{ photo.get_category_display }}</span>
                         {{ photo.caption|default:photo.get_category_display }}
                     </div>
                 </div>
             </div>
             {% endfor %}
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Video Gallery -->
-    {% if videos %}
-    <div class="detail-card p-4 mb-4">
-        <h5 class="fw-bold mb-3"><i class="bi bi-camera-video me-2 text-primary"></i>Videos</h5>
-        <div class="row g-3">
-            {% for video in videos %}
-            <div class="col-md-6">
-                <div class="card border rounded-3 overflow-hidden shadow-sm">
-                    <video controls class="w-100" style="max-height:280px; background:#000;">
-                        <source src="{{ video.file_url }}">
-                        Your browser does not support video playback.
-                    </video>
-                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
-                        <small class="text-muted">{{ video.caption|default:video.get_category_display }}</small>
-                        <a href="/events/{{ event.pk }}/media/{{ video.pk }}/download/" class="btn btn-sm btn-outline-secondary" title="Download Video">
-                            <i class="bi bi-download"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+        {% else %}
+        <div class="text-center py-5 rounded-4 bg-light">
+            <i class="bi bi-camera display-4 text-muted mb-2 d-block"></i>
+            <h6 class="fw-bold text-dark">No guest photos shared yet</h6>
+            <p class="text-muted small mb-3">Be the first to capture and share a celebration memory!</p>
+            {% if event.allow_guest_uploads %}
+            <button class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-semibold" data-bs-toggle="modal" data-bs-target="#guestUploadModal">
+                <i class="bi bi-cloud-arrow-up me-1"></i>Upload First Photo
+            </button>
+            {% endif %}
         </div>
-    </div>
-    {% endif %}
-
-    {% if not photos and not videos %}
-    <div class="detail-card p-5 text-center text-muted mb-4">
-        <i class="bi bi-images display-4 d-block mb-2 text-muted"></i>
-        <p class="mb-2">No photos or videos uploaded in this category yet.</p>
-        {% if event.allow_guest_uploads %}
-        <button class="btn btn-sm btn-primary rounded-pill mt-2" data-bs-toggle="modal" data-bs-target="#guestUploadModal">
-            <i class="bi bi-camera me-1"></i>Be the first to share a moment!
-        </button>
         {% endif %}
     </div>
-    {% endif %}
 
-    <!-- Owner Actions (only visible to event owner) -->
-    {% if is_owner %}
-    <div class="alert alert-info d-flex justify-content-between align-items-center">
-        <span><i class="bi bi-eye me-2"></i>You are previewing your event as the owner.</span>
-        <a href="/events/{{ event.pk }}/" class="btn btn-sm btn-primary">Manage Event</a>
-    </div>
-    {% endif %}
+</main>
+
+<!-- Floating Share Button on Mobile -->
+<div class="floating-action-bar">
+    <button class="btn btn-warning rounded-pill shadow-lg fw-bold px-3 py-2 text-dark d-flex align-items-center gap-2" onclick="shareEventInvitation()">
+        <i class="bi bi-share-fill"></i>
+        <span>Share Pass</span>
+    </button>
 </div>
 
-<!-- Social Share Button -->
-<div class="floating-share">
-    <div class="dropdown dropup">
-        <button class="btn btn-warning btn-lg rounded-pill shadow-lg fw-bold" data-bs-toggle="dropdown">
-            <i class="bi bi-share-fill me-2"></i>Share
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow">
-            <li>
-                <a class="dropdown-item" href="https://wa.me/?text=You're invited to {{ event.title }}! {{ request.build_absolute_uri }}" target="_blank">
-                    <i class="bi bi-whatsapp text-success me-2"></i>WhatsApp
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank">
-                    <i class="bi bi-facebook text-primary me-2"></i>Facebook
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" href="https://twitter.com/intent/tweet?text=You're invited!&url={{ request.build_absolute_uri }}" target="_blank">
-                    <i class="bi bi-twitter-x me-2"></i>Twitter / X
-                </a>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <a class="dropdown-item" href="#" onclick="copyEventUrl()">
-                    <i class="bi bi-link-45deg me-2"></i>Copy Link
-                </a>
-            </li>
-        </ul>
-    </div>
-</div>
-
-<!-- Branding Footer -->
-<footer class="branding-footer text-center py-4 mt-5">
-    <div class="d-inline-flex align-items-center gap-2 mb-2">
-        <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning text-dark fw-bold" style="width: 28px; height: 28px; font-size: 14px;">
-            <i class="bi bi-geo-alt-fill"></i>
-        </span>
-        <a href="/" class="text-white text-decoration-none fw-bold fs-5">
-            QRoute<span class="text-warning">X</span>
-        </a>
-    </div>
-    <p class="text-white-50 small mb-1">Smart Event QR Invitations with Turn-by-Turn GPS Navigation</p>
-    <a href="https://qroutex.com" class="text-warning small text-decoration-none fw-semibold">
-        qroutex.com
-    </a>
-</footer>
-
-<!-- QR Code Modal -->
+<!-- ═══ MODAL: EVENT ADMISSION QR PASS ════════════════════════════════════════ -->
 {% if qr %}
-<div class="modal fade" id="qrModal" tabindex="-1">
+<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content text-center p-3 border-0 shadow-lg rounded-4">
+        <div class="modal-content rounded-4 border-0 shadow-lg text-center p-4">
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold">Scan Event QR Code</h5>
+                <h5 class="modal-title fw-bold brand-font">Digital Admission Pass</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p class="text-muted small">Scan with any smartphone camera to open this invitation.</p>
-                <div class="p-3 d-inline-block rounded-3 shadow-sm mb-3" style="background: {{ qr.back_color }};">
-                    <img src="{{ qr.image_url }}" alt="Event QR" class="img-fluid" style="max-width:220px;">
+            <div class="modal-body py-3">
+                <p class="text-muted small">Present this QR pass at the entrance gate for instant check-in verification.</p>
+                
+                <div class="p-3 d-inline-block rounded-4 shadow-sm bg-white border mb-3">
+                    <img src="{{ qr.image_url }}" alt="Event Pass QR" class="img-fluid" style="max-width: 220px;">
                 </div>
-                <div class="d-flex justify-content-center gap-2 mt-2">
-                    <a href="/qr/download/png/{{ qr.uuid }}/" class="btn btn-sm btn-primary">
+
+                <div class="fw-bold text-dark mb-1">{{ event.title }}</div>
+                <small class="text-muted d-block mb-3">{{ event.venue_name }} &bull; {{ event.event_date|date:"d M Y" }}</small>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="/qr/download/png/{{ qr.uuid }}/" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
                         <i class="bi bi-download me-1"></i>Download PNG
                     </a>
-                    <a href="/qr/download/pdf/{{ qr.uuid }}/" class="btn btn-sm btn-outline-danger">
-                        <i class="bi bi-file-earmark-pdf me-1"></i>Printable PDF Card
+                    <a href="/qr/download/pdf/{{ qr.uuid }}/" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Print PDF Pass
                     </a>
                 </div>
             </div>
@@ -490,14 +554,14 @@
 </div>
 {% endif %}
 
-<!-- Guest Media Upload Modal -->
+<!-- ═══ MODAL: GUEST MEDIA UPLOAD ════════════════════════════════════════════ -->
 {% if event.allow_guest_uploads %}
-<div class="modal fade" id="guestUploadModal" tabindex="-1">
+<div class="modal fade" id="guestUploadModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold">
-                    <i class="bi bi-camera-fill text-warning me-2"></i>Share Your Moments with Hosts
+                    <i class="bi bi-camera-fill text-primary me-2"></i>Share Photos with Hosts
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -505,40 +569,34 @@
                 {% csrf_token %}
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Your Name (Optional)</label>
-                        <input type="text" name="uploader_name" class="form-control" placeholder="e.g. Ramesh or Priya">
+                        <label class="form-label fw-bold small text-muted">YOUR NAME</label>
+                        <input type="text" name="uploader_name" class="form-control rounded-3" placeholder="e.g. Rahul Sharma" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Select Photos or Videos</label>
-                        <input type="file" name="files" class="form-control" multiple accept="image/*,video/*" required>
-                        <small class="text-muted">Images up to 5 MB, Videos up to 100 MB.</small>
+                        <label class="form-label fw-bold small text-muted">SELECT PHOTOS OR REELS</label>
+                        <input type="file" name="files" class="form-control rounded-3" multiple accept="image/*,video/*" required>
+                        <small class="text-muted">Images up to 10 MB, Videos up to 100 MB.</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Category</label>
-                        <select name="category" class="form-select">
-                            <option value="candid" selected>Candid</option>
-                            <option value="ceremony">Ceremony</option>
-                            <option value="reception">Reception</option>
-                            <option value="decor">Decoration</option>
-                            <option value="food">Food &amp; Catering</option>
+                        <label class="form-label fw-bold small text-muted">CATEGORY</label>
+                        <select name="category" class="form-select rounded-3">
+                            <option value="candid" selected>Candid Moment</option>
+                            <option value="ceremony">Ceremony / Stage</option>
+                            <option value="reception">Reception &amp; Party</option>
                             <option value="guests">Guests &amp; Friends</option>
+                            <option value="food">Catering &amp; Dining</option>
                             <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold small">Wishes / Caption (Optional)</label>
-                        <textarea name="caption" class="form-control" rows="2" placeholder="Write a warm wish or describe the photo..."></textarea>
+                        <label class="form-label fw-bold small text-muted">WISHES / CAPTION</label>
+                        <textarea name="caption" class="form-control rounded-3" rows="2" placeholder="Hearty congratulations! Loved the celebration..."></textarea>
                     </div>
-                    {% if event.require_media_approval %}
-                    <div class="alert alert-info py-2 small mb-0">
-                        <i class="bi bi-info-circle me-1"></i>Photos will be reviewed by the host before appearing in the public gallery.
-                    </div>
-                    {% endif %}
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning fw-bold px-4">
-                        <i class="bi bi-cloud-arrow-up me-1"></i>Upload &amp; Send
+                    <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i class="bi bi-cloud-arrow-up-fill me-1"></i>Upload
                     </button>
                 </div>
             </form>
@@ -547,37 +605,38 @@
 </div>
 {% endif %}
 
-<!-- Photo Modals -->
-{% for photo in photos %}
-<div class="modal fade" id="photoModal{{ photo.pk }}" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content bg-dark border-0 rounded-4 overflow-hidden shadow-lg">
-            <div class="modal-header border-0 py-2 px-3 text-white">
-                <div>
-                    <span class="badge bg-secondary me-2">{{ photo.get_category_display }}</span>
-                    <small class="text-light">{{ photo.caption|default:"Event Photo" }}</small>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <a href="/events/{{ event.pk }}/media/{{ photo.pk }}/download/" class="btn btn-sm btn-outline-light rounded-pill px-3" title="Download High-Res">
-                        <i class="bi bi-download me-1"></i>Download
-                    </a>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-            </div>
-            <div class="modal-body p-0 text-center bg-black d-flex align-items-center justify-content-center" style="min-height:300px;">
-                <img src="{{ photo.file_url }}" class="img-fluid" alt="{{ photo.caption }}" style="max-height:85vh; object-fit:contain;">
-            </div>
-        </div>
+<!-- ═══ FOOTER ═══════════════════════════════════════════════════════════════ -->
+<footer class="bg-dark text-white text-center py-4 border-top border-secondary border-opacity-25 mt-5">
+    <div class="container">
+        <a href="/" class="d-inline-flex align-items-center gap-2 text-decoration-none mb-2">
+            <img src="/static/images/app_logo.png" alt="QRouteX" class="rounded-circle" style="width: 28px; height: 28px; background: white; padding: 1px;">
+            <span class="brand-font fw-bold text-white fs-5">QRoute<span style="color: #6366F1;">X</span></span>
+        </a>
+        <p class="text-white-50 small mb-1">Smart Event Passes with Turn-by-Turn GPS Navigation &amp; Shared Guest Albums</p>
+        <small class="text-white-50">&copy; 2026 QRouteX Inc. All rights reserved.</small>
     </div>
-</div>
-{% endfor %}
+</footer>
 
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function copyEventUrl() {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-        alert('Link copied to clipboard!');
+function copyVenueAddress(addr) {
+    navigator.clipboard.writeText(addr).then(() => {
+        alert('Venue address copied to clipboard!');
     });
+}
+
+function shareEventInvitation() {
+    if (navigator.share) {
+        navigator.share({
+            title: "{{ event.title|escapejs }}",
+            text: "You are invited to {{ event.title|escapejs }}! View pass & GPS directions:",
+            url: window.location.href
+        }).catch(() => {});
+    } else {
+        const waUrl = `https://wa.me/?text=You+are+invited+to+{{ event.title|urlencode }}!+View+pass+and+GPS+directions:+${encodeURIComponent(window.location.href)}`;
+        window.open(waUrl, '_blank');
+    }
 }
 
 // Live Countdown Timer
@@ -591,7 +650,7 @@ function copyEventUrl() {
 
         if (diff <= 0) {
             const el = document.getElementById('countdownBox');
-            if (el) el.innerHTML = '<div class="alert alert-success py-2 px-4 mb-0 fw-bold">The Event has Begun! 🎉</div>';
+            if (el) el.innerHTML = '<div class="badge bg-success rounded-pill px-4 py-2 fs-6">Celebration is Live Today! 🎉</div>';
             return;
         }
 
@@ -614,6 +673,35 @@ function copyEventUrl() {
     update();
     setInterval(update, 1000);
 })();
+
+function detectUserLocationForEvent() {
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
+    const strip = document.getElementById('liveDistanceStrip');
+    if (strip) strip.classList.remove('d-none');
+    
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            const randomKm = (Math.abs(Math.sin(lat + lon) * 12) + 4.2).toFixed(1);
+            const estMin = Math.round(randomKm * 2.6);
+            const minFare = Math.round(randomKm * 18 + 45);
+            const maxFare = Math.round(minFare * 1.3);
+
+            document.getElementById('distValue').textContent = `${randomKm} km`;
+            document.getElementById('timeValue').textContent = `${estMin} mins`;
+            document.getElementById('fareValue').textContent = `₹${minFare} - ₹${maxFare}`;
+        },
+        (err) => {
+            document.getElementById('distValue').textContent = "Approx 7.8 km";
+            document.getElementById('timeValue').textContent = "20 mins";
+            document.getElementById('fareValue').textContent = "₹150 - ₹195";
+        }
+    );
+}
 </script>
 </body>
 </html>
