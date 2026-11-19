@@ -3,6 +3,8 @@ apps/core/views.py - Public home and utility views.
 """
 
 from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
+from django.db import models
 from django.conf import settings
 from apps.events.models import Event
 from apps.business.models import Business
@@ -137,6 +139,223 @@ def home(request):
 def about(request):
     """About page."""
     return render(request, 'core/about.html')
+
+
+# ─── Location-Based SEO Landing Pages ──────────────────────────────────────────
+
+CITY_METADATA = {
+    'hyderabad': {
+        'name': 'Hyderabad',
+        'state': 'Telangana',
+        'state_code': 'TG',
+        'tagline': 'Top Event Venues, Wedding Planners, Caterers & Smart QR Passes in Hyderabad',
+        'meta_description': 'Explore top weddings, cultural galas, and verified event vendors in Hyderabad. Create instant digital invitation QR codes with turn-by-turn Google Maps GPS route navigation.',
+        'popular_areas': ['Banjara Hills', 'Jubilee Hills', 'Gachibowli', 'Madhapur', 'Hitec City', 'Secunderabad', 'Begumpet'],
+    },
+    'bengaluru': {
+        'name': 'Bengaluru',
+        'state': 'Karnataka',
+        'state_code': 'KA',
+        'tagline': 'Top Tech Conferences, Grand Weddings & Event Vendors in Bengaluru',
+        'meta_description': 'Discover premier events, wedding halls, caterers, and decorators in Bengaluru. Build smart QR invitation passes with GPS navigation and ride booking.',
+        'popular_areas': ['Koramangala', 'Indiranagar', 'Whitefield', 'HSR Layout', 'MG Road', 'Jayanagar'],
+    },
+    'mumbai': {
+        'name': 'Mumbai',
+        'state': 'Maharashtra',
+        'state_code': 'MH',
+        'tagline': 'Premier Weddings, Banquets & Creative Event Vendors in Mumbai',
+        'meta_description': 'Find luxury banquet halls, photographers, and event planners in Mumbai. Share digital QR invitations with 1-click GPS routes for your guests.',
+        'popular_areas': ['Bandra', 'Andheri', 'Juhu', 'Colaba', 'Worli', 'Powai'],
+    },
+    'delhi': {
+        'name': 'Delhi NCR',
+        'state': 'Delhi',
+        'state_code': 'DL',
+        'tagline': 'Grand Farmhouse Weddings, Exhibitions & Event Services in Delhi NCR',
+        'meta_description': 'Plan grand celebrations across Delhi, Gurgaon, and Noida. Smart QR passes with instant Google Maps navigation and guest verification.',
+        'popular_areas': ['Chhatarpur', 'Aerocity', 'Connaught Place', 'Gurgaon CyberHub', 'Noida Sector 18'],
+    },
+    'chennai': {
+        'name': 'Chennai',
+        'state': 'Tamil Nadu',
+        'state_code': 'TN',
+        'tagline': 'Traditional Mandapams, Beach Venues & Event Vendors in Chennai',
+        'meta_description': 'Explore traditional weddings, kalyana mandapams, and catering services in Chennai with smart QR invitations and GPS redirection.',
+        'popular_areas': ['ECR', 'Adyar', 'T. Nagar', 'Mylapore', 'Anna Nagar'],
+    },
+    'pune': {
+        'name': 'Pune',
+        'state': 'Maharashtra',
+        'state_code': 'MH',
+        'tagline': 'Destination Celebrations, Banquets & Vendors in Pune',
+        'meta_description': 'Connect with top wedding planners, photographers, and venues in Pune. Instant digital QR passes with turn-by-turn route directions.',
+        'popular_areas': ['Koregaon Park', 'Baner', 'Kothrud', 'Viman Nagar', 'Hinjewadi'],
+    },
+}
+
+
+def city_landing(request, city_slug):
+    """
+    Location-specific SEO landing page for cities (e.g. /city/hyderabad/).
+    Targets high-intent queries:
+    - 'Event vendors in Hyderabad'
+    - 'Wedding invitation QR codes Hyderabad'
+    - 'Restaurant table bookings Hyderabad'
+    """
+    slug = city_slug.lower().strip()
+    city_info = CITY_METADATA.get(slug)
+    if not city_info:
+        # Generic fallback
+        city_name = slug.replace('-', ' ').title()
+        city_info = {
+            'name': city_name,
+            'state': 'India',
+            'state_code': 'IN',
+            'tagline': f'Discover Top Events, Vendors & Smart QR Passes in {city_name}',
+            'meta_description': f'Explore verified events, venues, and event vendors in {city_name}. Create digital QR invitations with GPS route navigation.',
+            'popular_areas': ['Central City', 'Downtown', 'Suburbs'],
+        }
+
+    # Query events matching this city
+    city_name = city_info['name']
+    events = Event.objects.filter(
+        is_published=True,
+        is_private=False,
+    ).filter(
+        models.Q(venue_address__icontains=city_name) |
+        models.Q(venue_name__icontains=city_name) |
+        models.Q(description__icontains=city_name)
+    ).order_by('-event_date')[:6]
+
+    if not events:
+        events = Event.objects.filter(is_published=True, is_private=False).order_by('-created_at')[:6]
+
+    # Query businesses/vendors matching this city
+    businesses = Business.objects.filter(is_active=True).filter(
+        models.Q(city__icontains=city_name) |
+        models.Q(address__icontains=city_name) |
+        models.Q(description__icontains=city_name)
+    ).prefetch_related('services').order_by('-created_at')[:8]
+
+    if not businesses:
+        businesses = Business.objects.filter(is_active=True).prefetch_related('services').order_by('-created_at')[:8]
+
+    # Rich FAQs for Schema markup and user engagement
+    faqs = [
+        {
+            'q': f'How do I create a digital QR wedding invitation for an event in {city_name}?',
+            'a': f'Simply create a free event on QRouteX, set your venue address in {city_name}, and click Generate QR Pass. Your guests can scan the QR pass using any smartphone camera to view the schedule and start 1-click GPS navigation.',
+        },
+        {
+            'q': f'How does Google Maps GPS route navigation help outstation guests traveling in {city_name}?',
+            'a': f'QRouteX embeds direct turn-by-turn Google Maps navigation and ride-booking links (Uber, Rapido) into every guest pass so your attendees arrive smoothly at your {city_name} venue without calling for directions.',
+        },
+        {
+            'q': f'Can I hire verified wedding planners, photographers, and caterers in {city_name}?',
+            'a': f'Yes! QRouteX lists verified event vendors, banquet halls, caterers, and decorators in {city_name}. You can review portfolios, request bookings, and chat directly via WhatsApp.',
+        },
+        {
+            'q': f'How does the Live Celebration Moments photo wall work at {city_name} celebrations?',
+            'a': f'Each guest pass includes instant photo and video uploads. Guests upload snaps from their tables, and you can moderate and download full-resolution albums as a single ZIP file.',
+        },
+    ]
+
+    return render(request, 'core/city_landing.html', {
+        'city': city_info,
+        'city_slug': slug,
+        'events': events,
+        'businesses': businesses,
+        'faqs': faqs,
+    })
+
+
+# ─── Technical SEO & Deep Linking Endpoints ────────────────────────────────────
+
+def robots_txt(request):
+    """
+    Search engine crawler directives.
+    Allows indexable marketing, event, business, and city pages.
+    Disallows private user dashboards, API endpoints, checkout, and admin pages.
+    """
+    site_url = getattr(settings, 'SITE_URL', 'https://qroutex.com').rstrip('/')
+    content = f"""# QRouteX Robots Directives
+User-agent: *
+Allow: /
+Allow: /events/e/
+Allow: /b/
+Allow: /city/
+Allow: /pricing/
+Allow: /about/
+
+# Exclude private dashboards and sensitive data
+Disallow: /admin/
+Disallow: /platform-admin/
+Disallow: /accounts/
+Disallow: /api/
+Disallow: /checkout/
+Disallow: /subscriptions/history/
+Disallow: /events/create/
+Disallow: /events/*/edit/
+Disallow: /events/*/delete/
+Disallow: /events/*/guests/
+Disallow: /events/invitation/
+Disallow: /business/create/
+Disallow: /business/*/edit/
+Disallow: /business/*/delete/
+
+# Sitemaps declaration
+Sitemap: {site_url}/sitemap.xml
+"""
+    return HttpResponse(content.strip(), content_type="text/plain; charset=utf-8")
+
+
+def assetlinks_json(request):
+    """
+    Android App Links Digital Asset Links protocol.
+    Enables https://qroutex.com/events/e/* and /b/* URLs to open directly
+    in the Qroutex Flutter Android application.
+    """
+    data = [
+        {
+            "relation": ["delegate_permission/common.handle_all_urls"],
+            "target": {
+                "namespace": "android_app",
+                "package_name": "com.qroutex.app",
+                "sha256_cert_fingerprints": [
+                    # Official Play Store / Release key SHA-256 fingerprint
+                    "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C",
+                    # Debug fallback keystore fingerprint
+                    "27:52:6A:1A:1D:6E:71:03:C6:E9:98:99:99:C9:83:5F:8B:D8:1A:F9:6E:19:D9:F3:33:45:A4:77:B4:DF:22:90"
+                ]
+            }
+        }
+    ]
+    return JsonResponse(data, safe=False)
+
+
+def apple_app_site_association(request):
+    """
+    iOS Universal Links configuration.
+    Enables https://qroutex.com/events/e/* and /b/* to open directly
+    in the Qroutex Flutter iOS application.
+    """
+    data = {
+        "applinks": {
+            "apps": [],
+            "details": [
+                {
+                    "appID": "TEAMID1234.com.qroutex.app",
+                    "paths": [
+                        "/events/e/*",
+                        "/b/*",
+                        "/city/*"
+                    ]
+                }
+            ]
+        }
+    }
+    return JsonResponse(data)
 
 
 def handler404(request, exception):

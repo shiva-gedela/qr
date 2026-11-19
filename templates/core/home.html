@@ -466,7 +466,7 @@
                     <!-- Business Header / Cover -->
                     <div class="position-relative" style="height: 160px; background: linear-gradient(135deg, #1E1B4B, #4338CA);">
                         {% if biz.cover_image %}
-                        <img src="{{ biz.cover_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ biz.name }}">
+                        <img src="{{ biz.cover_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ biz.name }}" loading="lazy">
                         {% else %}
                         <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white-50">
                             <i class="bi bi-shop fs-1"></i>
@@ -535,7 +535,7 @@
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 hover-lift">
                     <div class="position-relative" style="height: 170px; background: linear-gradient(135deg, #312E81, #4F46E5);">
                         {% if ev.cover_image %}
-                        <img src="{{ ev.cover_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ ev.title }}">
+                        <img src="{{ ev.cover_image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ ev.title }}" loading="lazy">
                         {% else %}
                         <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white">
                             <span class="fs-1">{{ ev.event_type_icon }}</span>

@@ -29,7 +29,29 @@ class QRouteXApp extends StatelessWidget {
           themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeService.instance.lightTheme,
           darkTheme: ThemeService.instance.darkTheme,
-          home: const HomeScreen(),
+          initialRoute: '/',
+          routes: {
+            '/': (_) => const HomeScreen(),
+          },
+          onGenerateRoute: (settings) {
+            // Deep Link Handler for Android App Links & Universal Links
+            final uri = Uri.tryParse(settings.name ?? '');
+            if (uri != null && uri.pathSegments.isNotEmpty) {
+              final segments = uri.pathSegments;
+              if (segments.length >= 3 && segments[0] == 'events' && segments[1] == 'e') {
+                return MaterialPageRoute(
+                  builder: (_) => const HomeScreen(),
+                  settings: settings,
+                );
+              } else if (segments.length >= 2 && segments[0] == 'b') {
+                return MaterialPageRoute(
+                  builder: (_) => const HomeScreen(),
+                  settings: settings,
+                );
+              }
+            }
+            return MaterialPageRoute(builder: (_) => const HomeScreen());
+          },
         );
       },
     );

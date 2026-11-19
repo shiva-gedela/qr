@@ -4,6 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppConstants {
   static const String appName = 'QRouteX';
   static const String appWebsite = 'qroutex.com';
+  static const String privacyPolicyUrl = 'https://qroutex.com/about/';
+  static const String termsUrl = 'https://qroutex.com/about/';
+  static const String supportUrl = 'https://wa.me/919876543210';
+  static const String supportEmail = 'support@qroutex.com';
 
   // Default fallback baseUrl
   static const String defaultBaseUrl = 'http://10.22.84.118:8000';

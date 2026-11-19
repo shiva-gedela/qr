@@ -3,12 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SEO Meta & Canonical -->
+    <title>{{ event.title }} | {{ event.get_event_type_display }} Digital Pass | {{ SITE_NAME }}</title>
+    <meta name="description" content="{{ event.title }} hosted by {{ event.host_names }}. {{ event.event_date|date:'l, F j, Y' }} at {{ event.venue_name }}. Get instant Google Maps turn-by-turn route navigation, ride booking &amp; live guest albums.">
+    <link rel="canonical" href="{{ SITE_URL }}{{ event.get_absolute_url }}">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+
+    <!-- Open Graph (WhatsApp, Facebook, LinkedIn) -->
+    <meta property="og:site_name" content="{{ SITE_NAME }}">
+    <meta property="og:type" content="event">
     <meta property="og:title" content="{{ event.title }} - You're Invited!">
-    <meta property="og:description" content="{{ event.description|truncatechars:200 }}">
+    <meta property="og:description" content="Join us on {{ event.event_date|date:'M j, Y' }} at {{ event.venue_name }}. Tap for instant turn-by-turn Google Maps route directions &amp; passes.">
+    <meta property="og:url" content="{{ SITE_URL }}{{ event.get_absolute_url }}">
     {% if event.cover_image %}
-    <meta property="og:image" content="{{ event.cover_image.url }}">
+    <meta property="og:image" content="{{ SITE_URL }}{{ event.cover_image.url }}">
+    {% else %}
+    <meta property="og:image" content="{{ SITE_URL }}/static/images/app_logo.png">
     {% endif %}
-    <title>{{ event.title }} - QRouteX Invitation</title>
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ event.title }} - {{ event.get_event_type_display }}">
+    <meta name="twitter:description" content="Date: {{ event.event_date|date:'M j, Y' }} &bull; Venue: {{ event.venue_name }}. Instant turn-by-turn GPS navigation.">
+    {% if event.cover_image %}
+    <meta name="twitter:image" content="{{ SITE_URL }}{{ event.cover_image.url }}">
+    {% else %}
+    <meta name="twitter:image" content="{{ SITE_URL }}/static/images/app_logo.png">
+    {% endif %}
+
+    <!-- Schema.org JSON-LD Structured Data: Event & BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "{{ SITE_URL }}/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Events",
+              "item": "{{ SITE_URL }}/events/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "{{ event.title|escapejs }}",
+              "item": "{{ SITE_URL }}{{ event.get_absolute_url }}"
+            }
+          ]
+        },
+        {
+          "@type": "Event",
+          "@id": "{{ SITE_URL }}{{ event.get_absolute_url }}#event",
+          "name": "{{ event.title|escapejs }}",
+          "description": "{{ event.description|default:event.title|escapejs }}",
+          "startDate": "{{ event.event_date|date:'Y-m-d' }}{% if event.event_time %}T{{ event.event_time|time:'H:i:s' }}{% endif %}",
+          {% if event.event_end_date %}"endDate": "{{ event.event_end_date|date:'Y-m-d' }}{% if event.event_end_time %}T{{ event.event_end_time|time:'H:i:s' }}{% endif %}",{% endif %}
+          "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+          "eventStatus": "https://schema.org/EventScheduled",
+          "location": {
+            "@type": "Place",
+            "name": "{{ event.venue_name|default:'Event Venue'|escapejs }}",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "{{ event.venue_address|default:event.venue_name|escapejs }}",
+              "addressLocality": "Hyderabad",
+              "addressCountry": "IN"
+            }
+          },
+          "image": [
+            {% if event.cover_image %}"{{ SITE_URL }}{{ event.cover_image.url }}"{% else %}"{{ SITE_URL }}/static/images/app_logo.png"{% endif %}
+          ],
+          "organizer": {
+            "@type": "Person",
+            "name": "{{ event.host_names|default:event.organizer_name|default:'Event Host'|escapejs }}"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": "{{ SITE_URL }}{{ event.get_absolute_url }}",
+            "price": "0",
+            "priceCurrency": "INR",
+            "availability": "https://schema.org/InStock",
+            "validFrom": "{{ event.created_at|date:'Y-m-d' }}"
+          }
+        }
+      ]
+    }
+    </script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

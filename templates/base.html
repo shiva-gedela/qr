@@ -1,13 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}QRouteX (qroutex.com) - The World-Class Smart Event QR & GPS Turn-by-Turn Route Navigation Platform{% endblock %}">
-    <title>{% block title %}{{ SITE_NAME }} - Smart Event QR &amp; GPS Navigation{% endblock %}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <!-- Favicon using official QRouteX logo -->
+    <!-- SEO Meta Title & Description -->
+    <title>{% block title %}{{ SITE_NAME }} - Smart Event QR Passes &amp; Turn-by-Turn GPS Navigation{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}QRouteX - World-Class Smart Event QR Passes with Turn-by-Turn GPS Navigation, Instant Table QR Photo Walls, and Verified Local Vendor Bookings.{% endblock %}">
+    <meta name="author" content="QRouteX Inc.">
+
+    <!-- Search Engine Indexing & Robots Directives -->
+    {% block robots_meta %}
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    {% endblock %}
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn, Discord) -->
+    <meta property="og:site_name" content="{{ SITE_NAME }}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}{{ SITE_NAME }} - Smart Event QR Passes &amp; GPS Navigation{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Smart event QR passes with instant Google Maps GPS navigation, table photo sharing, and verified local business bookings.{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ SITE_URL }}/static/images/app_logo.png{% endblock %}">
+    <meta property="og:image:alt" content="{{ SITE_NAME }}">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Cards (X.com) -->
+    <meta name="twitter:card" content="{% block twitter_card %}summary_large_image{% endblock %}">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ SITE_NAME }} - Smart Event QR &amp; GPS Navigation{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Smart Event QR Passes, Turn-by-Turn GPS Navigation &amp; Verified Local Bookings{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ SITE_URL }}/static/images/app_logo.png{% endblock %}">
+
+    <!-- Geolocation Metadata for Local SEO -->
+    <meta name="geo.region" content="IN-TG">
+    <meta name="geo.placename" content="Hyderabad">
+
+    <!-- Search Console & Analytics -->
+    {% if GOOGLE_SITE_VERIFICATION %}
+    <meta name="google-site-verification" content="{{ GOOGLE_SITE_VERIFICATION }}">
+    {% endif %}
+    {% if GA_TRACKING_ID %}
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ GA_TRACKING_ID }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ GA_TRACKING_ID }}');
+    </script>
+    {% endif %}
+
+    <!-- Favicon & Touch Icons -->
     <link rel="icon" type="image/png" href="/static/images/app_logo.png">
+    <link rel="apple-touch-icon" href="/static/images/app_logo.png">
+
+    <!-- Performance & Core Web Vitals: Preconnect Google Fonts & CDNs -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -19,6 +72,46 @@
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <!-- Custom CSS -->
     <link href="/static/css/main.css" rel="stylesheet">
+
+    <!-- Schema.org JSON-LD Structured Data Block -->
+    {% block schema_markup %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "{{ SITE_URL }}/#organization",
+          "name": "{{ SITE_NAME }}",
+          "url": "{{ SITE_URL }}",
+          "logo": {
+            "@type": "ImageObject",
+            "@id": "{{ SITE_URL }}/#logo",
+            "url": "{{ SITE_URL }}/static/images/app_logo.png",
+            "caption": "{{ SITE_NAME }}"
+          },
+          "sameAs": [
+            "https://wa.me/919876543210",
+            "https://github.com/shiva-gedela/qr"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "{{ SITE_URL }}/#website",
+          "url": "{{ SITE_URL }}",
+          "name": "{{ SITE_NAME }}",
+          "description": "Smart Event QR invitations with turn-by-turn GPS route navigation, vendor bookings, and guest photo walls.",
+          "publisher": { "@id": "{{ SITE_URL }}/#organization" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "{{ SITE_URL }}/events/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
+    {% endblock %}
 
     {% block extra_css %}{% endblock %}
 </head>

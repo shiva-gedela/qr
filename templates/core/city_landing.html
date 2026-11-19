@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Events &amp; Verified Vendors in {{ city.name }} | {{ SITE_NAME }}{% endblock %}
+
+{% block meta_description %}{{ city.meta_description }}{% endblock %}
+
+{% block canonical_url %}{{ SITE_URL }}/city/{{ city_slug }}/{% endblock %}
+
+{% block og_title %}Events, Wedding Venues &amp; Verified Vendors in {{ city.name }} | {{ SITE_NAME }}{% endblock %}
+{% block og_description %}{{ city.meta_description }}{% endblock %}
+{% block og_url %}{{ SITE_URL }}/city/{{ city_slug }}/{% endblock %}
+
+{% block schema_markup %}
+<!-- Organization & WebSite from base -->
+{{ block.super }}
+
+<!-- BreadcrumbList Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ SITE_URL }}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Cities",
+      "item": "{{ SITE_URL }}/city/{{ city_slug }}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ city.name }}",
+      "item": "{{ SITE_URL }}/city/{{ city_slug }}/"
+    }
+  ]
+}
+</script>
+
+<!-- FAQPage Schema for Google Rich Snippets -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for faq in faqs %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.q|escapejs }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.a|escapejs }}"
+      }
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- ═══ BREADCRUMBS ═════════════════════════════════════════════════════════ -->
+<div class="bg-dark border-bottom border-secondary border-opacity-25 py-2">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small text-white-50">
+                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item text-white-50">Cities</li>
+                <li class="breadcrumb-item text-white active" aria-current="page">{{ city.name }}, {{ city.state }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- ═══ HERO SECTION ═════════════════════════════════════════════════════════ -->
+<section class="position-relative py-5 text-white overflow-hidden" style="background: radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.25) 0%, rgba(15, 23, 42, 1) 75%); border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <!-- Location Chip -->
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-white bg-opacity-10 border border-white border-opacity-15 mb-3">
+                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                    <span class="small fw-semibold text-white">{{ city.name }}, {{ city.state }} ({{ city.state_code }})</span>
+                    <span class="badge bg-success rounded-pill px-2 py-0.5" style="font-size: 0.68rem;">Verified Hub</span>
+                </div>
+
+                <h1 class="display-5 fw-extrabold text-white mb-3" style="letter-spacing: -0.5px;">
+                    Events, Venues &amp; Verified Vendors in <span style="background: linear-gradient(135deg, #818CF8, #22D3EE); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ city.name }}</span>
+                </h1>
+
+                <p class="lead text-white-75 mb-4" style="max-width: 680px; font-size: 1.1rem; line-height: 1.6;">
+                    {{ city.meta_description }}
+                </p>
+
+                <!-- CTAs -->
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <a href="/events/create/" class="btn btn-primary fw-bold px-4 py-2.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #4F46E5, #7C3AED); border: none;">
+                        <i class="bi bi-qr-code me-2"></i>Create Event Pass in {{ city.name }}
+                    </a>
+                    <a href="#vendors-section" class="btn btn-outline-light px-4 py-2.5 rounded-pill fw-semibold">
+                        <i class="bi bi-shop me-2"></i>Explore {{ city.name }} Vendors
+                    </a>
+                </div>
+
+                <!-- Popular Local Hubs -->
+                {% if city.popular_areas %}
+                <div class="mt-4 pt-2 d-flex align-items-center gap-2 flex-wrap">
+                    <small class="text-white-50 fw-semibold">Popular Areas:</small>
+                    {% for area in city.popular_areas %}
+                    <span class="badge bg-white bg-opacity-10 text-white-75 border border-white border-opacity-10 rounded-pill px-2.5 py-1 small">
+                        📍 {{ area }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Stats Badge Card -->
+            <div class="col-lg-4">
+                <div class="card border-0 rounded-4 p-4 shadow-lg" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1) !important;">
+                    <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-primary"></i>
+                        {{ city.name }} City Coverage
+                    </h5>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-white bg-opacity-5">
+                            <span class="text-white-75 small">Google Maps GPS Navigation</span>
+                            <span class="badge bg-success-subtle text-success fw-bold">100% Turn-by-Turn</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-white bg-opacity-5">
+                            <span class="text-white-75 small">Ride Booking Redirection</span>
+                            <span class="badge bg-info-subtle text-info fw-bold">Uber &amp; Rapido</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-white bg-opacity-5">
+                            <span class="text-white-75 small">Live Guest Moments Wall</span>
+                            <span class="badge bg-warning-subtle text-warning fw-bold">Table QR Upload</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-white bg-opacity-5">
+                            <span class="text-white-75 small">Verified Local Vendors</span>
+                            <span class="badge bg-primary-subtle text-primary fw-bold">Caterers &amp; Banquets</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FEATURED EVENTS IN CITY ═══════════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex align-items-end justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <span class="text-primary fw-bold small text-uppercase letter-spacing-1">Smart Digital Passes</span>
+                <h2 class="fw-bold text-dark mb-0">Trending Celebrations in {{ city.name }}</h2>
+            </div>
+            <a href="/events/" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">View All Events &rarr;</a>
+        </div>
+
+        <div class="row g-4">
+            {% for event in events %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden transition-all hover-lift">
+                    <div class="position-relative" style="height: 190px;">
+                        {% if event.cover_image %}
+                        <img src="{{ event.cover_image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ event.title }}">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white" style="background: linear-gradient(135deg, #4F46E5, #7C3AED);">
+                            <span style="font-size: 3rem;">{{ event.event_type_icon }}</span>
+                        </div>
+                        {% endif %}
+                        <span class="position-absolute top-0 start-0 m-3 badge bg-dark bg-opacity-75 backdrop-blur text-white rounded-pill px-2.5 py-1">
+                            {{ event.event_type_icon }} {{ event.get_event_type_display }}
+                        </span>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="text-muted small mb-1">
+                            <i class="bi bi-calendar3 me-1 text-primary"></i>{{ event.event_date|date:"M d, Y" }}
+                            {% if event.event_time %}&bull; {{ event.event_time|time:"g:i A" }}{% endif %}
+                        </div>
+                        <h5 class="fw-bold text-dark mb-2 line-clamp-1">{{ event.title }}</h5>
+                        <p class="text-muted small mb-3 line-clamp-2">
+                            <i class="bi bi-geo-alt me-1 text-danger"></i>{{ event.venue_name|default:city.name }}{% if event.venue_address %}, {{ event.venue_address }}{% endif %}
+                        </p>
+                        <div class="mt-auto pt-3 border-top d-flex align-items-center justify-content-between">
+                            <a href="{{ event.get_absolute_url }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold">
+                                View Pass &amp; Route
+                            </a>
+                            <span class="badge bg-success-subtle text-success rounded-pill px-2.5 py-1">
+                                <i class="bi bi-check-circle me-1"></i>GPS Ready
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-calendar-heart text-muted display-4 mb-3 d-block"></i>
+                <h5 class="fw-bold text-dark">No public events listed in {{ city.name }} yet</h5>
+                <p class="text-muted small mb-4">Be the first host to launch a digital QR pass in {{ city.name }}!</p>
+                <a href="/events/create/" class="btn btn-primary rounded-pill px-4">Create First {{ city.name }} Event</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ VERIFIED LOCAL VENDORS IN CITY ════════════════════════════════════════ -->
+<section id="vendors-section" class="py-5 bg-white border-top">
+    <div class="container">
+        <div class="d-flex align-items-end justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <span class="text-primary fw-bold small text-uppercase letter-spacing-1">Verified Local Directory</span>
+                <h2 class="fw-bold text-dark mb-0">Event Vendors, Caterers &amp; Banquets in {{ city.name }}</h2>
+            </div>
+            <a href="/business/" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">View All Vendors &rarr;</a>
+        </div>
+
+        <div class="row g-4">
+            {% for biz in businesses %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border rounded-4 p-4 shadow-sm hover-lift">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="{{ biz.logo_url }}" class="rounded-3 shadow-sm border" width="56" height="56" style="object-fit:cover;" alt="{{ biz.name }}">
+                        <div>
+                            <h5 class="fw-bold text-dark mb-0 line-clamp-1">{{ biz.name }}</h5>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill small">
+                                {{ biz.get_category_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3 line-clamp-2">{{ biz.description|default:biz.tagline }}</p>
+                    <div class="text-muted small mb-3">
+                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ biz.address|default:city.name }}
+                    </div>
+                    <div class="mt-auto pt-3 border-top d-flex align-items-center justify-content-between">
+                        <a href="{{ biz.get_absolute_url }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                            View Profile
+                        </a>
+                        {% if biz.whatsapp %}
+                        <a href="{{ biz.whatsapp_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold">
+                            <i class="bi bi-whatsapp me-1"></i>Enquire
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ FAQS WITH SCHEMA ═══════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light border-top">
+    <div class="container" style="max-width: 860px;">
+        <div class="text-center mb-5">
+            <span class="text-primary fw-bold small text-uppercase">Frequently Asked Questions</span>
+            <h2 class="fw-bold text-dark">Planning Events &amp; Hiring Vendors in {{ city.name }}</h2>
+            <p class="text-muted small">Everything you need to know about digital passes and turn-by-turn navigation in {{ city.name }}.</p>
+        </div>
+
+        <div class="accordion accordion-flush rounded-4 overflow-hidden shadow-sm" id="cityFaqAccordion">
+            {% for faq in faqs %}
+            <div class="accordion-item border mb-2 rounded-3 overflow-hidden">
+                <h3 class="accordion-header" id="heading{{ forloop.counter }}">
+                    <button class="accordion-button fw-bold text-dark collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
+                        {{ faq.q }}
+                    </button>
+                </h3>
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#cityFaqAccordion">
+                    <div class="accordion-body text-muted" style="line-height: 1.7;">
+                        {{ faq.a }}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CITY CALL TO ACTION ═══════════════════════════════════════════════════ -->
+<section class="py-5 text-white text-center" style="background: linear-gradient(135deg, #1E1B4B 0%, #4338CA 100%);">
+    <div class="container" style="max-width: 700px;">
+        <h2 class="fw-extrabold mb-3">Host Your Next Celebration in {{ city.name }}</h2>
+        <p class="text-white-75 mb-4">Empower your guests with smart digital QR passes, turn-by-turn Google Maps navigation, and collaborative celebration memory walls.</p>
+        <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+            <a href="/events/create/" class="btn btn-light text-primary fw-bold px-4 py-2.5 rounded-pill shadow-sm">
+                Create Free Event Pass
+            </a>
+            <a href="/business/create/" class="btn btn-outline-light fw-bold px-4 py-2.5 rounded-pill">
+                List Your {{ city.name }} Business
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

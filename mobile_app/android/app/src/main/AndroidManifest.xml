@@ -85,6 +85,26 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- App Links: AutoVerify for https://qroutex.com -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="qroutex.com" android:pathPrefix="/events/e/" />
+                <data android:scheme="https" android:host="qroutex.com" android:pathPrefix="/b/" />
+                <data android:scheme="https" android:host="qroutex.com" android:pathPrefix="/city/" />
+                <data android:scheme="https" android:host="www.qroutex.com" android:pathPrefix="/events/e/" />
+                <data android:scheme="https" android:host="www.qroutex.com" android:pathPrefix="/b/" />
+            </intent-filter>
+
+            <!-- Custom URL Scheme: qroutex:// -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="qroutex" />
+            </intent-filter>
         </activity>
         <meta-data
             android:name="flutterEmbedding"
