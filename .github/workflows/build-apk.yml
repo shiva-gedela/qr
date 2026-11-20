@@ -58,6 +58,14 @@ jobs:
           name: build-output-log
           path: mobile_app/build_output.log
 
+      - name: Add Build Log to Summary
+        if: always()
+        run: |
+          echo "### Build Log (Last 150 Lines)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -n 150 mobile_app/build_output.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
       - name: Rename APK for release
         run: |
           cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.1.0.apk

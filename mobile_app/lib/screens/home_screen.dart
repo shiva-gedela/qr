@@ -323,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   final prefs = await SharedPreferences.getInstance();
                                   await prefs.setString('qroutex_selected_city', city);
                                   setState(() => _selectedCity = city);
-                                  if (context.mounted) Navigator.pop(context);
+                                  if (mounted) Navigator.pop(context);
                                 },
                               );
                             },
