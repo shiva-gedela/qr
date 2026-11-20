@@ -45,7 +45,7 @@ class ThemeService extends ChangeNotifier {
         surface: AppConstants.cardColor,
         background: AppConstants.backgroundColor,
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -80,7 +80,7 @@ class ThemeService extends ChangeNotifier {
         surface: AppConstants.darkCardColor,
         background: AppConstants.darkBackgroundColor,
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: AppConstants.darkCardColor,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

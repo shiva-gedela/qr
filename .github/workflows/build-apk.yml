@@ -28,7 +28,6 @@ jobs:
       - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6'
           channel: 'stable'
           cache: true
 
@@ -61,48 +60,55 @@ jobs:
 
       - name: Rename APK for release
         run: |
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.1.0.apk
+          cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-latest.apk
           cp mobile_app/build/app/outputs/flutter-apk/app-release.apk mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.9.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: QRouteX-v1.0.9-apk
+          name: QRouteX-v1.1.0-apk
           path: mobile_app/build/app/outputs/flutter-apk/*.apk
 
-      - name: Publish GitHub Release v1.0.9
+      - name: Publish GitHub Release v1.1.0
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.9
-          name: "QRouteX v1.0.9 - Complete UI/UX Redesign, Official Brand Logo, 5-Tab Navigation, & Moments Feed"
+          tag_name: v1.1.0
+          name: "QRouteX v1.1.0 - Official Brand Logo, Live GPS City Detection & App Links"
           body: |
-            ## QRouteX Mobile App (v1.0.9) • Complete Redesign Edition • qroutex.com
+            ## QRouteX Mobile App (v1.1.0) • Complete Redesign Edition • qroutex.com
             
-            ### ✨ What's New in v1.0.9:
+            ### ✨ What's New in v1.1.0:
             - **Official QRouteX High-Resolution Logo**:
-              - Integrated official high-res QRouteX logo across Android launcher mipmaps, app header, and digital invitations.
+              - Integrated the new official squircle emblem with GPS route and cyan locator pin across Android launcher mipmaps, web icons, and header badge.
+            - **Live Location Auto-Detection**:
+              - Added real-time GPS & network city auto-detection with OpenStreetMap and GeoJS reverse geocoding in the city picker modal.
+            - **Android App Links & Deep Linking**:
+              - Configured `android:autoVerify="true"` and intent filters for `https://qroutex.com/events/e/` and `https://qroutex.com/b/`.
             - **5-Tab Navigation Architecture**:
-              - **Home | Explore | Create (+) | Bookings | Profile**
-              - Docked center Floating Action Button with interactive quick actions modal (Create Event, Scan QR, Book Service, Share Moment, Add Vendor).
+              - **Home | Explore | Create (+) | Bookings | Profile** with floating create dock.
             - **8-Step Multi-Step Event Creation Wizard**:
-              - 1. Event Information, 2. Date, Time & Venue, 3. Cover Image, 4. Story & Description, 5. Guest Capacity, 6. Entry & QR Settings, 7. Event Portfolio, 8. Interactive Live Preview & Publish.
+              - Event Info, Date & Location, Cover Image, Description, Capacity, Tickets, Portfolio, Live Preview & Publish.
             - **Restaurant & Local Business Direct Booking**:
-              - Full booking module with date picker, time slot chips, guest count slider, and status tracking in My Bookings.
+              - Time slot chips, date picker, guest count slider, and status tracking in My Bookings.
             - **Vendor Partner Portal & Dashboard**:
-              - Dedicated dashboard with key performance indicators (views, bookings, revenue) and client inquiry management.
-            - **Social Moments Feed**:
-              - Celebration feed with story highlights, double-tap like animations, comments, and WhatsApp sharing.
+              - KPI cards (views, bookings, revenue) and client inquiry management.
+            - **Celebration Moments Feed**:
+              - Story highlights, double-tap like animations, comments, and WhatsApp sharing.
             - **Advanced QR Code Scanner with Scan History**:
-              - Full-screen scanner, gallery screenshot scanning, camera torch toggle, attendance scan history, and Google / Apple wallet passes.
+              - Full-screen camera scanner, gallery decode, torch toggle, and duplicate check-in prevention.
             - **Ride & GPS Turn-by-Turn Navigation**:
-              - Live route directions and instant deep-linking for Uber, Rapido, and Ola.
+              - Live Google Maps route directions and 1-click deep links for Uber, Rapido, and Ola.
             
             ### 📱 Android Installation Instructions:
-            1. Download `QRouteX-v1.0.9.apk` directly to your Android device.
+            1. Download `QRouteX-v1.1.0.apk` (or `QRouteX-latest.apk`) directly to your Android device.
             2. If Android displays *"Blocked by Play Protect"* or *"Unrecognized App"*:
                - Tap **"More details"**
                - Tap **"Install anyway"**
             3. Open the app to experience the brand-new QRouteX platform!
           files: |
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.1.0.apk
+            mobile_app/build/app/outputs/flutter-apk/QRouteX-latest.apk
             mobile_app/build/app/outputs/flutter-apk/QRouteX-v1.0.9.apk
             mobile_app/build/app/outputs/flutter-apk/app-release.apk
