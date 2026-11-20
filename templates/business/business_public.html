@@ -536,6 +536,7 @@
             </div>
             <div class="modal-body p-3 p-md-4">
                 <form id="publicBookingForm" onsubmit="submitPublicBooking(event)">
+                    {% csrf_token %}
                     <!-- Date Picker -->
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-dark">Reservation Date</label>
@@ -583,8 +584,8 @@
                     </div>
 
                     <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-success btn-lg fw-bold rounded-pill shadow-sm">
-                            <i class="bi bi-whatsapp me-2"></i>Confirm via WhatsApp
+                        <button type="submit" id="pbSubmitBtn" class="btn btn-success btn-lg fw-bold rounded-pill shadow-sm">
+                            <i class="bi bi-calendar2-check-fill me-2"></i>Confirm &amp; Notify via WhatsApp
                         </button>
                     </div>
                 </form>
@@ -619,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function submitPublicBooking(e) {
+async function submitPublicBooking(e) {
     e.preventDefault();
     const date = document.getElementById('pbDateInput').value;
     const guests = document.getElementById('pbGuestsInput').value;
@@ -627,15 +628,51 @@ function submitPublicBooking(e) {
     const phone = document.getElementById('pbCustomerPhone').value;
     const notes = document.getElementById('pbNotes').value;
 
-    const bizName = "{{ business.name|escapejs }}";
-    const bizPhone = "{{ business.clean_whatsapp_number|default:'919876543210' }}";
+    const btn = document.getElementById('pbSubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Reserving...';
+    }
 
-    const msg = `Hello ${bizName}! I would like to book a table/service via QRouteX:%0A- Name: ${encodeURIComponent(name)}%0A- Phone: ${encodeURIComponent(phone)}%0A- Date: ${date}%0A- Time Slot: ${currentPbSlot}%0A- Guests: ${guests}%0A- Notes: ${encodeURIComponent(notes || 'None')}`;
-
-    const waUrl = `https://wa.me/${bizPhone}?text=${msg}`;
-    bootstrap.Modal.getInstance(document.getElementById('publicBookingModal')).hide();
-    alert(`Booking Request Created!\n\nOpening WhatsApp to confirm with ${bizName}...`);
-    window.open(waUrl, '_blank');
+    try {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        const resp = await fetch('{% url "business_public_book" business.slug %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                name: name,
+                phone: phone,
+                date: date,
+                time_slot: currentPbSlot,
+                guests: guests,
+                notes: notes,
+            })
+        });
+        const result = await resp.json();
+        if (resp.ok && result.success) {
+            bootstrap.Modal.getInstance(document.getElementById('publicBookingModal')).hide();
+            alert(`🎉 Booking Confirmed!\n\nBooking ID: ${result.booking_code}\n\nOpening WhatsApp to confirm directly with {{ business.name|escapejs }}...`);
+            window.open(result.whatsapp_url, '_blank');
+        } else {
+            alert(`Booking Error: ${result.error || 'Could not complete reservation'}`);
+        }
+    } catch (err) {
+        console.error('Booking fetch error:', err);
+        const bizName = "{{ business.name|escapejs }}";
+        const bizPhone = "{{ business.clean_whatsapp_number|default:'919876543210' }}";
+        const msg = `Hello ${bizName}! I would like to book a table/service via QRouteX:%0A- Name: ${encodeURIComponent(name)}%0A- Phone: ${encodeURIComponent(phone)}%0A- Date: ${date}%0A- Time Slot: ${currentPbSlot}%0A- Guests: ${guests}%0A- Notes: ${encodeURIComponent(notes || 'None')}`;
+        const waUrl = `https://wa.me/${bizPhone}?text=${msg}`;
+        bootstrap.Modal.getInstance(document.getElementById('publicBookingModal')).hide();
+        window.open(waUrl, '_blank');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-calendar2-check-fill me-2"></i>Confirm &amp; Notify via WhatsApp';
+        }
+    }
 }
 
 document.getElementById('shareBtn')?.addEventListener('click', async () => {

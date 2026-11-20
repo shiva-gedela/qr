@@ -246,3 +246,64 @@ class BusinessService(models.Model):
         if self.image:
             return self.image.url
         return ''
+
+
+class BusinessBooking(models.Model):
+    """
+    Table reservations and business service appointments.
+    Synchronized between QRouteX web portals and mobile Flutter apps.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending Approval'),
+        ('confirmed', 'Confirmed'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('rescheduled', 'Rescheduled'),
+    ]
+
+    id = models.BigAutoField(primary_key=True)
+    booking_code = models.CharField(max_length=40, unique=True, blank=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='bookings')
+    service = models.ForeignKey(BusinessService, on_delete=models.SET_NULL, null=True, blank=True, related_name='bookings')
+    service_name = models.CharField(max_length=200, blank=True)
+    service_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    customer_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='customer_bookings')
+    customer_name = models.CharField(max_length=150)
+    customer_phone = models.CharField(max_length=30)
+    customer_email = models.EmailField(blank=True)
+
+    date = models.DateField(help_text="Booking or reservation date")
+    time_slot = models.CharField(max_length=50, help_text="e.g. 07:00 PM - 08:30 PM")
+    guests_count = models.PositiveIntegerField(default=2, help_text="Party size or guest count")
+    special_requests = models.TextField(blank=True, help_text="Dietary needs, table preference, notes")
+    status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='confirmed')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'business_bookings'
+        verbose_name = 'Business Booking & Reservation'
+        verbose_name_plural = 'Business Bookings & Reservations'
+        ordering = ['-date', '-created_at']
+        indexes = [
+            models.Index(fields=['business', 'date']),
+            models.Index(fields=['customer_phone', 'date']),
+            models.Index(fields=['booking_code']),
+            models.Index(fields=['status']),
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self.booking_code:
+            import time, random
+            self.booking_code = f"QX-BK{int(time.time()) % 1000000:06d}{random.randint(10, 99)}"
+        if self.service and not self.service_name:
+            self.service_name = self.service.name
+        if self.service and self.service.price and self.service_price is None:
+            self.service_price = self.service.price
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.booking_code}: {self.customer_name} @ {self.business.name} ({self.date})"
+

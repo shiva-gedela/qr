@@ -5,7 +5,7 @@ Django REST Framework serializers for Business Profiles and Services.
 """
 
 from rest_framework import serializers
-from .models import Business, BusinessService
+from .models import Business, BusinessService, BusinessBooking
 from apps.qrcodes.serializers import QRCodeSerializer
 
 
@@ -96,3 +96,44 @@ class BusinessPublicSerializer(serializers.ModelSerializer):
     def get_services(self, obj):
         services = obj.get_active_services()
         return BusinessServiceSerializer(services, many=True).data
+
+
+class BusinessBookingSerializer(serializers.ModelSerializer):
+    """Serializer for business bookings and table reservations."""
+    id = serializers.CharField(source='booking_code', read_only=True)
+    business_id = serializers.IntegerField(source='business.id', read_only=True)
+    business_name = serializers.CharField(source='business.name', read_only=True)
+    business_category = serializers.CharField(source='business.get_category_display', read_only=True)
+
+    class Meta:
+        model = BusinessBooking
+        fields = [
+            'id', 'booking_code', 'business', 'business_id', 'business_name', 'business_category',
+            'service', 'service_name', 'service_price',
+            'customer_name', 'customer_phone', 'customer_email',
+            'date', 'time_slot', 'guests_count', 'special_requests',
+            'status', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'booking_code', 'created_at', 'updated_at']
+
+    def validate(self, attrs):
+        business = attrs.get('business')
+        date = attrs.get('date')
+        time_slot = attrs.get('time_slot')
+        phone = attrs.get('customer_phone')
+
+        if business and date and time_slot and phone:
+            existing = BusinessBooking.objects.filter(
+                business=business,
+                date=date,
+                time_slot=time_slot,
+                customer_phone=phone,
+            ).exclude(status='cancelled')
+            if self.instance:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                raise serializers.ValidationError(
+                    "You already have an active booking for this business at this date and time slot."
+                )
+        return attrs
+

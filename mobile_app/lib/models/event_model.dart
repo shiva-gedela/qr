@@ -127,6 +127,11 @@ class EventModel {
     }
   }
 
+  String get effectiveDirectionsUrl =>
+      googleMapsDirectionsUrl ??
+      googleMapsUrl ??
+      'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent("$venueName, $venueAddress")}';
+
   String get eventTypeIcon {
     switch (eventType.toLowerCase()) {
       case 'wedding': return '💍';

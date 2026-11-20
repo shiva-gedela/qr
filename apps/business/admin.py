@@ -5,7 +5,7 @@ Django Admin configuration for Business profiles and Products/Services.
 """
 
 from django.contrib import admin
-from .models import Business, BusinessService
+from .models import Business, BusinessService, BusinessBooking
 
 
 class BusinessServiceInline(admin.TabularInline):
@@ -58,3 +58,12 @@ class BusinessServiceAdmin(admin.ModelAdmin):
     list_display = ('name', 'business', 'price', 'price_type', 'is_available', 'order', 'created_at')
     list_filter = ('price_type', 'is_available', 'created_at')
     search_fields = ('name', 'description', 'business__name')
+
+
+@admin.register(BusinessBooking)
+class BusinessBookingAdmin(admin.ModelAdmin):
+    list_display = ('booking_code', 'business', 'customer_name', 'customer_phone', 'date', 'time_slot', 'guests_count', 'status', 'created_at')
+    list_filter = ('status', 'date', 'created_at', 'business')
+    search_fields = ('booking_code', 'customer_name', 'customer_phone', 'business__name', 'special_requests')
+    readonly_fields = ('booking_code', 'created_at', 'updated_at')
+

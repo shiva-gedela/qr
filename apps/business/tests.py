@@ -17,7 +17,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from apps.business.models import Business, BusinessService
+from apps.business.models import Business, BusinessService, BusinessBooking
 from apps.qrcodes.models import QRCode
 from apps.qrcodes.services import generate_or_update_business_qr, generate_business_qr_pdf
 
@@ -149,9 +149,14 @@ class BusinessViewsWebTests(TestCase):
         )
         generate_or_update_business_qr(self.biz)
 
-    def test_business_list_requires_login(self):
-        """Unauthenticated user is redirected to login."""
+    def test_business_list_public(self):
+        """Unauthenticated user can view the public business directory."""
         response = self.client.get(reverse('business_list'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_business_create_requires_login(self):
+        """Unauthenticated user is redirected to login when trying to create a business."""
+        response = self.client.get(reverse('business_create'))
         self.assertEqual(response.status_code, 302)
 
     def test_business_list_authenticated(self):
@@ -224,6 +229,38 @@ class BusinessViewsWebTests(TestCase):
         self.assertEqual(pdf_resp.status_code, 200)
         self.assertEqual(pdf_resp['Content-Type'], 'application/pdf')
         self.assertIn(b'%PDF', pdf_resp.content[:10])
+
+    def test_web_booking_creation_and_duplicate_prevention(self):
+        """Test public web booking endpoint and duplicate prevention."""
+        book_url = reverse('business_public_book', kwargs={'slug': self.biz.slug})
+        post_data = {
+            'name': 'Rahul Sharma',
+            'phone': '+91 98765 43210',
+            'date': '2026-12-25',
+            'time_slot': '07:00 PM',
+            'guests': 4,
+            'notes': 'Quiet corner table for anniversary dinner',
+        }
+        resp = self.client.post(book_url, post_data)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertTrue(data['success'])
+        self.assertTrue(data['booking_code'].startswith('QX-BK'))
+        self.assertIn('https://wa.me/', data['whatsapp_url'])
+
+        # Check DB
+        booking = BusinessBooking.objects.get(booking_code=data['booking_code'])
+        self.assertEqual(booking.customer_name, 'Rahul Sharma')
+        self.assertEqual(booking.guests_count, 4)
+        self.assertEqual(booking.status, 'confirmed')
+
+        # Test duplicate booking prevention
+        dup_resp = self.client.post(book_url, post_data)
+        self.assertEqual(dup_resp.status_code, 400)
+        dup_data = dup_resp.json()
+        self.assertFalse(dup_data['success'])
+        self.assertIn('already have an active reservation', dup_data['error'])
+
 
 
 class BusinessAPITests(TestCase):
@@ -305,3 +342,49 @@ class BusinessAPITests(TestCase):
         self.assertEqual(get_resp.status_code, status.HTTP_200_OK)
         results = get_resp.data.get('results', get_resp.data)
         self.assertEqual(len(results), 1)
+
+    def test_api_booking_lifecycle(self):
+        """Test full booking lifecycle via REST API: create, duplicate check, user query, cancel, vendor status."""
+        url = reverse('api_business_bookings', kwargs={'business_pk': self.biz.pk})
+
+        # 1. Create booking via API
+        payload = {
+            'business': self.biz.pk,
+            'customer_name': 'Sneha Patel',
+            'customer_phone': '+91 91234 56789',
+            'customer_email': 'sneha@example.com',
+            'date': '2026-11-28',
+            'time_slot': '08:00 PM',
+            'guests_count': 3,
+            'special_requests': 'Outdoor seating',
+        }
+        create_resp = self.client.post(url, payload, format='json')
+        self.assertEqual(create_resp.status_code, status.HTTP_201_CREATED)
+        booking_code = create_resp.data['id']
+        self.assertTrue(booking_code.startswith('QX-BK'))
+        self.assertEqual(create_resp.data['customer_name'], 'Sneha Patel')
+
+        # 2. Duplicate booking prevention check via API
+        dup_resp = self.client.post(url, payload, format='json')
+        self.assertEqual(dup_resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # 3. User Bookings query
+        user_url = reverse('api_user_bookings') + '?phone=%2B91%2091234%2056789'
+        user_resp = self.client.get(user_url)
+        self.assertEqual(user_resp.status_code, status.HTTP_200_OK)
+        bookings = user_resp.data.get('results', user_resp.data)
+        self.assertEqual(len(bookings), 1)
+        self.assertEqual(bookings[0]['id'], booking_code)
+
+        # 4. Vendor status update
+        status_url = reverse('api_vendor_booking_status', kwargs={'business_pk': self.biz.pk, 'booking_code': booking_code})
+        status_resp = self.client.post(status_url, {'status': 'completed'}, format='json')
+        self.assertEqual(status_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(status_resp.data['booking']['status'], 'completed')
+
+        # 5. Cancel booking
+        cancel_url = reverse('api_booking_cancel', kwargs={'booking_code': booking_code})
+        cancel_resp = self.client.post(cancel_url, {'phone': '+91 91234 56789'}, format='json')
+        self.assertEqual(cancel_resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(cancel_resp.data['booking']['status'], 'cancelled')
+

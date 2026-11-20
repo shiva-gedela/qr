@@ -18,4 +18,10 @@ urlpatterns = [
     # Services / Products CRUD
     path('<int:business_pk>/services/', api_views.BusinessServiceListCreateAPIView.as_view(), name='api_service_list_create'),
     path('<int:business_pk>/services/<int:pk>/', api_views.BusinessServiceDetailAPIView.as_view(), name='api_service_detail'),
+
+    # Table & Service Bookings (Web & Mobile Flutter synchronization)
+    path('bookings/', api_views.UserBookingListAPIView.as_view(), name='api_user_bookings'),
+    path('bookings/<str:booking_code>/cancel/', api_views.BookingCancelAPIView.as_view(), name='api_booking_cancel'),
+    path('<int:business_pk>/bookings/', api_views.BusinessBookingListCreateAPIView.as_view(), name='api_business_bookings'),
+    path('<int:business_pk>/bookings/<str:booking_code>/status/', api_views.VendorBookingStatusAPIView.as_view(), name='api_vendor_booking_status'),
 ]
