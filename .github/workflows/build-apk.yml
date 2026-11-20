@@ -58,6 +58,16 @@ jobs:
           name: build-output-log
           path: mobile_app/build_output.log
 
+      - name: Commit build error log if failed
+        if: failure()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          tail -n 250 mobile_app/build_output.log > BUILD_FAILURE_LOG.txt
+          git add BUILD_FAILURE_LOG.txt
+          git commit -m "ci: dump android build failure log [skip ci]" || true
+          git push origin main || true
+
       - name: Add Build Log to Summary
         if: always()
         run: |
